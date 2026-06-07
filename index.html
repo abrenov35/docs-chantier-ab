@@ -64,6 +64,7 @@ textarea { resize: vertical; min-height: 90px; }
 #doc-result.visible { display: block; }
 
 .doc-card { background: transparent; padding: 0; margin: 0; border: none; box-shadow: none; }
+#doc-frame { border: 2.5px solid var(--navy); border-radius: 6px; overflow: hidden; margin-bottom: 14px; background: white; }
 
 .doc-section { background: var(--white); border-radius: 4px; padding: 0; margin: 10px 0 4px; border: none; box-shadow: 0 1px 6px rgba(22,45,73,0.13); overflow: visible; }
 .doc-section-photos { border: none !important; }
@@ -109,6 +110,7 @@ textarea { resize: vertical; min-height: 90px; }
 @media print {
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
   html, body { background: white !important; margin: 0 !important; padding: 0 !important; }
+  #doc-frame { border: 2.5px solid #162D49 !important; border-radius: 0 !important; overflow: visible !important; }
   .header, .actions, .modif-zone, #form-section, #loading { display: none !important; }
   #doc-result { display: block !important; }
   .main { padding: 0 !important; max-width: 100% !important; margin: 0 !important; }
@@ -194,7 +196,9 @@ textarea { resize: vertical; min-height: 90px; }
       <button class="btn-action btn-reset" onclick="resetForm()">← Retour</button>
       <button class="btn-action btn-print" onclick="imprimerDoc()">🖨️ Imprimer</button>
     </div>
+    <div id="doc-frame">
     <div id="doc-content"></div>
+    </div>
     <div class="modif-zone">
       <div class="section-label">Modifier / Compléter</div>
       <textarea id="modif-input" placeholder="Ex: Ajoute une réserve sur la peinture du couloir…" style="min-height:60px;background:#EDE9F4;border-color:var(--lav)"></textarea>
