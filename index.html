@@ -73,6 +73,14 @@ textarea { resize: vertical; min-height: 80px; }
 .doc-bullet::before { content: "▸"; position: absolute; left: 0; color: var(--lav2); font-size: 11px; top: 3px; }
 .doc-title-main { font-family: 'Century Gothic','Futura',sans-serif; font-weight: 800; font-size: 18px; color: var(--navy); margin-bottom: 4px; }
 .doc-subtitle { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+.doc-photos { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+.doc-photo { width: calc(33% - 6px); aspect-ratio: 4/3; object-fit: cover; border-radius: 8px; border: 2px solid var(--border); cursor: pointer; transition: transform 0.15s; }
+.doc-photo:hover { transform: scale(1.03); }
+.photo-section-title { font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--lav2); margin-bottom: 8px; }
+.lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 999; align-items: center; justify-content: center; }
+.lightbox.open { display: flex; }
+.lightbox img { max-width: 92vw; max-height: 88vh; border-radius: 10px; }
+.lightbox-close { position: absolute; top: 16px; right: 20px; color: white; font-size: 32px; cursor: pointer; }
 
 .actions { display: flex; gap: 10px; margin-bottom: 14px; }
 .btn-action { flex: 1; padding: 12px; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; }
@@ -168,6 +176,12 @@ textarea { resize: vertical; min-height: 80px; }
     </div>
   </div>
 
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <div class="lightbox-close">✕</div>
+  <img id="lightbox-img" src="">
 </div>
 
 <script>
@@ -337,7 +351,30 @@ function afficherDoc(text) {
     }
   }
   if (inSection) html += '</div>';
+
+  // Ajouter les photos en bas du document
+  const photos = currentFiles.filter(f => f.type && f.type.startsWith('image/'));
+  if (photos.length > 0) {
+    html += '<div style="height:12px"></div>';
+    html += '<div class="doc-section"><div class="doc-section-title">📷 Photos du chantier</div>';
+    html += '<div class="doc-photos">';
+    photos.forEach((f, i) => {
+      html += `<img class="doc-photo" src="data:${f.type};base64,${f.data}" alt="${f.name}" onclick="openLightbox(${i})">`;
+    });
+    html += '</div></div>';
+  }
+
   document.getElementById('doc-content').innerHTML = html;
+}
+
+function openLightbox(idx) {
+  const photos = currentFiles.filter(f => f.type && f.type.startsWith('image/'));
+  document.getElementById('lightbox-img').src = `data:${photos[idx].type};base64,${photos[idx].data}`;
+  document.getElementById('lightbox').classList.add('open');
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
 }
 
 function resetForm() {
