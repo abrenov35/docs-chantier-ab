@@ -338,8 +338,10 @@ function afficherDoc(text) {
     if (trimmed === '·' || trimmed === '•' || trimmed === '-') continue;
     if (trimmed.match(/^(AB Renov|AB RENOV|Société)/i)) continue;
     if (trimmed.match(/^(Chantier\/Client|Opérateur|Lieu|Client|Rédacteur)\s*:/i)) continue;
-    const docTitles = ['compte rendu de chantier','fiche chantier','procès-verbal de réception','crch','fch','pvr'];
-    if (docTitles.some(t => trimmed.toLowerCase().replace(/[*#]/g,'').trim() === t)) continue;
+    // Filtrer tout titre qui répète le type de document
+    const cleanLine = trimmed.toLowerCase().replace(/[*#:\-_]/g,'').trim();
+    const docTitles = ['compte rendu de chantier','compte rendu chantier','fiche chantier','fiche de chantier','procès verbal de réception','proces verbal de reception','pvr','fch','crch'];
+    if (docTitles.some(t => cleanLine === t || cleanLine === t.toUpperCase())) continue;
 
     // Titre principal (# ou ## en début)
     if (line.match(/^# /)) {
