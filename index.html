@@ -63,7 +63,7 @@ textarea { resize: vertical; min-height: 90px; }
 #doc-result { display: none; }
 #doc-result.visible { display: block; }
 
-.doc-card { background: var(--white); border-radius: 10px; padding: 12px; border: 1px solid var(--border); margin-bottom: 14px; box-shadow: 0 2px 12px rgba(22,45,73,0.07); }
+.doc-card { background: transparent; padding: 0; margin: 0; border: none; box-shadow: none; }
 
 .doc-section { background: var(--white); border-radius: 6px; padding: 0; margin: 8px 0 2px; overflow: hidden; border: 1.5px solid var(--navy); }
 .doc-section-title { font-weight: 800; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: #FFFFFF; background: var(--navy); padding: 6px 12px; margin-bottom: 0; }
@@ -81,7 +81,7 @@ textarea { resize: vertical; min-height: 90px; }
 .doc-type-header .type-badge { background: var(--lav); color: var(--white); font-weight: 800; font-size: 13px; border-radius: 6px; padding: 4px 10px; letter-spacing: 1px; flex-shrink: 0; }
 .doc-type-header .type-full { color: var(--white); font-weight: 800; font-size: 13px; letter-spacing: 1px; font-family: 'Century Gothic','Futura',sans-serif; text-transform: uppercase; }
 .doc-photos { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
-.doc-photo { width: calc(33% - 6px); aspect-ratio: 4/3; object-fit: cover; border-radius: 8px; border: 2px solid var(--border); cursor: pointer; transition: transform 0.15s; }
+.doc-photo { width: calc(33% - 6px); aspect-ratio: 4/3; object-fit: cover; border-radius: 6px; border: none; cursor: pointer; transition: transform 0.15s; }
 .doc-photo:hover { transform: scale(1.03); }
 .photo-section-title { font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--lav2); margin-bottom: 8px; }
 .lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 999; align-items: center; justify-content: center; }
@@ -108,7 +108,8 @@ textarea { resize: vertical; min-height: 90px; }
   #doc-result { display: block !important; }
   body { background: white !important; }
   .main { padding: 0 !important; max-width: 100% !important; }
-  .doc-card { border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; border-radius: 0 !important; }
+  .doc-card { border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; border-radius: 0 !important; outline: none !important; }
+  .doc-photo { border: none !important; }
   .doc-type-header { background: #162D49 !important; color: white !important; border-radius: 4px !important; }
   .doc-type-header .type-full { color: white !important; }
   .doc-section { background: white !important; border: 1.5px solid #162D49 !important; border-radius: 4px !important; break-inside: avoid; margin: 6px 0 !important; }
