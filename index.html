@@ -99,16 +99,19 @@ textarea { resize: vertical; min-height: 90px; }
 .btn-modif { width: 100%; padding: 11px; background: var(--lav); color: var(--white); border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 10px; }
 
 @media print {
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
   .header, .actions, .modif-zone, #form-section, #loading { display: none !important; }
   #doc-result { display: block !important; }
-  body { background: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { background: white !important; }
   .main { padding: 0 !important; max-width: 100% !important; }
   .doc-card { border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; border-radius: 0 !important; }
-  .doc-type-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .doc-section { -webkit-print-color-adjust: exact; print-color-adjust: exact; break-inside: avoid; border-radius: 0 !important; }
-  .doc-section-title { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .doc-type-header { background: #162D49 !important; color: white !important; border-radius: 4px !important; }
+  .doc-type-header .type-full { color: white !important; }
+  .doc-section { background: white !important; border: 1.5px solid #162D49 !important; border-radius: 4px !important; break-inside: avoid; margin: 6px 0 !important; }
+  .doc-section-title { background: #162D49 !important; color: white !important; }
+  .doc-section .doc-text, .doc-section .doc-bullet { color: #162D49 !important; }
   .doc-photos { break-inside: avoid; }
-  .doc-photo { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .doc-header-band { background: linear-gradient(90deg, #A495C3, #162D49) !important; }
 }
 </style>
 </head>
