@@ -34,11 +34,12 @@ html, body { min-height: 100%; background: var(--beige); font-family: 'Segoe UI'
 .type-btn.active .name { color: rgba(255,255,255,0.6); }
 
 .card { background: var(--white); border-radius: 12px; padding: 16px; margin-bottom: 14px; border: 1px solid var(--border); }
-label { display: block; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; margin-top: 14px; }
+label { display: block; font-size: 11px; font-weight: 800; color: var(--navy); text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 6px; margin-top: 16px; }
 label:first-child { margin-top: 0; }
-input, textarea { width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; background: #FAFAF9; color: var(--navy); outline: none; transition: border-color 0.15s; }
-input:focus, textarea:focus { border-color: var(--lav2); }
-textarea { resize: vertical; min-height: 80px; }
+input, textarea { width: 100%; padding: 11px 13px; border: 2px solid #C8D8E8; border-radius: 8px; font-size: 14px; font-weight: 500; font-family: inherit; background: #EEF4FA; color: var(--navy); outline: none; transition: border-color 0.15s, background 0.15s; }
+input:focus, textarea:focus { border-color: var(--navy); background: #fff; }
+input::placeholder, textarea::placeholder { color: #9AAFC0; font-weight: 400; }
+textarea { resize: vertical; min-height: 90px; }
 
 .btn-generate { width: 100%; padding: 14px; background: var(--navy); color: var(--white); border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 16px; }
 .btn-generate:disabled { opacity: 0.5; }
