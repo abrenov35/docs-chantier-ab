@@ -65,8 +65,11 @@ textarea { resize: vertical; min-height: 80px; }
 
 .doc-card { background: var(--white); border-radius: 14px; padding: 22px; border: 1px solid var(--border); margin-bottom: 14px; box-shadow: 0 2px 12px rgba(22,45,73,0.07); }
 .doc-header-band { height: 4px; background: linear-gradient(90deg, var(--lav), var(--navy)); border-radius: 2px; margin-bottom: 20px; }
-.doc-section { background: #F7F4FB; border-left: 4px solid var(--lav2); border-radius: 0 8px 8px 0; padding: 12px 14px; margin: 14px 0 4px; }
-.doc-section-title { font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--lav2); margin-bottom: 6px; }
+.doc-section { background: var(--navy); border-radius: 8px; padding: 12px 14px; margin: 14px 0 4px; }
+.doc-section-title { font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #FFFFFF; margin-bottom: 6px; }
+.doc-section .doc-text { color: #FFFFFF; }
+.doc-section .doc-bullet { color: #FFFFFF; }
+.doc-section .doc-bullet::before { color: var(--lav); }
 .doc-text { font-size: 14px; line-height: 1.75; color: #1a1a2e; }
 .doc-text-plain { font-size: 14px; line-height: 1.75; color: #1a1a2e; padding: 0 2px; }
 .doc-bullet { font-size: 14px; line-height: 1.7; color: #1a1a2e; padding-left: 16px; position: relative; }
