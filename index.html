@@ -420,9 +420,21 @@ function resetForm() {
 }
 
 function imprimerDoc() {
-  // Forcer le rendu avant impression
+  // Nommage automatique : Type - Chantier - Opérateur - Date
+  const typeLabelsShort = { CRCh: 'CR Chantier', FCh: 'Fiche Chantier', PVR: 'PV Réception' };
+  const chantier = (document.getElementById('chantier').value || '').split(/[-–,]/)[0].trim();
+  const operateur = document.getElementById('operateur').value.trim();
+  const date = new Date().toISOString().slice(0,10);
+  const parts = [typeLabelsShort[selectedType] || selectedType];
+  if (chantier) parts.push(chantier);
+  if (operateur) parts.push(operateur);
+  parts.push(date);
+  document.title = parts.join(' - ');
   document.getElementById('doc-result').style.display = 'block';
-  setTimeout(() => { window.print(); }, 300);
+  setTimeout(() => {
+    window.print();
+    setTimeout(() => { document.title = 'AB RENOV 35 — Documents Chantier'; }, 1000);
+  }, 300);
 }
 </script>
 </body>
