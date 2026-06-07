@@ -64,23 +64,23 @@ textarea { resize: vertical; min-height: 90px; }
 #doc-result { display: none; }
 #doc-result.visible { display: block; }
 
-.doc-card { background: var(--white); border-radius: 14px; padding: 22px; border: 1px solid var(--border); margin-bottom: 14px; box-shadow: 0 2px 12px rgba(22,45,73,0.07); }
-.doc-header-band { height: 4px; background: linear-gradient(90deg, var(--lav), var(--navy)); border-radius: 2px; margin-bottom: 20px; }
-.doc-section { background: var(--white); border-radius: 8px; padding: 0; margin: 14px 0 4px; overflow: hidden; border: 1.5px solid var(--navy); }
-.doc-section-title { font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #FFFFFF; background: var(--navy); padding: 8px 14px; margin-bottom: 0; }
-.doc-section-body { padding: 10px 14px; }
+.doc-card { background: var(--white); border-radius: 10px; padding: 12px; border: 1px solid var(--border); margin-bottom: 14px; box-shadow: 0 2px 12px rgba(22,45,73,0.07); }
+.doc-header-band { height: 3px; background: linear-gradient(90deg, var(--lav), var(--navy)); border-radius: 2px; margin-bottom: 8px; }
+.doc-section { background: var(--white); border-radius: 6px; padding: 0; margin: 8px 0 2px; overflow: hidden; border: 1.5px solid var(--navy); }
+.doc-section-title { font-weight: 800; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: #FFFFFF; background: var(--navy); padding: 6px 12px; margin-bottom: 0; }
+.doc-section-body { padding: 7px 12px; }
 .doc-section .doc-text { color: var(--navy); }
 .doc-section .doc-bullet { color: var(--navy); }
 .doc-section .doc-bullet::before { color: var(--lav2); }
-.doc-text { font-size: 14px; line-height: 1.75; color: #1a1a2e; }
-.doc-text-plain { font-size: 14px; line-height: 1.75; color: #1a1a2e; padding: 0 2px; }
-.doc-bullet { font-size: 14px; line-height: 1.7; color: #1a1a2e; padding-left: 16px; position: relative; }
+.doc-text { font-size: 13px; line-height: 1.5; color: #1a1a2e; margin: 1px 0; }
+.doc-text-plain { font-size: 13px; line-height: 1.5; color: #1a1a2e; margin: 1px 0; }
+.doc-bullet { font-size: 13px; line-height: 1.5; color: #1a1a2e; padding-left: 14px; position: relative; margin: 1px 0; }
 .doc-bullet::before { content: "▸"; position: absolute; left: 0; color: var(--lav2); font-size: 11px; top: 3px; }
 .doc-title-main { font-family: 'Century Gothic','Futura',sans-serif; font-weight: 800; font-size: 18px; color: var(--navy); margin-bottom: 4px; }
 .doc-subtitle { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
-.doc-type-header { background: var(--navy); border-radius: 10px; padding: 16px 18px; margin-bottom: 18px; display: flex; align-items: center; gap: 12px; }
+.doc-type-header { background: var(--navy); border-radius: 8px; padding: 9px 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
 .doc-type-header .type-badge { background: var(--lav); color: var(--white); font-weight: 800; font-size: 13px; border-radius: 6px; padding: 4px 10px; letter-spacing: 1px; flex-shrink: 0; }
-.doc-type-header .type-full { color: var(--white); font-weight: 800; font-size: 16px; letter-spacing: 0.5px; font-family: 'Century Gothic','Futura',sans-serif; }
+.doc-type-header .type-full { color: var(--white); font-weight: 800; font-size: 13px; letter-spacing: 1px; font-family: 'Century Gothic','Futura',sans-serif; text-transform: uppercase; }
 .doc-photos { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
 .doc-photo { width: calc(33% - 6px); aspect-ratio: 4/3; object-fit: cover; border-radius: 8px; border: 2px solid var(--border); cursor: pointer; transition: transform 0.15s; }
 .doc-photo:hover { transform: scale(1.03); }
@@ -330,7 +330,9 @@ function afficherDoc(text) {
     if (trimmed.match(/\.(jpeg|jpg|png|pdf|doc|docx|JPG|JPEG|PNG|PDF)$/i)) continue;
     if (trimmed.match(/^(WhatsApp Image|IMG_|DSC|DCIM)/i)) continue;
     if (trimmed === '·' || trimmed === '•' || trimmed === '-') continue;
-    if (trimmed.match(/^(AB Renov|AB RENOV|Opérateur\s*:|Société\s*:)/i)) continue;
+    if (trimmed.match(/^(AB Renov|AB RENOV|Opérateur|Société)/i)) continue;
+    const docTitles = ['compte rendu de chantier','fiche chantier','procès-verbal de réception','crch','fch','pvr'];
+    if (docTitles.some(t => trimmed.toLowerCase().replace(/[*#\s]/g,'').includes(t.replace(/\s/g,'')))) continue;
 
     // Titre principal (# ou ## en début)
     if (line.match(/^# /)) {
