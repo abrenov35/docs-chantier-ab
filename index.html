@@ -64,7 +64,7 @@ textarea { resize: vertical; min-height: 90px; }
 #doc-result.visible { display: block; }
 
 .doc-card { background: var(--white); border-radius: 10px; padding: 12px; border: 1px solid var(--border); margin-bottom: 14px; box-shadow: 0 2px 12px rgba(22,45,73,0.07); }
-.doc-header-band { display: none; }
+
 .doc-section { background: var(--white); border-radius: 6px; padding: 0; margin: 8px 0 2px; overflow: hidden; border: 1.5px solid var(--navy); }
 .doc-section-title { font-weight: 800; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: #FFFFFF; background: var(--navy); padding: 6px 12px; margin-bottom: 0; }
 .doc-section-body { padding: 7px 12px; }
@@ -184,10 +184,7 @@ textarea { resize: vertical; min-height: 90px; }
       <button class="btn-action btn-reset" onclick="resetForm()">← Retour</button>
       <button class="btn-action btn-print" onclick="imprimerDoc()">🖨️ Imprimer</button>
     </div>
-    <div class="doc-card">
-      <div class="doc-header-band"></div>
-      <div id="doc-content"></div>
-    </div>
+    <div id="doc-content"></div>
     <div class="modif-zone">
       <div class="section-label">Modifier / Compléter</div>
       <textarea id="modif-input" placeholder="Ex: Ajoute une réserve sur la peinture du couloir…" style="min-height:60px;background:#EDE9F4;border-color:var(--lav)"></textarea>
