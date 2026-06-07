@@ -158,6 +158,13 @@ textarea { resize: vertical; min-height: 80px; }
 
       <label>Réserves / Problèmes (optionnel)</label>
       <textarea id="reserves" placeholder="Réserves constatées, problèmes, points à surveiller…" style="min-height:60px"></textarea>
+
+      <label>Document / Photo (optionnel)</label>
+      <div id="upload-zone" onclick="document.getElementById('file-input').click()" style="border:2px dashed var(--border);border-radius:8px;padding:16px;text-align:center;cursor:pointer;background:#FAFAF9;transition:border-color 0.15s;">
+        <div style="font-size:24px;margin-bottom:6px">📎</div>
+        <div id="upload-label" style="font-size:13px;color:var(--muted)">Photo, PDF, image… Appuie pour ajouter</div>
+      </div>
+      <input type="file" id="file-input" accept="image/*,application/pdf,.doc,.docx" capture="environment" style="display:none" onchange="handleFile(this)">
     </div>
 
     <button class="btn-generate" onclick="generer()">⚡ Générer le document</button>
@@ -196,6 +203,9 @@ const ANTHROPIC_KEY_GAS = 'https://script.google.com/macros/s/PLACEHOLDER_GAS_UR
 let selectedType = 'CRCh';
 let lastDoc = '';
 let conversationHistory = [];
+let currentFileData = null;
+let currentFileType = null;
+let currentFileName = null;
 
 const typeLabels = {
   CRCh: 'Compte Rendu de Chantier',
@@ -209,23 +219,31 @@ function selectType(el) {
   selectedType = el.dataset.type;
 }
 
-async function callClaude(messages) {
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxkxZ71UhLWUsq7DK5utewVbTcJGirALgQElAu9BgPOf7SwhTqwYsiM4w6vJemNc5ulmQ/exec';
+
+async function callClaude(payload) {
+  const res = await fetch(GAS_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1000,
-      system: `Tu es l'assistant de rédaction de AB RENOV 35, entreprise artisanale de rénovation à Rennes.
-Tu génères des documents professionnels de chantier : CRCh (Compte Rendu Chantier), FCh (Fiche Chantier), PVR (Procès-Verbal de Réception).
-Style : clair, professionnel, direct. Français correct.
-Ne jamais inclure de date, signature, nom de client, ni engagement de prix.
-Format de sortie : texte structuré avec sections claires, prêt à imprimer.`,
-      messages
-    })
+    body: JSON.stringify(payload)
   });
   const data = await res.json();
-  return data.content[0].text;
+  if (!data.ok) throw new Error(data.error);
+  conversationHistory = data.history;
+  return data.text;
+}
+
+function handleFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  currentFileName = file.name;
+  currentFileType = file.type;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    currentFileData = e.target.result.split(',')[1];
+    document.getElementById('upload-label').textContent = '✅ ' + file.name;
+    document.getElementById('upload-zone').style.borderColor = 'var(--lav2)';
+  };
+  reader.readAsDataURL(file);
 }
 
 async function generer() {
@@ -267,14 +285,11 @@ async function modifier() {
   const modif = document.getElementById('modif-input').value.trim();
   if (!modif) return;
 
-  conversationHistory.push({ role: 'user', content: modif });
-
   document.getElementById('modif-input').disabled = true;
   document.querySelector('.btn-modif').disabled = true;
 
   try {
-    const result = await callClaude(conversationHistory);
-    conversationHistory.push({ role: 'assistant', content: result });
+    const result = await callClaude({ modif, history: conversationHistory });
     lastDoc = result;
     afficherDoc(result);
     document.getElementById('modif-input').value = '';
