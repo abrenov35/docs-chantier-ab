@@ -99,9 +99,15 @@ textarea { resize: vertical; min-height: 90px; }
 .btn-modif { width: 100%; padding: 11px; background: var(--lav); color: var(--white); border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 10px; }
 
 @media print {
-  .header, .actions, .modif-zone, #form-section { display: none !important; }
+  .header, .actions, .modif-zone, #form-section, #loading { display: none !important; }
   #doc-result { display: block !important; }
-  .doc-card { border: none; padding: 0; }
+  body { background: white !important; }
+  .main { padding: 0 !important; max-width: 100% !important; }
+  .doc-card { border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; }
+  .doc-type-header { border-radius: 0 !important; margin-bottom: 10px !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .doc-section { -webkit-print-color-adjust: exact; print-color-adjust: exact; page-break-inside: avoid; }
+  .doc-section-title { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .doc-photos { page-break-inside: avoid; }
 }
 </style>
 </head>
@@ -330,9 +336,10 @@ function afficherDoc(text) {
     if (trimmed.match(/\.(jpeg|jpg|png|pdf|doc|docx|JPG|JPEG|PNG|PDF)$/i)) continue;
     if (trimmed.match(/^(WhatsApp Image|IMG_|DSC|DCIM)/i)) continue;
     if (trimmed === '·' || trimmed === '•' || trimmed === '-') continue;
-    if (trimmed.match(/^(AB Renov|AB RENOV|Opérateur|Société)/i)) continue;
+    if (trimmed.match(/^(AB Renov|AB RENOV|Société)/i)) continue;
+    if (trimmed.match(/^(Chantier\/Client|Opérateur|Lieu|Client|Rédacteur)\s*:/i)) continue;
     const docTitles = ['compte rendu de chantier','fiche chantier','procès-verbal de réception','crch','fch','pvr'];
-    if (docTitles.some(t => trimmed.toLowerCase().replace(/[*#\s]/g,'').includes(t.replace(/\s/g,'')))) continue;
+    if (docTitles.some(t => trimmed.toLowerCase().replace(/[*#]/g,'').trim() === t)) continue;
 
     // Titre principal (# ou ## en début)
     if (line.match(/^# /)) {
