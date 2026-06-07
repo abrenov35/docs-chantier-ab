@@ -159,12 +159,14 @@ textarea { resize: vertical; min-height: 80px; }
       <label>Réserves / Problèmes (optionnel)</label>
       <textarea id="reserves" placeholder="Réserves constatées, problèmes, points à surveiller…" style="min-height:60px"></textarea>
 
-      <label>Document / Photo (optionnel)</label>
-      <div id="upload-zone" onclick="document.getElementById('file-input').click()" style="border:2px dashed var(--border);border-radius:8px;padding:16px;text-align:center;cursor:pointer;background:#FAFAF9;transition:border-color 0.15s;">
-        <div style="font-size:24px;margin-bottom:6px">📎</div>
-        <div id="upload-label" style="font-size:13px;color:var(--muted)">Photo, PDF, image… Appuie pour ajouter</div>
+      <label>Photos / Documents (optionnel)</label>
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <button type="button" onclick="document.getElementById('photo-input').click()" style="flex:1;padding:12px 6px;background:var(--navy);color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">📷 Prendre une photo</button>
+        <button type="button" onclick="document.getElementById('file-input').click()" style="flex:1;padding:12px 6px;background:var(--white);color:var(--navy);border:2px solid var(--border);border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">📎 Ajouter un document</button>
       </div>
-      <input type="file" id="file-input" accept="image/*,application/pdf,.doc,.docx" capture="environment" style="display:none" onchange="handleFile(this)">
+      <div id="upload-label" style="font-size:12px;color:var(--muted);text-align:center;min-height:18px"></div>
+      <input type="file" id="photo-input" accept="image/*" capture="environment" style="display:none" onchange="handleFile(this)">
+      <input type="file" id="file-input" accept="image/*,application/pdf,.doc,.docx" style="display:none" onchange="handleFile(this)">
     </div>
 
     <button class="btn-generate" onclick="generer()">⚡ Générer le document</button>
@@ -241,7 +243,6 @@ function handleFile(input) {
   reader.onload = (e) => {
     currentFileData = e.target.result.split(',')[1];
     document.getElementById('upload-label').textContent = '✅ ' + file.name;
-    document.getElementById('upload-zone').style.borderColor = 'var(--lav2)';
   };
   reader.readAsDataURL(file);
 }
