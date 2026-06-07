@@ -17,95 +17,61 @@
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 html, body { min-height: 100%; background: var(--beige); font-family: 'Segoe UI', sans-serif; color: var(--navy); }
 
-.header {
-  background: var(--navy);
-  padding: 14px 18px 0;
-  position: sticky; top: 0; z-index: 100;
-}
+.header { background: var(--navy); padding: 14px 18px 0; position: sticky; top: 0; z-index: 100; }
 .header-top { display: flex; align-items: center; gap: 10px; padding-bottom: 14px; }
-.logo-text { font-family: 'Futura PT','Century Gothic','Futura',sans-serif; font-weight: 800; font-size: 17px; color: var(--white); letter-spacing: 1px; }
+.logo-text { font-family: 'Century Gothic','Futura',sans-serif; font-weight: 800; font-size: 17px; color: var(--white); letter-spacing: 1px; }
 .logo-sub { font-size: 9px; color: var(--lav); letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
 .header-band { height: 3px; background: linear-gradient(90deg, var(--lav), var(--lav2), var(--navy)); }
 
 .main { max-width: 640px; margin: 0 auto; padding: 20px 16px 40px; }
-
 .section-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; }
 
 .type-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px; }
-.type-btn {
-  background: var(--white); border: 2px solid var(--border);
-  border-radius: 10px; padding: 12px 6px; text-align: center;
-  cursor: pointer; transition: all 0.15s;
-}
+.type-btn { background: var(--white); border: 2px solid var(--border); border-radius: 10px; padding: 12px 6px; text-align: center; cursor: pointer; transition: all 0.15s; }
 .type-btn.active { border-color: var(--navy); background: var(--navy); color: var(--white); }
 .type-btn .code { font-weight: 800; font-size: 16px; display: block; margin-bottom: 3px; }
 .type-btn .name { font-size: 10px; color: var(--muted); line-height: 1.2; }
 .type-btn.active .name { color: rgba(255,255,255,0.6); }
 
 .card { background: var(--white); border-radius: 12px; padding: 16px; margin-bottom: 14px; border: 1px solid var(--border); }
-
 label { display: block; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; margin-top: 14px; }
 label:first-child { margin-top: 0; }
-
-input, textarea, select {
-  width: 100%; padding: 10px 12px; border: 1.5px solid var(--border);
-  border-radius: 8px; font-size: 14px; font-family: inherit;
-  background: #FAFAF9; color: var(--navy); outline: none;
-  transition: border-color 0.15s;
-}
-input:focus, textarea:focus, select:focus { border-color: var(--lav2); }
+input, textarea { width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; background: #FAFAF9; color: var(--navy); outline: none; transition: border-color 0.15s; }
+input:focus, textarea:focus { border-color: var(--lav2); }
 textarea { resize: vertical; min-height: 80px; }
 
-.btn-generate {
-  width: 100%; padding: 14px; background: var(--navy); color: var(--white);
-  border: none; border-radius: 10px; font-size: 15px; font-weight: 700;
-  cursor: pointer; margin-top: 16px; transition: opacity 0.15s;
-}
-.btn-generate:hover { opacity: 0.85; }
-.btn-generate:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-generate { width: 100%; padding: 14px; background: var(--navy); color: var(--white); border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 16px; }
+.btn-generate:disabled { opacity: 0.5; }
 
-/* LOADING */
+.file-btns { display: flex; gap: 8px; margin-bottom: 8px; }
+.btn-file { flex: 1; padding: 12px 6px; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; }
+.btn-photo { background: var(--navy); color: white; }
+.btn-doc { background: var(--white); color: var(--navy); border: 2px solid var(--border) !important; }
+
+.files-list { display: flex; flex-wrap: wrap; gap: 6px; min-height: 0; }
+.file-tag { background: #EDE9F4; color: var(--lav2); border-radius: 20px; padding: 4px 10px; font-size: 12px; display: flex; align-items: center; gap: 6px; }
+.file-tag button { background: none; border: none; cursor: pointer; color: var(--lav2); font-size: 14px; padding: 0; line-height: 1; }
+
 #loading { display: none; text-align: center; padding: 30px 0; }
 #loading.visible { display: block; }
-.spinner {
-  width: 36px; height: 36px; border: 3px solid var(--border);
-  border-top-color: var(--navy); border-radius: 50%;
-  animation: spin 0.8s linear infinite; margin: 0 auto 12px;
-}
+.spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--navy); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* RESULT */
 #doc-result { display: none; }
 #doc-result.visible { display: block; }
 
-.doc-card {
-  background: var(--white); border-radius: 12px; padding: 20px;
-  border: 1px solid var(--border); margin-bottom: 14px;
-  white-space: pre-wrap; font-size: 14px; line-height: 1.7;
-}
-.doc-header-band {
-  height: 3px; background: linear-gradient(90deg, var(--lav), var(--navy));
-  border-radius: 2px; margin-bottom: 14px;
-}
-
-.doc-section { margin-bottom: 16px; }
-.doc-section-title { font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--lav2); margin-bottom: 6px; }
+.doc-card { background: var(--white); border-radius: 12px; padding: 20px; border: 1px solid var(--border); margin-bottom: 14px; }
+.doc-header-band { height: 3px; background: linear-gradient(90deg, var(--lav), var(--navy)); border-radius: 2px; margin-bottom: 14px; }
+.doc-section-title { font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--lav2); margin-bottom: 6px; margin-top: 14px; }
 .doc-text { font-size: 14px; line-height: 1.7; color: var(--navy); }
 
-.actions { display: flex; gap: 10px; margin-bottom: 20px; }
-.btn-action {
-  flex: 1; padding: 12px; border-radius: 10px; font-size: 13px;
-  font-weight: 700; cursor: pointer; border: none; transition: opacity 0.15s;
-}
+.actions { display: flex; gap: 10px; margin-bottom: 14px; }
+.btn-action { flex: 1; padding: 12px; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; }
 .btn-print { background: var(--navy); color: var(--white); }
-.btn-reset { background: var(--white); color: var(--navy); border: 2px solid var(--border); }
+.btn-reset { background: var(--white); color: var(--navy); border: 2px solid var(--border) !important; }
 
 .modif-zone { background: var(--white); border-radius: 12px; padding: 16px; border: 1px solid var(--border); }
-.btn-modif {
-  width: 100%; padding: 11px; background: var(--lav); color: var(--white);
-  border: none; border-radius: 8px; font-size: 14px; font-weight: 700;
-  cursor: pointer; margin-top: 10px;
-}
+.btn-modif { width: 100%; padding: 11px; background: var(--lav); color: var(--white); border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 10px; }
 
 @media print {
   .header, .actions, .modif-zone, #form-section { display: none !important; }
@@ -128,7 +94,6 @@ textarea { resize: vertical; min-height: 80px; }
 
 <div class="main">
 
-  <!-- FORMULAIRE -->
   <div id="form-section">
     <div class="section-label">Type de document</div>
     <div class="type-grid">
@@ -154,42 +119,38 @@ textarea { resize: vertical; min-height: 80px; }
       <input type="text" id="operateur" placeholder="Ton prénom ou initiales">
 
       <label>Travaux réalisés / Observations</label>
-      <textarea id="observations" placeholder="Décris les travaux du jour, les observations, les points importants…"></textarea>
+      <textarea id="observations" placeholder="Décris les travaux du jour, observations, points importants…"></textarea>
 
       <label>Réserves / Problèmes (optionnel)</label>
-      <textarea id="reserves" placeholder="Réserves constatées, problèmes, points à surveiller…" style="min-height:60px"></textarea>
+      <textarea id="reserves" placeholder="Réserves, problèmes, points à surveiller…" style="min-height:60px"></textarea>
 
       <label>Photos / Documents (optionnel)</label>
-      <div style="display:flex;gap:8px;margin-bottom:8px">
-        <button type="button" onclick="document.getElementById('photo-input').click()" style="flex:1;padding:12px 6px;background:var(--navy);color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">📷 Prendre une photo</button>
-        <button type="button" onclick="document.getElementById('file-input').click()" style="flex:1;padding:12px 6px;background:var(--white);color:var(--navy);border:2px solid var(--border);border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">📎 Ajouter un document</button>
+      <div class="file-btns">
+        <button type="button" class="btn-file btn-photo" onclick="document.getElementById('photo-input').click()">📷 Prendre des photos</button>
+        <button type="button" class="btn-file btn-doc" onclick="document.getElementById('file-input').click()">📎 Ajouter des documents</button>
       </div>
-      <div id="upload-label" style="font-size:12px;color:var(--muted);text-align:center;min-height:18px"></div>
-      <input type="file" id="photo-input" accept="image/*" capture="environment" style="display:none" onchange="handleFile(this)">
-      <input type="file" id="file-input" accept="image/*,application/pdf,.doc,.docx" style="display:none" onchange="handleFile(this)">
+      <div class="files-list" id="files-list"></div>
+      <input type="file" id="photo-input" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFiles(this)">
+      <input type="file" id="file-input" accept="image/*,application/pdf,.doc,.docx" multiple style="display:none" onchange="handleFiles(this)">
     </div>
 
     <button class="btn-generate" onclick="generer()">⚡ Générer le document</button>
   </div>
 
-  <!-- LOADING -->
   <div id="loading">
     <div class="spinner"></div>
     <div style="color:var(--muted);font-size:14px">Génération en cours…</div>
   </div>
 
-  <!-- RÉSULTAT -->
   <div id="doc-result">
     <div class="actions">
+      <button class="btn-action btn-reset" onclick="resetForm()">← Retour</button>
       <button class="btn-action btn-print" onclick="imprimerDoc()">🖨️ Imprimer</button>
-      <button class="btn-action btn-reset" onclick="resetForm()">↩ Nouveau</button>
     </div>
-
     <div class="doc-card">
       <div class="doc-header-band"></div>
       <div id="doc-content"></div>
     </div>
-
     <div class="modif-zone">
       <div class="section-label">Modifier / Compléter</div>
       <textarea id="modif-input" placeholder="Ex: Ajoute une réserve sur la peinture du couloir…" style="min-height:60px;background:#EDE9F4;border-color:var(--lav)"></textarea>
@@ -200,20 +161,11 @@ textarea { resize: vertical; min-height: 80px; }
 </div>
 
 <script>
-const ANTHROPIC_KEY_GAS = 'https://script.google.com/macros/s/PLACEHOLDER_GAS_URL/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxkxZ71UhLWUsq7DK5utewVbTcJGirALgQElAu9BgPOf7SwhTqwYsiM4w6vJemNc5ulmQ/exec';
 
 let selectedType = 'CRCh';
-let lastDoc = '';
 let conversationHistory = [];
-let currentFileData = null;
-let currentFileType = null;
-let currentFileName = null;
-
-const typeLabels = {
-  CRCh: 'Compte Rendu de Chantier',
-  FCh: 'Fiche Chantier',
-  PVR: 'Procès-Verbal de Réception'
-};
+let currentFiles = []; // [{name, type, data}]
 
 function selectType(el) {
   document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
@@ -221,63 +173,62 @@ function selectType(el) {
   selectedType = el.dataset.type;
 }
 
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbxkxZ71UhLWUsq7DK5utewVbTcJGirALgQElAu9BgPOf7SwhTqwYsiM4w6vJemNc5ulmQ/exec';
-
-async function callClaude(payload) {
-  const res = await fetch(GAS_URL, {
-    method: 'POST',
-    body: JSON.stringify(payload)
+function handleFiles(input) {
+  const files = Array.from(input.files);
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      currentFiles.push({ name: file.name, type: file.type, data: e.target.result.split(',')[1] });
+      renderFilesList();
+    };
+    reader.readAsDataURL(file);
   });
+  input.value = '';
+}
+
+function removeFile(idx) {
+  currentFiles.splice(idx, 1);
+  renderFilesList();
+}
+
+function renderFilesList() {
+  const list = document.getElementById('files-list');
+  list.innerHTML = currentFiles.map((f, i) =>
+    `<div class="file-tag">📄 ${f.name} <button onclick="removeFile(${i})">✕</button></div>`
+  ).join('');
+}
+
+async function callGAS(payload) {
+  const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
   const data = await res.json();
   if (!data.ok) throw new Error(data.error);
   conversationHistory = data.history;
   return data.text;
 }
 
-function handleFile(input) {
-  const file = input.files[0];
-  if (!file) return;
-  currentFileName = file.name;
-  currentFileType = file.type;
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    currentFileData = e.target.result.split(',')[1];
-    document.getElementById('upload-label').textContent = '✅ ' + file.name;
-  };
-  reader.readAsDataURL(file);
-}
-
 async function generer() {
   const chantier = document.getElementById('chantier').value.trim();
-  const operateur = document.getElementById('operateur').value;
+  const operateur = document.getElementById('operateur').value.trim();
   const observations = document.getElementById('observations').value.trim();
   const reserves = document.getElementById('reserves').value.trim();
 
-  if (!chantier || !observations) {
-    alert('Chantier et observations obligatoires.');
-    return;
-  }
+  if (!chantier || !observations) { alert('Chantier et observations obligatoires.'); return; }
 
   document.getElementById('form-section').style.display = 'none';
   document.getElementById('loading').classList.add('visible');
 
-  const prompt = `Génère un ${typeLabels[selectedType]} (${selectedType}) pour :
-- Chantier/Client : ${chantier}
-- Opérateur : ${operateur}
-- Travaux/Observations : ${observations}
-${reserves ? `- Réserves : ${reserves}` : ''}
-
-Format : sections titrées, contenu professionnel et clair.`;
-
-  conversationHistory = [{ role: 'user', content: prompt }];
+  const payload = {
+    type: selectedType,
+    chantier, operateur, observations, reserves,
+    files: currentFiles,
+    history: []
+  };
 
   try {
-    const result = await callClaude(conversationHistory);
-    conversationHistory.push({ role: 'assistant', content: result });
-    lastDoc = result;
+    const result = await callGAS(payload);
     afficherDoc(result);
   } catch(e) {
-    alert('Erreur API : ' + e.message);
+    alert('Erreur : ' + e.message);
     resetForm();
   }
 }
@@ -285,13 +236,10 @@ Format : sections titrées, contenu professionnel et clair.`;
 async function modifier() {
   const modif = document.getElementById('modif-input').value.trim();
   if (!modif) return;
-
   document.getElementById('modif-input').disabled = true;
   document.querySelector('.btn-modif').disabled = true;
-
   try {
-    const result = await callClaude({ modif, history: conversationHistory });
-    lastDoc = result;
+    const result = await callGAS({ modif, history: conversationHistory });
     afficherDoc(result);
     document.getElementById('modif-input').value = '';
   } catch(e) {
@@ -305,7 +253,6 @@ async function modifier() {
 function afficherDoc(text) {
   document.getElementById('loading').classList.remove('visible');
   document.getElementById('doc-result').classList.add('visible');
-
   const lines = text.split('\n');
   let html = '';
   for (const line of lines) {
@@ -330,9 +277,7 @@ function resetForm() {
   conversationHistory = [];
 }
 
-function imprimerDoc() {
-  window.print();
-}
+function imprimerDoc() { window.print(); }
 </script>
 </body>
 </html>
