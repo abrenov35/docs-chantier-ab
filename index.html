@@ -73,6 +73,9 @@ textarea { resize: vertical; min-height: 80px; }
 .doc-bullet::before { content: "▸"; position: absolute; left: 0; color: var(--lav2); font-size: 11px; top: 3px; }
 .doc-title-main { font-family: 'Century Gothic','Futura',sans-serif; font-weight: 800; font-size: 18px; color: var(--navy); margin-bottom: 4px; }
 .doc-subtitle { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+.doc-type-header { background: var(--navy); border-radius: 10px; padding: 16px 18px; margin-bottom: 18px; display: flex; align-items: center; gap: 12px; }
+.doc-type-header .type-badge { background: var(--lav); color: var(--white); font-weight: 800; font-size: 13px; border-radius: 6px; padding: 4px 10px; letter-spacing: 1px; flex-shrink: 0; }
+.doc-type-header .type-full { color: var(--white); font-weight: 800; font-size: 16px; letter-spacing: 0.5px; font-family: 'Century Gothic','Futura',sans-serif; }
 .doc-photos { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
 .doc-photo { width: calc(33% - 6px); aspect-ratio: 4/3; object-fit: cover; border-radius: 8px; border: 2px solid var(--border); cursor: pointer; transition: transform 0.15s; }
 .doc-photo:hover { transform: scale(1.03); }
@@ -357,6 +360,11 @@ function afficherDoc(text) {
     }
   }
   if (inSection) html += '</div>';
+
+  // Injecter titre type en haut
+  const typeLabels2 = { CRCh: 'Compte Rendu de Chantier', FCh: 'Fiche Chantier', PVR: 'Procès-Verbal de Réception' };
+  const typeHeader = `<div class="doc-type-header"><span class="type-badge">${selectedType}</span><span class="type-full">${typeLabels2[selectedType] || selectedType}</span></div>`;
+  html = typeHeader + html;
 
   // Ajouter les photos en bas du document
   const photos = currentFiles.filter(f => f.type && f.type.startsWith('image/'));
