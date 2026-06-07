@@ -77,9 +77,11 @@ textarea { resize: vertical; min-height: 90px; }
 .doc-bullet::before { content: "▸"; position: absolute; left: 0; color: var(--lav2); font-size: 11px; top: 3px; }
 .doc-title-main { font-family: 'Century Gothic','Futura',sans-serif; font-weight: 800; font-size: 18px; color: var(--navy); margin-bottom: 4px; }
 .doc-subtitle { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
-.doc-type-header { background: var(--navy); border-radius: 8px; padding: 9px 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
-.doc-type-header .type-badge { background: var(--lav); color: var(--white); font-weight: 800; font-size: 13px; border-radius: 6px; padding: 4px 10px; letter-spacing: 1px; flex-shrink: 0; }
+.doc-type-header { background: var(--navy); border-radius: 0; padding: 9px 14px; margin-bottom: 0; display: flex; align-items: center; gap: 12px; }
 .doc-type-header .type-full { color: var(--white); font-weight: 800; font-size: 13px; letter-spacing: 1px; font-family: 'Century Gothic','Futura',sans-serif; text-transform: uppercase; }
+.doc-info-bar { background: #EEF4FA; border: 1.5px solid var(--navy); border-top: none; padding: 7px 14px; margin-bottom: 12px; display: flex; gap: 16px; flex-wrap: wrap; }
+.doc-info-item { font-size: 12px; color: var(--navy); font-weight: 600; }
+.doc-info-item span { font-weight: 400; color: #445; }
 .doc-photos { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
 .doc-photo { width: calc(33% - 6px); aspect-ratio: 4/3; object-fit: cover; border-radius: 6px; border: none; cursor: pointer; transition: transform 0.15s; }
 .doc-photo:hover { transform: scale(1.03); }
@@ -347,7 +349,7 @@ function afficherDoc(text) {
     if (trimmed.match(/^(WhatsApp Image|IMG_|DSC|DCIM)/i)) continue;
     if (trimmed === '·' || trimmed === '•' || trimmed === '-') continue;
     if (trimmed.match(/^(AB Renov|AB RENOV|Société)/i)) continue;
-    if (trimmed.match(/^(Chantier\/Client|Opérateur|Lieu|Client|Rédacteur)\s*:/i)) continue;
+    if (trimmed.match(/^(Chantier\/Client|Chantier|Opérateur|Lieu|Client|Rédacteur)\s*[:/]/i)) continue;
     // Filtrer tout titre qui répète le type de document
     const cleanLine = trimmed.toLowerCase().replace(/[*#:\-_]/g,'').trim();
     const docTitles = ['compte rendu de chantier','compte rendu chantier','fiche chantier','fiche de chantier','procès verbal de réception','proces verbal de reception','pvr','fch','crch'];
@@ -390,7 +392,14 @@ function afficherDoc(text) {
 
   // Injecter titre type en haut
   const typeLabels2 = { CRCh: 'Compte Rendu de Chantier', FCh: 'Fiche Chantier', PVR: 'Procès-Verbal de Réception' };
-  const typeHeader = `<div class="doc-type-header"><span class="type-full">${(typeLabels2[selectedType] || selectedType).toUpperCase()}</span></div>`;
+  const chantierVal = document.getElementById('chantier').value.trim();
+  const operateurVal = document.getElementById('operateur').value.trim();
+  const today = new Date().toLocaleDateString('fr-FR');
+  let infoItems = '';
+  if (chantierVal) infoItems += `<div class="doc-info-item">Chantier <span>${chantierVal}</span></div>`;
+  if (operateurVal) infoItems += `<div class="doc-info-item">Opérateur <span>${operateurVal}</span></div>`;
+  infoItems += `<div class="doc-info-item">Date <span>${today}</span></div>`;
+  const typeHeader = `<div class="doc-type-header"><span class="type-full">${(typeLabels2[selectedType] || selectedType).toUpperCase()}</span></div><div class="doc-info-bar">${infoItems}</div>`;
   html = typeHeader + html;
 
   // Ajouter les photos en bas du document
