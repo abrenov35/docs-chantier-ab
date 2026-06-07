@@ -97,7 +97,12 @@ textarea { resize: vertical; min-height: 90px; }
 .modif-zone { background: var(--white); border-radius: 12px; padding: 16px; border: 1px solid var(--border); }
 .btn-modif { width: 100%; padding: 11px; background: var(--lav); color: var(--white); border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 10px; }
 
+@page {
+  margin: 12mm 10mm;
+}
+
 @media print {
+  @page { margin: 12mm 10mm; }
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
   .header, .actions, .modif-zone, #form-section, #loading { display: none !important; }
   #doc-result { display: block !important; }
@@ -416,7 +421,11 @@ function resetForm() {
   conversationHistory = [];
 }
 
-function imprimerDoc() { window.print(); }
+function imprimerDoc() {
+  // Forcer le rendu avant impression
+  document.getElementById('doc-result').style.display = 'block';
+  setTimeout(() => { window.print(); }, 300);
+}
 </script>
 </body>
 </html>
