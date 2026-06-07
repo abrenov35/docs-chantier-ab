@@ -65,16 +65,16 @@ textarea { resize: vertical; min-height: 90px; }
 
 .doc-card { background: transparent; padding: 0; margin: 0; border: none; box-shadow: none; }
 
-.doc-section { background: var(--white); border-radius: 0; padding: 0; margin: 10px 0 4px; border: none; }
+.doc-section { background: var(--white); border-radius: 4px; padding: 0; margin: 10px 0 4px; border: none; box-shadow: 0 1px 6px rgba(22,45,73,0.13); overflow: hidden; }
 .doc-section-photos { border: none !important; }
 .doc-section-photos .doc-section-title { border-radius: 0; }
-.doc-section-title { font-weight: 800; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: #FFFFFF; background: var(--navy); padding: 7px 12px; margin-bottom: 0; }
-.doc-section-body { padding: 8px 12px 10px; background: var(--white); }
+.doc-section-title { font-weight: 800; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: #FFFFFF; background: var(--navy); padding: 8px 16px; margin-bottom: 0; }
+.doc-section-body { padding: 10px 16px 12px; background: var(--white); }
 .doc-section .doc-text { color: var(--navy); }
 .doc-section .doc-bullet { color: var(--navy); }
 .doc-section .doc-bullet::before { color: var(--lav2); }
-.doc-text { font-size: 13px; line-height: 1.5; color: #1a1a2e; margin: 1px 0; }
-.doc-text-plain { font-size: 13px; line-height: 1.5; color: #1a1a2e; margin: 1px 0; }
+.doc-text { font-size: 13px; line-height: 1.6; color: #1a1a2e; margin: 3px 0; }
+.doc-text-plain { font-size: 13px; line-height: 1.6; color: #1a1a2e; margin: 3px 0; padding: 0 4px; }
 .doc-bullet { font-size: 13px; line-height: 1.5; color: #1a1a2e; padding-left: 14px; position: relative; margin: 1px 0; }
 .doc-bullet::before { content: "▸"; position: absolute; left: 0; color: var(--lav2); font-size: 11px; top: 3px; }
 .doc-title-main { font-family: 'Century Gothic','Futura',sans-serif; font-weight: 800; font-size: 18px; color: var(--navy); margin-bottom: 4px; }
@@ -116,8 +116,8 @@ textarea { resize: vertical; min-height: 90px; }
   .doc-photo { border: none !important; }
   .doc-type-header { background: #162D49 !important; color: white !important; border-radius: 4px !important; }
   .doc-type-header .type-full { color: white !important; }
-  .doc-section { background: white !important; border: none !important; break-inside: avoid; margin: 8px 0 !important; }
-  .doc-section-title { background: #162D49 !important; color: white !important; }
+  .doc-section { background: white !important; border: 1px solid #162D49 !important; border-radius: 3px !important; overflow: hidden !important; break-inside: avoid; margin: 8px 0 !important; }
+  .doc-section-title { background: #162D49 !important; color: white !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
   .doc-section-title { background: #162D49 !important; color: white !important; }
   .doc-section .doc-text, .doc-section .doc-bullet { color: #162D49 !important; }
   .doc-photos { break-inside: avoid; }
