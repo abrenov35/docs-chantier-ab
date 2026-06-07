@@ -320,11 +320,12 @@ function afficherDoc(text) {
     const line = lines[i];
     const trimmed = line.trim();
 
-    // Ignorer lignes parasites : noms de fichiers, séparateurs ---
+    // Ignorer lignes parasites
     if (trimmed.match(/^---+$/)) continue;
     if (trimmed.match(/\.(jpeg|jpg|png|pdf|doc|docx|JPG|JPEG|PNG|PDF)$/i)) continue;
     if (trimmed.match(/^(WhatsApp Image|IMG_|DSC|DCIM)/i)) continue;
     if (trimmed === '·' || trimmed === '•' || trimmed === '-') continue;
+    if (trimmed.match(/^(AB Renov|AB RENOV|Opérateur\s*:|Société\s*:)/i)) continue;
 
     // Titre principal (# ou ## en début)
     if (line.match(/^# /)) {
