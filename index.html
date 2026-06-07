@@ -66,11 +66,12 @@ textarea { resize: vertical; min-height: 90px; }
 
 .doc-card { background: var(--white); border-radius: 14px; padding: 22px; border: 1px solid var(--border); margin-bottom: 14px; box-shadow: 0 2px 12px rgba(22,45,73,0.07); }
 .doc-header-band { height: 4px; background: linear-gradient(90deg, var(--lav), var(--navy)); border-radius: 2px; margin-bottom: 20px; }
-.doc-section { background: var(--navy); border-radius: 8px; padding: 12px 14px; margin: 14px 0 4px; }
-.doc-section-title { font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #FFFFFF; margin-bottom: 6px; }
-.doc-section .doc-text { color: #FFFFFF; }
-.doc-section .doc-bullet { color: #FFFFFF; }
-.doc-section .doc-bullet::before { color: var(--lav); }
+.doc-section { background: var(--white); border-radius: 8px; padding: 0; margin: 14px 0 4px; overflow: hidden; border: 1.5px solid var(--navy); }
+.doc-section-title { font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #FFFFFF; background: var(--navy); padding: 8px 14px; margin-bottom: 0; }
+.doc-section-body { padding: 10px 14px; }
+.doc-section .doc-text { color: var(--navy); }
+.doc-section .doc-bullet { color: var(--navy); }
+.doc-section .doc-bullet::before { color: var(--lav2); }
 .doc-text { font-size: 14px; line-height: 1.75; color: #1a1a2e; }
 .doc-text-plain { font-size: 14px; line-height: 1.75; color: #1a1a2e; padding: 0 2px; }
 .doc-bullet { font-size: 14px; line-height: 1.7; color: #1a1a2e; padding-left: 16px; position: relative; }
@@ -338,9 +339,9 @@ function afficherDoc(text) {
     }
     // Section (## ou ### ou **TITRE** seul sur sa ligne)
     else if (line.match(/^#{2,3} /) || (line.match(/^\*\*[^*]+\*\*$/) && trimmed.length < 60)) {
-      if (inSection) { html += '</div>'; inSection = false; }
+      if (inSection) { html += '</div></div>'; inSection = false; }
       const title = line.replace(/^#{2,3} /, '').replace(/\*\*/g,'');
-      html += `<div class="doc-section"><div class="doc-section-title">${title}</div>`;
+      html += `<div class="doc-section"><div class="doc-section-title">${title}</div><div class="doc-section-body">`;
       inSection = true;
     }
     // Ligne avec **gras** inline
@@ -364,7 +365,7 @@ function afficherDoc(text) {
       html += `<div class="${inSection ? 'doc-text' : 'doc-text-plain'}">${formatted}</div>`;
     }
   }
-  if (inSection) html += '</div>';
+  if (inSection) html += '</div></div>';
 
   // Injecter titre type en haut
   const typeLabels2 = { CRCh: 'Compte Rendu de Chantier', FCh: 'Fiche Chantier', PVR: 'Procès-Verbal de Réception' };
