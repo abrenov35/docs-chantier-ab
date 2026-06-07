@@ -367,7 +367,7 @@ function afficherDoc(text) {
 
   // Injecter titre type en haut
   const typeLabels2 = { CRCh: 'Compte Rendu de Chantier', FCh: 'Fiche Chantier', PVR: 'Procès-Verbal de Réception' };
-  const typeHeader = `<div class="doc-type-header"><span class="type-badge">${selectedType}</span><span class="type-full">${typeLabels2[selectedType] || selectedType}</span></div>`;
+  const typeHeader = `<div class="doc-type-header"><span class="type-full">${(typeLabels2[selectedType] || selectedType).toUpperCase()}</span></div>`;
   html = typeHeader + html;
 
   // Ajouter les photos en bas du document
