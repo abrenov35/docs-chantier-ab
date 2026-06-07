@@ -52,10 +52,13 @@ textarea { resize: vertical; min-height: 80px; }
 .file-tag { background: #EDE9F4; color: var(--lav2); border-radius: 20px; padding: 4px 10px; font-size: 12px; display: flex; align-items: center; gap: 6px; }
 .file-tag button { background: none; border: none; cursor: pointer; color: var(--lav2); font-size: 14px; padding: 0; line-height: 1; }
 
-#loading { display: none; text-align: center; padding: 30px 0; }
+#loading { display: none; text-align: center; padding: 30px 16px; }
 #loading.visible { display: block; }
-.spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--navy); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
+.spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--navy); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
 @keyframes spin { to { transform: rotate(360deg); } }
+.progress-bar-wrap { background: var(--border); border-radius: 20px; height: 6px; margin: 12px 0 8px; overflow: hidden; }
+.progress-bar { height: 6px; border-radius: 20px; background: linear-gradient(90deg, var(--lav), var(--navy)); width: 0%; transition: width 0.4s ease; }
+.progress-step { font-size: 13px; color: var(--muted); min-height: 20px; }
 
 #doc-result { display: none; }
 #doc-result.visible { display: block; }
@@ -139,7 +142,8 @@ textarea { resize: vertical; min-height: 80px; }
 
   <div id="loading">
     <div class="spinner"></div>
-    <div style="color:var(--muted);font-size:14px">Génération en cours…</div>
+    <div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar"></div></div>
+    <div class="progress-step" id="progress-step">Envoi des données…</div>
   </div>
 
   <div id="doc-result">
@@ -206,6 +210,36 @@ async function callGAS(payload) {
   return data.text;
 }
 
+let progressTimer = null;
+
+function startProgress() {
+  const steps = [
+    [5, 'Envoi des données…'],
+    [20, 'Analyse en cours…'],
+    [45, 'Rédaction du document…'],
+    [70, 'Mise en forme…'],
+    [90, 'Finalisation…']
+  ];
+  let i = 0;
+  const bar = document.getElementById('progress-bar');
+  const step = document.getElementById('progress-step');
+  bar.style.width = '5%';
+  step.textContent = steps[0][1];
+  progressTimer = setInterval(() => {
+    i++;
+    if (i < steps.length) {
+      bar.style.width = steps[i][0] + '%';
+      step.textContent = steps[i][1];
+    }
+  }, 1200);
+}
+
+function stopProgress() {
+  clearInterval(progressTimer);
+  document.getElementById('progress-bar').style.width = '100%';
+  document.getElementById('progress-step').textContent = 'Document prêt ✓';
+}
+
 async function generer() {
   const chantier = document.getElementById('chantier').value.trim();
   const operateur = document.getElementById('operateur').value.trim();
@@ -216,6 +250,7 @@ async function generer() {
 
   document.getElementById('form-section').style.display = 'none';
   document.getElementById('loading').classList.add('visible');
+  startProgress();
 
   const payload = {
     type: selectedType,
@@ -226,7 +261,8 @@ async function generer() {
 
   try {
     const result = await callGAS(payload);
-    afficherDoc(result);
+    stopProgress();
+    setTimeout(() => afficherDoc(result), 400);
   } catch(e) {
     alert('Erreur : ' + e.message);
     resetForm();
