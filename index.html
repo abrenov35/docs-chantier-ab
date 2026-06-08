@@ -478,12 +478,12 @@ let currentDocId = null;
 
 async function sauvegarder() {
   const msg = document.getElementById('save-msg');
-  let dots = 0;
+  let secs = 0;
+  msg.textContent = '💾 Sauvegarde en cours... 0s';
   const saveTimer = setInterval(() => {
-    dots = (dots + 1) % 4;
-    msg.textContent = '💾 Sauvegarde' + '.'.repeat(dots);
-  }, 400);
-  msg.textContent = '💾 Sauvegarde.';
+    secs++;
+    msg.textContent = '💾 Sauvegarde en cours... ' + secs + 's';
+  }, 1000);
   const contenu = document.getElementById('doc-content').innerHTML;
   const chantier = document.getElementById('chantier').value.trim();
   const operateur = document.getElementById('operateur').value.trim();
