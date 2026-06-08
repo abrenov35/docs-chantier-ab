@@ -486,8 +486,8 @@ function ajouterFichiersModif(files) {
       if (ps) ps.innerHTML = photos.map((f,i) =>
         `<img class="doc-photo" src="data:${f.type};base64,${f.data}" onclick="openLightbox(${i})">`
       ).join('');
-      // Sauvegarde automatique après ajout photo
-      sauvegarderAuto();
+      // Sauvegarde automatique seulement si doc déjà en base
+      if (currentDocId) sauvegarderAuto();
     };
     reader.readAsDataURL(file);
   });
@@ -577,7 +577,7 @@ async function modifier() {
     afficherDoc(data.text);
     document.getElementById('modif-input').value = '';
     // Sauvegarde automatique après modification
-    await sauvegarderAuto();
+    if (currentDocId) await sauvegarderAuto();
   } catch(e) { alert('Erreur : ' + e.message); }
   finally { btn.disabled = false; btn.textContent = '✏️ Modifier le document'; }
 }
