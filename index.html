@@ -36,6 +36,8 @@ html, body { min-height: 100%; background: var(--beige); font-family: 'Segoe UI'
 .doc-list-actions button:hover { background: var(--border); }
 .doc-list-wrap { background: var(--white); border-radius: 8px; overflow: hidden; border: 1.5px solid var(--border); }
 .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 14px; }
+#tab-liste:not([style*="none"]) ~ #doc-result,
+#tab-liste[style="display: block;"] ~ * #doc-result { display: none !important; }
 .section-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; }
 
 .type-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px; }
@@ -253,6 +255,8 @@ html, body { min-height: 100%; background: var(--beige); font-family: 'Segoe UI'
 .doc-list-actions button:hover { background: var(--border); }
 .doc-list-wrap { background: var(--white); border-radius: 8px; overflow: hidden; border: 1.5px solid var(--border); }
 .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 14px; }
+#tab-liste:not([style*="none"]) ~ #doc-result,
+#tab-liste[style="display: block;"] ~ * #doc-result { display: none !important; }
 .section-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; }
 
 .type-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px; }
@@ -685,11 +689,14 @@ function showTab(tab) {
   document.getElementById('tab-nouveau').style.display = tab === 'nouveau' ? 'block' : 'none';
   document.getElementById('tab-liste').style.display = tab === 'liste' ? 'block' : 'none';
   if (tab === 'liste') {
+    document.getElementById('doc-result').style.display = 'none';
     document.getElementById('doc-result').classList.remove('visible');
     document.getElementById('form-section').style.display = 'none';
+    document.getElementById('loading').classList.remove('visible');
     chargerListe();
   }
   if (tab === 'nouveau') {
+    document.getElementById('doc-result').style.display = '';
     // Toujours reset vers formulaire vide
     document.getElementById('chantier').value = '';
     document.getElementById('operateur').value = '';
