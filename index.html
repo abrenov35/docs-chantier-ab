@@ -380,43 +380,11 @@ function selectType(el) {
 
 // ── Compression image ────────────────────────────
 function compressImage(file, callback) {
-  // Fallback direct si pas image
-  if (!file.type.startsWith('image/')) {
-    const r = new FileReader();
-    r.onload = e => callback({ name: file.name, type: file.type, data: e.target.result.split(',')[1] });
-    r.readAsDataURL(file);
-    return;
-  }
-  const reader = new FileReader();
-  reader.onload = ev => {
-    const img = new Image();
-    // Timeout 8s sur le chargement de l'image
-    const t = setTimeout(() => {
-      // Fallback : utiliser les données brutes sans compression
-      callback({ name: file.name.split('.')[0] + '.jpg', type: 'image/jpeg', data: ev.target.result.split(',')[1] });
-    }, 8000);
-    img.onload = () => {
-      clearTimeout(t);
-      const MAX = 600;
-      let w = img.width, h = img.height;
-      if (w > MAX || h > MAX) {
-        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
-        else { w = Math.round(w * MAX / h); h = MAX; }
-      }
-      const canvas = document.createElement('canvas');
-      canvas.width = w; canvas.height = h;
-      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      const data = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
-      callback({ name: file.name.split('.')[0] + '.jpg', type: 'image/jpeg', data });
-    };
-    img.onerror = () => {
-      clearTimeout(t);
-      callback({ name: file.name, type: file.type, data: ev.target.result.split(',')[1] });
-    };
-    img.src = ev.target.result;
-  };
-  reader.onerror = () => callback({ name: file.name, type: file.type, data: '' });
-  reader.readAsDataURL(file);
+  // Lecture directe sans compression — plus fiable sur iOS Safari
+  const r = new FileReader();
+  r.onload = e => callback({ name: file.name, type: file.type, data: e.target.result.split(',')[1] });
+  r.onerror = () => callback({ name: file.name, type: file.type, data: '' });
+  r.readAsDataURL(file);
 }
 
 // ── Fichiers ─────────────────────────────────────
