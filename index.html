@@ -27,12 +27,14 @@ html, body { min-height: 100%; background: var(--beige); font-family: 'Segoe UI'
 .tabs { display: flex; gap: 0; margin-bottom: 20px; border-bottom: 2px solid var(--navy); padding-top: 14px; }
 .tab-btn { flex: 1; padding: 10px 6px; background: none; border: none; font-size: 13px; font-weight: 700; color: var(--muted); cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; }
 .tab-btn.active { color: var(--navy); border-bottom-color: var(--navy); }
-.doc-list-item { background: var(--white); border-radius: 8px; padding: 12px 14px; margin-bottom: 8px; cursor: pointer; border: 1.5px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-.doc-list-item:hover { border-color: var(--navy); }
-.doc-list-meta { font-size: 11px; color: var(--muted); margin-top: 3px; }
-.doc-list-title { font-weight: 700; font-size: 14px; color: var(--navy); }
-.doc-list-type { font-size: 10px; font-weight: 800; background: var(--navy); color: white; border-radius: 4px; padding: 2px 7px; }
-.btn-delete { background: none; border: none; color: #cc4444; font-size: 18px; cursor: pointer; padding: 0 4px; }
+.doc-list-header { display: grid; grid-template-columns: 80px 1fr 90px 90px; gap: 8px; padding: 6px 12px; font-size: 10px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid var(--border); margin-bottom: 4px; }
+.doc-list-item { display: grid; grid-template-columns: 80px 1fr 90px 90px; gap: 8px; align-items: center; padding: 8px 12px; background: var(--white); border-bottom: 1px solid var(--border); font-size: 13px; }
+.doc-list-item:hover { background: #F0F4F8; }
+.doc-list-type-badge { font-size: 9px; font-weight: 800; background: var(--navy); color: white; border-radius: 3px; padding: 2px 6px; display: inline-block; }
+.doc-list-actions { display: flex; gap: 4px; justify-content: flex-end; }
+.doc-list-actions button { background: none; border: none; cursor: pointer; font-size: 15px; padding: 2px 4px; border-radius: 4px; }
+.doc-list-actions button:hover { background: var(--border); }
+.doc-list-wrap { background: var(--white); border-radius: 8px; overflow: hidden; border: 1.5px solid var(--border); }
 .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 14px; }
 .section-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; }
 
@@ -512,18 +514,23 @@ async function chargerListe() {
       container.innerHTML = '<div class="empty-state">Aucun document sauvegardé</div>';
       return;
     }
-    const typeLabels = { CRCh: 'CR Chantier', FCh: 'Fiche Chantier', PVR: 'PV Réception' };
-    container.innerHTML = data.docs.map(d => `
-      <div class="doc-list-item" onclick="ouvrirDoc('${d.id}')">
-        <div>
-          <div class="doc-list-title">${d.chantier || '—'} <span style="font-weight:400;color:var(--muted)">· ${d.operateur || ''}</span></div>
-          <div class="doc-list-meta">${typeLabels[d.type] || d.type} · ${d.date || ''}</div>
+    container.innerHTML = `
+      <div class="doc-list-wrap">
+        <div class="doc-list-header">
+          <div>Type</div><div>Chantier · Opérateur</div><div>Date</div><div style="text-align:right">Actions</div>
         </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <span class="doc-list-type">${d.type}</span>
-          <button class="btn-delete" onclick="event.stopPropagation();supprimerDoc('${d.id}')">🗑</button>
-        </div>
-      </div>`).join('');
+        ${data.docs.map(d => `
+        <div class="doc-list-item">
+          <div><span class="doc-list-type-badge">${d.type}</span></div>
+          <div style="font-weight:600;color:var(--navy);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.chantier || '—'} <span style="font-weight:400;color:var(--muted)">· ${d.operateur || ''}</span></div>
+          <div style="color:var(--muted);font-size:12px">${d.date || ''}</div>
+          <div class="doc-list-actions">
+            <button title="Ouvrir" onclick="ouvrirDoc('${d.id}')">👁</button>
+            <button title="Modifier" onclick="ouvrirDoc('${d.id}')">✏️</button>
+            <button title="Supprimer" onclick="supprimerDoc('${d.id}')">🗑</button>
+          </div>
+        </div>`).join('')}
+      </div>`;
   } catch(e) { container.innerHTML = '<div class="empty-state">Erreur de chargement</div>'; }
 }
 
