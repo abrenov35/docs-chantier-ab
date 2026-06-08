@@ -113,8 +113,8 @@ textarea { resize: vertical; min-height: 90px; }
 
 /* LISTE DOCUMENTS */
 .doc-list-wrap { background: var(--white); border-radius: 8px; overflow: hidden; border: 1.5px solid var(--border); }
-.doc-list-header { display: grid; grid-template-columns: 100px 1fr 80px 72px; gap: 6px; padding: 6px 12px; font-size: 10px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid var(--border); }
-.doc-list-item { display: grid; grid-template-columns: 100px 1fr 80px 72px; gap: 6px; align-items: center; padding: 9px 12px; border-bottom: 1px solid var(--border); font-size: 13px; transition: background 0.1s; }
+.doc-list-header { display: grid; grid-template-columns: 100px 1fr 72px 90px; gap: 6px; padding: 6px 12px; font-size: 10px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid var(--border); }
+.doc-list-item { display: grid; grid-template-columns: 100px 1fr 72px 90px; gap: 6px; align-items: center; padding: 9px 12px; border-bottom: 1px solid var(--border); font-size: 13px; transition: background 0.1s; }
 .doc-list-item:last-child { border-bottom: none; }
 .doc-list-item:hover { background: var(--blue-light); }
 .doc-type-badge { font-size: 9px; font-weight: 800; background: var(--navy); color: white; border-radius: 3px; padding: 2px 6px; display: inline-block; white-space: nowrap; }
@@ -522,9 +522,10 @@ async function chargerListe() {
       <div class="doc-list-item">
         <div><span class="doc-type-badge">${TYPE_SHORT[d.type]||d.type}</span></div>
         <div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.chantier||'—'} <span style="font-weight:400;color:var(--muted)">· ${d.operateur||''}</span></div>
-        <div style="color:var(--muted);font-size:12px">${d.date||''}</div>
+        <div style="color:var(--muted);font-size:12px">${(d.date||'').slice(0,10).split('-').reverse().join('/')}</div>
         <div class="doc-list-actions">
           <button title="Ouvrir" onclick="ouvrirDoc('${d.id}')">👁</button>
+          <button title="Modifier" onclick="ouvrirDoc('${d.id}')">✏️</button>
           <button title="Supprimer" onclick="supprimerDoc('${d.id}')">🗑</button>
         </div>
       </div>`).join('')}
