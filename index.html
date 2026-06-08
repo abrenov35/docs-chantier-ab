@@ -67,8 +67,8 @@ textarea { resize: vertical; min-height: 90px; }
 #save-msg { flex: 1; font-size: 11px; text-align: center; min-height: 18px; }
 .save-pendule { display: inline-block; animation: pendule 0.6s ease-in-out infinite alternate; transform-origin: top center; }
 @keyframes pendule { from { transform: rotate(-25deg); } to { transform: rotate(25deg); } }
-.save-ok { color: #3aaa6e; font-weight: 700; }
-.save-err { color: #e05050; font-weight: 700; }
+
+
 
 #doc-frame { border: 2.5px solid var(--navy); border-radius: 6px; overflow: hidden; margin-bottom: 14px; background: white; }
 .doc-type-header { background: var(--navy); padding: 10px 16px; }
@@ -555,10 +555,10 @@ async function sauvegarderAuto() {
     });
     currentDocId = data.id || currentDocId;
   } catch(e) {
-    msg.innerHTML = '<span class="save-err">⚠️ ' + e.message + '</span>';
+    msg.innerHTML = '<span class="save-badge save-badge-err">⚠️ ' + e.message + '</span>';
     console.error('sauvegarderAuto step1:', e);
     isSaving = false;
-    setTimeout(() => { msg.innerHTML = currentDocId ? '<span style="color:#aaa;font-size:10px">✓ Sauvegardé</span>' : ''; }, 4000);
+    setTimeout(() => { msg.innerHTML = currentDocId ? '<span class="save-badge save-badge-idle">✓ Sauvegardé</span>' : ''; }, 4000);
     return;
   }
 
@@ -572,12 +572,12 @@ async function sauvegarderAuto() {
       // Ne pas bloquer — le texte est sauvegardé
     }
   }
-  msg.innerHTML = '<span class="save-ok">✅ Sauvegardé</span>';
+  msg.innerHTML = '<span class="save-badge save-badge-ok">✅ Sauvegardé</span>';
   isSaving = false;
   setSavingUI(false);
   setTimeout(() => {
     const msg = document.getElementById('save-msg');
-    msg.innerHTML = currentDocId ? '<span style="color:#aaa;font-size:10px">✓ Sauvegardé</span>' : '';
+    msg.innerHTML = currentDocId ? '<span class="save-badge save-badge-idle">✓ Sauvegardé</span>' : '';
   }, 4000);
 }
 
@@ -704,8 +704,8 @@ async function ouvrirDoc(id) {
     }
     afficherPhotosDoc();
     const msg = document.getElementById('save-msg');
-    msg.innerHTML = '<span style="color:var(--lav2)">📄 Document chargé</span>';
-    setTimeout(() => msg.innerHTML = '<span style="color:#aaa;font-size:10px">✓ Sauvegardé</span>', 2000);
+    msg.innerHTML = '<span class="save-badge save-badge-saving">📄 Document chargé</span>';
+    setTimeout(() => msg.innerHTML = '<span class="save-badge save-badge-idle">✓ Sauvegardé</span>', 2000);
   } catch(e) { alert('Erreur ouverture : ' + e.message); }
 }
 
