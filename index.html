@@ -377,9 +377,9 @@ textarea { resize: vertical; min-height: 90px; }
     <div id="doc-result">
       <div class="actions">
         <button class="btn-action btn-retour" onclick="resetForm()">← Retour</button>
+        <div id="save-msg" style="flex:1;font-size:11px;text-align:center"></div>
         <button class="btn-action btn-print" onclick="imprimerDoc()">🖨️ Imprimer</button>
       </div>
-      <div id="save-msg"></div>
 
       <div id="doc-frame">
         <div id="doc-content"></div>
@@ -697,7 +697,14 @@ async function sauvegarderAuto(chantierParam, operateurParam) {
     console.error('sauvegarderAuto:', e);
   }
   isSaving = false;
-  setTimeout(() => msg.innerHTML = '', 2500);
+  // Garder ✅ visible 4 secondes puis afficher statut discret
+  setTimeout(() => {
+    if (currentDocId) {
+      msg.innerHTML = '<span style="color:#aaa;font-size:10px">✓ Sauvegardé</span>';
+    } else {
+      msg.innerHTML = '';
+    }
+  }, 4000);
 }
 
 // ── RESET ────────────────────────────────────────
@@ -707,7 +714,7 @@ function resetForm() {
   document.getElementById('doc-result').style.display = 'none';
   document.getElementById('loading').classList.remove('visible');
   document.getElementById('modif-input').value = '';
-  document.getElementById('save-msg').textContent = '';
+  document.getElementById('save-msg').innerHTML = '';
   conversationHistory = [];
   currentDocId = null;
   currentFiles = [];
@@ -815,8 +822,8 @@ async function ouvrirDoc(id) {
   document.getElementById('doc-result').classList.add('visible');
   document.getElementById('doc-frame').innerHTML = data.contenu;
   const msg = document.getElementById('save-msg');
-  msg.textContent = '📄 Document chargé';
-  setTimeout(() => msg.textContent = '', 2000);
+  msg.innerHTML = '<span style="color:var(--lav2)">📄 Document chargé</span>';
+  setTimeout(() => msg.innerHTML = '', 2000);
 }
 
 async function supprimerDoc(id) {
