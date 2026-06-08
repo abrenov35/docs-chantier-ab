@@ -18,35 +18,29 @@
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 html, body { min-height: 100%; background: var(--beige); font-family: 'Segoe UI', sans-serif; color: var(--navy); }
 
-/* HEADER */
 .header { background: var(--navy); padding: 14px 18px 0; position: sticky; top: 0; z-index: 100; }
 .header-top { display: flex; align-items: center; padding-bottom: 14px; }
 .logo-text { font-family: 'Century Gothic','Futura',sans-serif; font-weight: 800; font-size: 17px; color: var(--white); letter-spacing: 1px; }
 .logo-sub { font-size: 9px; color: var(--lav); letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
 .header-band { height: 3px; background: linear-gradient(90deg, var(--lav), var(--lav2), var(--navy)); }
-
-/* LAYOUT */
 .main { max-width: 640px; margin: 0 auto; padding: 0 16px 40px; }
 
-/* TABS */
 .tabs { display: flex; border-bottom: 2px solid var(--navy); padding-top: 14px; margin-bottom: 20px; }
-.tab-btn { flex: 1; padding: 10px 6px; background: none; border: none; font-size: 13px; font-weight: 700; color: var(--muted); cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: color 0.15s; }
+.tab-btn { flex: 1; padding: 10px 6px; background: none; border: none; font-size: 13px; font-weight: 700; color: var(--muted); cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; }
 .tab-btn.active { color: var(--navy); border-bottom-color: var(--navy); }
 
-/* FORMULAIRE */
 .section-label { font-size: 11px; font-weight: 800; color: var(--navy); text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 10px; }
 .type-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px; }
-.type-btn { background: var(--white); border: 2px solid var(--border); border-radius: 10px; padding: 12px 8px; text-align: center; cursor: pointer; transition: all 0.15s; font-size: 12px; font-weight: 700; color: var(--navy); line-height: 1.3; }
+.type-btn { background: var(--white); border: 2px solid var(--border); border-radius: 10px; padding: 12px 8px; text-align: center; cursor: pointer; font-size: 12px; font-weight: 700; color: var(--navy); line-height: 1.3; }
 .type-btn.active { border-color: var(--navy); background: var(--navy); color: var(--white); }
 .card { background: var(--white); border-radius: 12px; padding: 16px; margin-bottom: 14px; border: 1px solid var(--border); }
 label { display: block; font-size: 11px; font-weight: 800; color: var(--navy); text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 6px; margin-top: 16px; }
 label:first-child { margin-top: 0; }
-input, textarea { width: 100%; padding: 11px 13px; border: 2px solid #C8D8E8; border-radius: 8px; font-size: 14px; font-weight: 500; font-family: inherit; background: var(--blue-light); color: var(--navy); outline: none; transition: border-color 0.15s; }
+input, textarea { width: 100%; padding: 11px 13px; border: 2px solid #C8D8E8; border-radius: 8px; font-size: 14px; font-weight: 500; font-family: inherit; background: var(--blue-light); color: var(--navy); outline: none; }
 input:focus, textarea:focus { border-color: var(--navy); background: #fff; }
 input::placeholder, textarea::placeholder { color: #9AAFC0; font-weight: 400; }
 textarea { resize: vertical; min-height: 90px; }
 
-/* BOUTONS FICHIERS */
 .file-btns { display: flex; gap: 8px; margin-bottom: 8px; }
 .btn-file { flex: 1; padding: 12px 6px; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; }
 .btn-photo { background: var(--navy); color: white; }
@@ -55,11 +49,8 @@ textarea { resize: vertical; min-height: 90px; }
 .file-tag { background: #EDE9F4; color: var(--lav2); border-radius: 20px; padding: 4px 10px; font-size: 12px; display: flex; align-items: center; gap: 6px; }
 .file-tag button { background: none; border: none; cursor: pointer; color: var(--lav2); font-size: 14px; padding: 0; }
 
-/* BOUTON GÉNÉRER */
-.btn-generate { width: 100%; padding: 15px; background: var(--navy); color: var(--white); border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 16px; transition: opacity 0.15s; }
-.btn-generate:hover { opacity: 0.85; }
+.btn-generate { width: 100%; padding: 15px; background: var(--navy); color: var(--white); border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 16px; }
 
-/* LOADING */
 #loading { display: none; text-align: center; padding: 40px 0; }
 #loading.visible { display: block; }
 .spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--navy); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
@@ -67,21 +58,18 @@ textarea { resize: vertical; min-height: 90px; }
 .progress-bar-wrap { background: var(--border); border-radius: 20px; height: 6px; overflow: hidden; flex: 1; }
 .progress-bar { height: 6px; border-radius: 20px; background: linear-gradient(90deg, var(--lav), var(--navy)); width: 0%; transition: width 0.4s ease; }
 
-/* RÉSULTAT DOCUMENT */
 #doc-result { display: none; }
 #doc-result.visible { display: block; }
-.actions { display: flex; gap: 8px; margin-bottom: 8px; }
-.btn-action { flex: 1; padding: 11px; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; transition: opacity 0.15s; }
+.actions { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
+.btn-action { flex: 1; padding: 11px; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; }
 .btn-retour { background: var(--white); color: var(--navy); border: 2px solid var(--border) !important; }
-.btn-save { background: var(--lav); color: white; }
 .btn-print { background: var(--navy); color: white; }
-#save-msg { text-align: center; font-size: 12px; color: var(--lav2); min-height: 18px; margin-bottom: 6px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; }
+#save-msg { flex: 1; font-size: 11px; text-align: center; min-height: 18px; }
 .save-pendule { display: inline-block; animation: pendule 0.6s ease-in-out infinite alternate; transform-origin: top center; }
 @keyframes pendule { from { transform: rotate(-25deg); } to { transform: rotate(25deg); } }
-.save-ok { color: #3aaa6e; }
-.save-err { color: #e05050; }
+.save-ok { color: #3aaa6e; font-weight: 700; }
+.save-err { color: #e05050; font-weight: 700; }
 
-/* CADRE DOCUMENT */
 #doc-frame { border: 2.5px solid var(--navy); border-radius: 6px; overflow: hidden; margin-bottom: 14px; background: white; }
 .doc-type-header { background: var(--navy); padding: 10px 16px; }
 .doc-type-header .type-full { color: var(--white); font-weight: 800; font-size: 14px; letter-spacing: 1px; font-family: 'Century Gothic','Futura',sans-serif; text-transform: uppercase; }
@@ -90,7 +78,6 @@ textarea { resize: vertical; min-height: 90px; }
 .doc-info-item span { font-weight: 400; }
 #doc-content { padding: 4px 0; }
 
-/* SECTIONS */
 .doc-section { background: var(--white); padding: 0; margin: 8px 0; box-shadow: 0 1px 4px rgba(22,45,73,0.10); }
 .doc-section-title { font-weight: 800; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--white); background: var(--navy); padding: 7px 16px; }
 .doc-subsection-title { font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--navy); background: #DDD7EC; padding: 5px 16px; border-left: 3px solid var(--lav2); }
@@ -99,206 +86,54 @@ textarea { resize: vertical; min-height: 90px; }
 .doc-text-plain { font-size: 13px; line-height: 1.6; color: var(--navy); margin: 3px 0; padding: 0 16px; }
 .doc-bullet { font-size: 13px; line-height: 1.6; color: var(--navy); padding-left: 28px; position: relative; margin: 2px 0; }
 .doc-bullet::before { content: "▸"; position: absolute; left: 16px; color: var(--lav2); font-size: 11px; top: 2px; }
-.doc-title-main { font-weight: 800; font-size: 16px; color: var(--navy); padding: 10px 16px 4px; }
 
-/* PHOTOS */
 .doc-photos { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 16px 12px; }
 .doc-photo { width: calc(33% - 6px); aspect-ratio: 4/3; object-fit: cover; border-radius: 4px; cursor: pointer; }
 .photo-section-title { background: var(--navy); padding: 7px 16px; font-weight: 800; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: white; margin-top: 8px; }
 
-/* MODIFIER */
 .modif-zone { background: var(--white); border-radius: 12px; padding: 16px; border: 1px solid var(--border); margin-top: 14px; }
 .btn-modif { width: 100%; padding: 11px; background: var(--lav); color: var(--white); border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 10px; }
 
-/* LIGHTBOX */
 .lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 999; align-items: center; justify-content: center; }
 .lightbox.open { display: flex; }
 .lightbox img { max-width: 92vw; max-height: 88vh; border-radius: 10px; }
 .lightbox-close { position: absolute; top: 16px; right: 20px; color: white; font-size: 32px; cursor: pointer; }
 
-/* LISTE DOCUMENTS */
 .doc-list-wrap { background: var(--white); border-radius: 8px; overflow: hidden; border: 1.5px solid var(--border); }
-.doc-list-header { display: grid; grid-template-columns: 130px 1fr 72px 90px; gap: 6px; padding: 6px 12px; font-size: 10px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid var(--border); }
-.doc-list-item { display: grid; grid-template-columns: 130px 1fr 72px 90px; gap: 6px; align-items: center; padding: 9px 12px; border-bottom: 1px solid var(--border); font-size: 13px; transition: background 0.1s; }
+.doc-list-header { display: grid; grid-template-columns: 130px 1fr 72px 80px; gap: 6px; padding: 6px 12px; font-size: 10px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid var(--border); }
+.doc-list-item { display: grid; grid-template-columns: 130px 1fr 72px 80px; gap: 6px; align-items: center; padding: 9px 12px; border-bottom: 1px solid var(--border); font-size: 13px; }
 .doc-list-item:last-child { border-bottom: none; }
-.doc-list-item:hover { background: var(--blue-light); }
-.doc-type-badge { font-size: 9px; font-weight: 800; background: var(--navy); color: white; border-radius: 3px; padding: 2px 6px; display: inline-block; white-space: nowrap; }
-.doc-list-actions { display: flex; gap: 4px; justify-content: flex-end; align-items: center; }
-.doc-list-actions button { background: none; border: none; cursor: pointer; font-size: 18px; padding: 6px 8px; border-radius: 6px; line-height: 1; }
-.doc-list-actions button:hover { background: var(--border); }
-.doc-list-actions .btn-delete { margin-left: 6px; color: #c0392b; }
+.doc-type-badge { font-size: 8px; font-weight: 800; background: var(--navy); color: white; border-radius: 3px; padding: 2px 5px; display: inline-block; white-space: normal; line-height: 1.2; }
+.doc-list-actions { display: flex; gap: 6px; justify-content: flex-end; align-items: center; }
+.doc-list-actions button { background: none; border: none; cursor: pointer; font-size: 18px; padding: 5px 7px; border-radius: 6px; }
+.doc-list-actions .btn-delete { color: #c0392b; }
 .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 14px; }
 
 /* IMPRESSION */
-@page {
-  size: A4 portrait;
-  margin: 18mm 14mm 20mm 14mm;
-}
-@page :first {
-  margin-top: 10mm;
-}
-
-/* En-tête et pied de page via @page */
+@page { size: A4 portrait; margin: 18mm 14mm 20mm 14mm; }
 @media print {
-
-  /* ── Reset global ── */
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-  html, body { background: white !important; font-family: 'Segoe UI', Arial, sans-serif !important; }
-
-  /* ── Masquer tout sauf le doc ── */
-  .header, .tabs, .actions, .modif-zone, #form-section,
-  #loading, #save-msg, #tab-liste, .lightbox { display: none !important; }
-
-  /* ── Zone résultat ── */
+  html, body { background: white !important; }
+  .header, .tabs, .actions, .modif-zone, #form-section, #loading, #save-msg, #tab-liste, .lightbox { display: none !important; }
   #doc-result { display: block !important; visibility: visible !important; }
   .main { padding: 0 !important; max-width: 100% !important; margin: 0 !important; }
-
-  /* ── Cadre document ── */
-  #doc-frame {
-    border: none !important;
-    border-radius: 0 !important;
-    overflow: visible !important;
-    box-shadow: none !important;
-    width: 100% !important;
-  }
-
-  /* ── En-tête document : bandeau navy pleine largeur ── */
-  .doc-type-header {
-    background: #162D49 !important;
-    padding: 14px 18px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    break-inside: avoid !important;
-    break-after: avoid !important;
-  }
-  .doc-type-header::after {
-    content: 'AB RENOV 35';
-    color: #A495C3;
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    font-family: 'Century Gothic', 'Futura', Arial, sans-serif;
-  }
-  .type-full {
-    color: white !important;
-    font-size: 15px !important;
-    font-weight: 800 !important;
-    letter-spacing: 1.5px !important;
-    font-family: 'Century Gothic', 'Futura', Arial, sans-serif !important;
-  }
-
-  /* ── Barre infos chantier ── */
-  .doc-info-bar {
-    background: #EEF4FA !important;
-    padding: 8px 18px !important;
-    display: flex !important;
-    gap: 20px !important;
-    border-bottom: 2px solid #162D49 !important;
-    break-inside: avoid !important;
-    break-after: avoid !important;
-  }
-  .doc-info-item {
-    font-size: 11px !important;
-    color: #162D49 !important;
-    font-weight: 700 !important;
-  }
+  #doc-frame { border: none !important; border-radius: 0 !important; overflow: visible !important; box-shadow: none !important; width: 100% !important; }
+  .doc-type-header { background: #162D49 !important; padding: 14px 18px !important; display: flex !important; justify-content: space-between !important; align-items: center !important; break-after: avoid !important; }
+  .doc-type-header::after { content: 'AB RENOV 35'; color: #A495C3; font-size: 10px; font-weight: 800; letter-spacing: 2px; font-family: 'Century Gothic','Futura',Arial,sans-serif; }
+  .type-full { color: white !important; font-size: 15px !important; font-weight: 800 !important; letter-spacing: 1.5px !important; }
+  .doc-info-bar { background: #EEF4FA !important; padding: 8px 18px !important; display: flex !important; gap: 20px !important; border-bottom: 2px solid #162D49 !important; break-after: avoid !important; }
+  .doc-info-item { font-size: 11px !important; color: #162D49 !important; font-weight: 700 !important; }
   .doc-info-item span { font-weight: 400 !important; }
-
-  /* ── Séparateur décoratif sous l'en-tête ── */
-  .doc-info-bar::after {
-    content: '';
-    display: block;
-    height: 3px;
-    background: linear-gradient(90deg, #A495C3, #162D49);
-  }
-
-  /* ── Sections : jamais coupées ── */
-  .doc-section {
-    box-shadow: none !important;
-    break-inside: avoid !important;
-    margin: 6px 0 !important;
-    border: 1px solid #E0D8F0 !important;
-    border-radius: 0 !important;
-    page-break-inside: avoid !important;
-  }
-
-  /* ── Titre de section : toujours avec son contenu ── */
-  .doc-section-title {
-    background: #162D49 !important;
-    color: white !important;
-    font-size: 9px !important;
-    padding: 6px 14px !important;
-    letter-spacing: 1.5px !important;
-    break-inside: avoid !important;
-    break-after: avoid !important;
-    page-break-after: avoid !important;
-  }
-
-  /* ── Sous-titre lavande ── */
-  .doc-subsection-title {
-    background: #DDD7EC !important;
-    color: #162D49 !important;
-    font-size: 9px !important;
-    padding: 5px 14px !important;
-    break-inside: avoid !important;
-    break-after: avoid !important;
-    page-break-after: avoid !important;
-  }
-
-  /* ── Corps de section ── */
-  .doc-section-body {
-    padding: 7px 14px 9px !important;
-  }
-  .doc-text, .doc-text-plain, .doc-bullet {
-    font-size: 11px !important;
-    line-height: 1.55 !important;
-    color: #162D49 !important;
-    orphans: 3 !important;
-    widows: 3 !important;
-  }
+  .doc-section { box-shadow: none !important; break-inside: avoid !important; page-break-inside: avoid !important; margin: 6px 0 !important; border: 1px solid #E0D8F0 !important; }
+  .doc-section-title { background: #162D49 !important; color: white !important; font-size: 9px !important; padding: 6px 14px !important; break-after: avoid !important; page-break-after: avoid !important; }
+  .doc-subsection-title { background: #DDD7EC !important; color: #162D49 !important; font-size: 9px !important; padding: 5px 14px !important; break-after: avoid !important; }
+  .doc-section-body { padding: 7px 14px 9px !important; }
+  .doc-text, .doc-text-plain, .doc-bullet { font-size: 11px !important; line-height: 1.55 !important; color: #162D49 !important; orphans: 3 !important; widows: 3 !important; }
   .doc-bullet::before { color: #7B6BA8 !important; }
-
-  /* ── Photos : grille propre, jamais coupée ── */
-  .photo-section-title {
-    background: #162D49 !important;
-    color: white !important;
-    font-size: 9px !important;
-    padding: 6px 14px !important;
-    break-inside: avoid !important;
-    break-after: avoid !important;
-    page-break-after: avoid !important;
-    margin-top: 10px !important;
-  }
-  .doc-photos {
-    display: grid !important;
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: 6px !important;
-    padding: 8px 14px 10px !important;
-    break-inside: avoid !important;
-    page-break-inside: avoid !important;
-  }
-  .doc-photo {
-    display: block !important;
-    width: 100% !important;
-    aspect-ratio: 4/3 !important;
-    object-fit: cover !important;
-    border-radius: 3px !important;
-    border: 1px solid #E0D8F0 !important;
-  }
-
-  /* ── Pied de page automatique ── */
-  #doc-content::after {
-    content: 'AB RENOV 35  —  ' attr(data-chantier) '  —  Document généré le ' attr(data-date);
-    display: block;
-    font-size: 8px;
-    color: #8A9BAD;
-    text-align: center;
-    margin-top: 16px;
-    padding-top: 8px;
-    border-top: 1px solid #E0D8F0;
-  }
+  .photo-section-title { background: #162D49 !important; color: white !important; font-size: 9px !important; padding: 6px 14px !important; break-after: avoid !important; margin-top: 10px !important; }
+  .doc-photos { display: grid !important; grid-template-columns: repeat(3,1fr) !important; gap: 6px !important; padding: 8px 14px 10px !important; break-inside: avoid !important; page-break-inside: avoid !important; }
+  .doc-photo { display: block !important; width: 100% !important; aspect-ratio: 4/3 !important; object-fit: cover !important; border-radius: 3px !important; border: 1px solid #E0D8F0 !important; }
+  #doc-content::after { content: 'AB RENOV 35  —  ' attr(data-chantier) '  —  ' attr(data-date); display: block; font-size: 8px; color: #8A9BAD; text-align: center; margin-top: 16px; padding-top: 8px; border-top: 1px solid #E0D8F0; }
 }
 </style>
 </head>
@@ -320,15 +155,12 @@ textarea { resize: vertical; min-height: 90px; }
 </div>
 
 <div class="main">
-
   <div class="tabs">
     <button class="tab-btn active" id="tab-btn-nouveau" onclick="showTab('nouveau')">✏️ Nouveau</button>
     <button class="tab-btn" id="tab-btn-liste" onclick="showTab('liste')">📂 Mes documents</button>
   </div>
 
-  <!-- ONGLET NOUVEAU -->
   <div id="tab-nouveau">
-
     <div id="form-section">
       <div class="section-label">Type de document</div>
       <div class="type-grid">
@@ -336,55 +168,45 @@ textarea { resize: vertical; min-height: 90px; }
         <div class="type-btn" data-type="FCh" onclick="selectType(this)">Fiche Chantier</div>
         <div class="type-btn" data-type="PVR" onclick="selectType(this)">Procès-Verbal de Réception</div>
       </div>
-
       <div class="card">
         <label>Chantier / Client</label>
         <input type="text" id="chantier" placeholder="Ex: Dupont — 12 rue des Lilas, Rennes">
-
         <label>Opérateur</label>
         <input type="text" id="operateur" placeholder="Ton prénom ou initiales">
-
         <label>Travaux réalisés / Observations</label>
         <textarea id="observations" placeholder="Décris les travaux du jour, observations, points importants…"></textarea>
-
         <label>Réserves / Problèmes (optionnel)</label>
         <textarea id="reserves" placeholder="Réserves, problèmes, points à surveiller…" style="min-height:60px"></textarea>
-
         <label>Photos / Documents (optionnel)</label>
         <div class="file-btns">
           <button type="button" class="btn-file btn-photo" onclick="document.getElementById('photo-input').click()">📷 Prendre des photos</button>
           <button type="button" class="btn-file btn-doc" onclick="document.getElementById('file-input').click()">📎 Ajouter des documents</button>
         </div>
         <div class="files-list" id="files-list"></div>
-        <input type="file" id="photo-input" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFiles(this)">
+        <input type="file" id="photo-input" accept="image/*" multiple style="display:none" onchange="handleFiles(this)">
         <input type="file" id="file-input" accept="image/*,application/pdf,.doc,.docx" multiple style="display:none" onchange="handleFiles(this)">
       </div>
-
       <button class="btn-generate" onclick="generer()">⚡ Générer le document</button>
     </div>
 
-    <!-- LOADING -->
     <div id="loading">
       <div class="spinner"></div>
       <div style="display:flex;align-items:center;gap:8px;margin:12px 16px 4px">
         <div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar"></div></div>
         <div id="progress-pct" style="font-size:13px;font-weight:700;color:var(--navy);min-width:36px;text-align:right">0%</div>
       </div>
-      <div class="progress-step" id="progress-step" style="color:var(--muted);font-size:13px;text-align:center">Envoi des données…</div>
+      <div id="progress-step" style="color:var(--muted);font-size:13px;text-align:center">Envoi des données…</div>
     </div>
 
-    <!-- RÉSULTAT -->
     <div id="doc-result">
       <div class="actions">
         <button class="btn-action btn-retour" onclick="resetForm()">← Retour</button>
-        <div id="save-msg" style="flex:1;font-size:11px;text-align:center"></div>
+        <div id="save-msg"></div>
         <button class="btn-action btn-print" onclick="imprimerDoc()">🖨️ Imprimer</button>
       </div>
-
       <div id="doc-frame">
         <div id="doc-content"></div>
       </div>
-
       <div class="modif-zone">
         <div class="section-label">Modifier / Compléter</div>
         <textarea id="modif-input" placeholder="Ex: Ajoute une réserve sur la peinture du couloir…" style="min-height:60px;background:#EDE9F4;border-color:var(--lav)"></textarea>
@@ -396,50 +218,43 @@ textarea { resize: vertical; min-height: 90px; }
         </div>
         <input type="file" id="modif-photo-input" accept="image/*" multiple style="display:none" onchange="ajouterFichiersModif(this.files)">
         <input type="file" id="modif-doc-input" multiple style="display:none" onchange="ajouterFichiersModif(this.files)">
-        <div id="modif-files-list" style="display:flex;flex-wrap:wrap;gap:6px;min-height:0"></div>
+        <div id="modif-files-list" style="display:flex;flex-wrap:wrap;gap:6px"></div>
       </div>
     </div>
+  </div>
 
-  </div><!-- fin tab-nouveau -->
-
-  <!-- ONGLET MES DOCUMENTS -->
   <div id="tab-liste" style="display:none">
     <div id="docs-list-container"><div class="empty-state">Chargement…</div></div>
   </div>
-
-</div><!-- fin main -->
+</div>
 
 <script>
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxkxZ71UhLWUsq7DK5utewVbTcJGirALgQElAu9BgPOf7SwhTqwYsiM4w6vJemNc5ulmQ/exec';
 const TYPE_LABELS = { CRCh: 'Compte Rendu de Chantier', FCh: 'Fiche Chantier', PVR: 'Procès-Verbal de Réception' };
-const TYPE_SHORT = { CRCh: 'CR Chantier', FCh: 'Fiche Chantier', PVR: 'PV Réception' };
+const TYPE_SHORT  = { CRCh: 'CR Chantier', FCh: 'Fiche Chantier', PVR: 'PV Réception' };
 
+// ── État global ──────────────────────────────────
 let selectedType = 'CRCh';
 let conversationHistory = [];
-let currentFiles = [];
-let currentDocId = null;
-let currentChantier = '';
+let currentFiles  = [];   // { name, type, data (base64) }
+let currentDocId  = null;
+let currentChantier  = '';
 let currentOperateur = '';
 let progressTimer = null;
 let isSaving = false;
 
-// Bloquer uniquement si on quitte le site (pas la navigation interne)
 window.addEventListener('beforeunload', e => {
-  if (isSaving) {
-    e.preventDefault();
-    e.returnValue = '';
-  }
+  if (isSaving) { e.preventDefault(); e.returnValue = ''; }
 });
 
-// ── TYPE ──────────────────────────────────────────
+// ── Type ─────────────────────────────────────────
 function selectType(el) {
   document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
   selectedType = el.dataset.type;
 }
 
-// ── FICHIERS ──────────────────────────────────────
-// Compresser image à 800px max, qualité 0.7 pour alléger le payload GAS
+// ── Compression image ────────────────────────────
 function compressImage(file, callback) {
   const img = new Image();
   const url = URL.createObjectURL(file);
@@ -455,80 +270,102 @@ function compressImage(file, callback) {
     canvas.getContext('2d').drawImage(img, 0, 0, w, h);
     const data = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
     URL.revokeObjectURL(url);
-    callback({ name: file.name.replace(/\.[^.]+$/, '.jpg'), type: 'image/jpeg', data });
+    callback({ name: file.name.split('.')[0] + '.jpg', type: 'image/jpeg', data });
+  };
+  img.onerror = () => {
+    URL.revokeObjectURL(url);
+    const reader = new FileReader();
+    reader.onload = e => callback({ name: file.name, type: file.type, data: e.target.result.split(',')[1] });
+    reader.readAsDataURL(file);
   };
   img.src = url;
 }
 
+// ── Fichiers ─────────────────────────────────────
 function handleFiles(input) {
-  // Limite : 6 photos maximum
-  const photos = currentFiles.filter(f => f.type && f.type.startsWith('image/'));
-  const newPhotos = Array.from(input.files).filter(f => f.type.startsWith('image/'));
-  if (photos.length + newPhotos.length > 6) {
-    alert('Maximum 6 photos autorisées.');
-    input.value = '';
-    return;
-  }
+  const existingPhotos = currentFiles.filter(f => f.type && f.type.startsWith('image/')).length;
+  const newPhotos = Array.from(input.files).filter(f => f.type.startsWith('image/')).length;
+  if (existingPhotos + newPhotos > 6) { alert('Maximum 6 photos.'); input.value = ''; return; }
   Array.from(input.files).forEach(file => {
     if (file.type.startsWith('image/')) {
-      compressImage(file, compressed => {
-        currentFiles.push(compressed);
-        renderFilesList();
-      });
+      compressImage(file, c => { currentFiles.push(c); renderFilesList(); });
     } else {
-      const reader = new FileReader();
-      reader.onload = e => {
-        currentFiles.push({ name: file.name, type: file.type, data: e.target.result.split(',')[1] });
-        renderFilesList();
-      };
-      reader.readAsDataURL(file);
+      const r = new FileReader();
+      r.onload = e => { currentFiles.push({ name: file.name, type: file.type, data: e.target.result.split(',')[1] }); renderFilesList(); };
+      r.readAsDataURL(file);
     }
   });
   input.value = '';
 }
-function removeFile(i) { currentFiles.splice(i, 1); renderFilesList(); }
-function renderFilesList() {
-  const tags = currentFiles.map((f,i) =>
-    `<div class="file-tag">📄 ${f.name} <button onclick="removeFile(${i})">✕</button></div>`
-  ).join('');
-  const el = document.getElementById('files-list');
-  if (el) el.innerHTML = tags;
-  const el2 = document.getElementById('modif-files-list');
-  if (el2) el2.innerHTML = tags;
-}
+
 function ajouterFichiersModif(files) {
-  // Limite : 6 photos maximum
-  const existingPhotos = currentFiles.filter(f => f.type && f.type.startsWith('image/'));
-  const newPhotos = Array.from(files).filter(f => f.type.startsWith('image/'));
-  if (existingPhotos.length + newPhotos.length > 6) {
-    alert('Maximum 6 photos autorisées.');
-    return;
-  }
+  const existingPhotos = currentFiles.filter(f => f.type && f.type.startsWith('image/')).length;
+  const newPhotos = Array.from(files).filter(f => f.type.startsWith('image/')).length;
+  if (existingPhotos + newPhotos > 6) { alert('Maximum 6 photos.'); return; }
   Array.from(files).forEach(file => {
     if (file.type.startsWith('image/')) {
-      compressImage(file, compressed => {
-        currentFiles.push(compressed);
+      compressImage(file, c => {
+        currentFiles.push(c);
         renderFilesList();
-        const photos = currentFiles.filter(f => f.type && f.type.startsWith('image/'));
-        const ps = document.getElementById('doc-photos-section');
-        if (ps) ps.innerHTML = photos.map((f,i) =>
-          `<img class="doc-photo" src="data:${f.type};base64,${f.data}" onclick="openLightbox(${i})">`
-        ).join('');
+        afficherPhotosDoc();
         if (currentDocId) sauvegarderAuto();
       });
     } else {
-      const reader = new FileReader();
-      reader.onload = e => {
+      const r = new FileReader();
+      r.onload = e => {
         currentFiles.push({ name: file.name, type: file.type, data: e.target.result.split(',')[1] });
         renderFilesList();
         if (currentDocId) sauvegarderAuto();
       };
-      reader.readAsDataURL(file);
+      r.readAsDataURL(file);
     }
   });
 }
 
-// ── PROGRESS ──────────────────────────────────────
+function removeFile(i) { currentFiles.splice(i, 1); renderFilesList(); afficherPhotosDoc(); }
+
+function renderFilesList() {
+  const tags = currentFiles.map((f,i) =>
+    `<div class="file-tag">📄 ${f.name} <button onclick="removeFile(${i})">✕</button></div>`
+  ).join('');
+  const el1 = document.getElementById('files-list');
+  const el2 = document.getElementById('modif-files-list');
+  if (el1) el1.innerHTML = tags;
+  if (el2) el2.innerHTML = tags;
+}
+
+// Affiche/met à jour la section photos dans doc-content
+function afficherPhotosDoc() {
+  const photos = currentFiles.filter(f => f.type && f.type.startsWith('image/'));
+  const docContent = document.getElementById('doc-content');
+  if (!docContent) return;
+  // Supprimer ancienne section photos
+  const oldTitle = docContent.querySelector('.photo-section-title');
+  const oldGrid  = docContent.querySelector('.doc-photos');
+  if (oldTitle) oldTitle.remove();
+  if (oldGrid)  oldGrid.remove();
+  // Réinjecter si photos présentes
+  if (photos.length > 0) {
+    const div = document.createElement('div');
+    div.innerHTML = `<div class="photo-section-title">📷 Photos du chantier</div>
+      <div class="doc-photos" id="doc-photos-section">
+        ${photos.map((f,i) => `<img class="doc-photo" src="data:${f.type};base64,${f.data}" onclick="openLightbox(${i})">`).join('')}
+      </div>`;
+    docContent.appendChild(div.querySelector('.photo-section-title'));
+    docContent.appendChild(div.querySelector('.doc-photos'));
+  }
+}
+
+// ── Lightbox ─────────────────────────────────────
+function openLightbox(idx) {
+  const photos = currentFiles.filter(f => f.type && f.type.startsWith('image/'));
+  if (!photos[idx]) return;
+  document.getElementById('lightbox-img').src = `data:${photos[idx].type};base64,${photos[idx].data}`;
+  document.getElementById('lightbox').classList.add('open');
+}
+function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); }
+
+// ── Progress ─────────────────────────────────────
 function startProgress() {
   const steps = [[5,'Envoi des données…'],[20,'Analyse en cours…'],[45,'Rédaction du document…'],[70,'Mise en forme…'],[90,'Finalisation…']];
   let i = 0;
@@ -537,8 +374,7 @@ function startProgress() {
   const step = document.getElementById('progress-step');
   bar.style.width = '5%'; pct.textContent = '5%'; step.textContent = steps[0][1];
   progressTimer = setInterval(() => {
-    i++;
-    if (i < steps.length) { bar.style.width = steps[i][0]+'%'; pct.textContent = steps[i][0]+'%'; step.textContent = steps[i][1]; }
+    i++; if (i < steps.length) { bar.style.width = steps[i][0]+'%'; pct.textContent = steps[i][0]+'%'; step.textContent = steps[i][1]; }
   }, 1200);
 }
 function stopProgress() {
@@ -548,36 +384,38 @@ function stopProgress() {
   document.getElementById('progress-step').textContent = 'Document prêt ✓';
 }
 
-// ── APPEL GAS ─────────────────────────────────────
+// ── Appel GAS ────────────────────────────────────
 async function callGAS(payload) {
   const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
   const data = await res.json();
-  if (!data.ok) throw new Error(data.error || 'Erreur GAS');
+  if (data.ok === false) throw new Error(data.error || 'Erreur GAS');
   return data;
 }
 
-// Purger images base64 de l'historique pour alléger le payload GAS
-function cleanHistory(history) {
-  return (history || []).map(msg => {
+// Purger images base64 de l'historique (trop lourd pour GAS)
+function cleanHistory(h) {
+  return (h || []).map(msg => {
     if (!Array.isArray(msg.content)) return msg;
-    return {
-      ...msg,
-      content: msg.content.map(block => {
-        if (block.type === 'image') return { type: 'text', text: '[image]' };
-        if (block.type === 'document') return { type: 'text', text: '[document]' };
-        return block;
-      })
-    };
+    return { ...msg, content: msg.content.map(b => {
+      if (b.type === 'image') return { type: 'text', text: '[image]' };
+      if (b.type === 'document') return { type: 'text', text: '[document]' };
+      return b;
+    })};
   });
 }
 
-// ── GÉNÉRER ──────────────────────────────────────
+// ── Générer ──────────────────────────────────────
 async function generer() {
-  const chantier = document.getElementById('chantier').value.trim();
-  const operateur = document.getElementById('operateur').value.trim();
+  const chantier     = document.getElementById('chantier').value.trim();
+  const operateur    = document.getElementById('operateur').value.trim();
   const observations = document.getElementById('observations').value.trim();
-  const reserves = document.getElementById('reserves').value.trim();
+  const reserves     = document.getElementById('reserves').value.trim();
   if (!chantier || !observations) { alert('Chantier et observations obligatoires.'); return; }
+
+  // Stocker dans globales AVANT tout appel async
+  currentChantier  = chantier;
+  currentOperateur = operateur;
 
   document.getElementById('form-section').style.display = 'none';
   document.getElementById('loading').classList.add('visible');
@@ -586,8 +424,6 @@ async function generer() {
   try {
     const data = await callGAS({ type: selectedType, chantier, operateur, observations, reserves, files: currentFiles, history: [] });
     conversationHistory = data.history;
-    currentChantier = chantier;
-    currentOperateur = operateur;
     stopProgress();
     setTimeout(async () => {
       afficherDoc(data.text);
@@ -595,12 +431,13 @@ async function generer() {
     }, 400);
   } catch(e) {
     stopProgress();
-    alert('Erreur : ' + e.message);
-    resetForm();
+    alert('Erreur génération : ' + e.message);
+    document.getElementById('form-section').style.display = 'block';
+    document.getElementById('loading').classList.remove('visible');
   }
 }
 
-// ── MODIFIER ─────────────────────────────────────
+// ── Modifier ─────────────────────────────────────
 async function modifier() {
   const modif = document.getElementById('modif-input').value.trim();
   if (!modif) return;
@@ -611,162 +448,108 @@ async function modifier() {
     conversationHistory = data.history;
     afficherDoc(data.text);
     document.getElementById('modif-input').value = '';
-    // Sauvegarde automatique après modification
     if (currentDocId) await sauvegarderAuto();
-  } catch(e) { alert('Erreur : ' + e.message); }
+  } catch(e) { alert('Erreur modification : ' + e.message); }
   finally { btn.disabled = false; btn.textContent = '✏️ Modifier le document'; }
 }
 
-// ── AFFICHER DOC ─────────────────────────────────
+// ── Afficher doc ─────────────────────────────────
 function afficherDoc(text) {
   document.getElementById('loading').classList.remove('visible');
   document.getElementById('doc-result').style.display = '';
   document.getElementById('doc-result').classList.add('visible');
 
-  const chantierVal = document.getElementById('chantier').value.trim();
-  const operateurVal = document.getElementById('operateur').value.trim();
-  const today = new Date().toLocaleDateString('fr-FR');
-
-  // Bandeau titre + infos
+  // En-tête
   let html = `<div class="doc-type-header"><div class="type-full">${(TYPE_LABELS[selectedType]||selectedType).toUpperCase()}</div></div>`;
   let infos = '';
-  if (chantierVal) infos += `<div class="doc-info-item">Chantier <span>${chantierVal}</span></div>`;
-  if (operateurVal) infos += `<div class="doc-info-item">Opérateur <span>${operateurVal}</span></div>`;
-  infos += `<div class="doc-info-item">Date <span>${today}</span></div>`;
+  if (currentChantier)  infos += `<div class="doc-info-item">Chantier <span>${currentChantier}</span></div>`;
+  if (currentOperateur) infos += `<div class="doc-info-item">Opérateur <span>${currentOperateur}</span></div>`;
+  infos += `<div class="doc-info-item">Date <span>${new Date().toLocaleDateString('fr-FR')}</span></div>`;
   html += `<div class="doc-info-bar">${infos}</div>`;
 
-  // Lignes à filtrer
-  const SKIP_EXACT = new Set(['compte rendu de chantier','compte rendu chantier','fiche chantier','fiche de chantier','procès-verbal de réception','procès verbal de réception','proces verbal de reception','pvr','fch','crch','première section','premier section','informations générales','informations generales','localisation et identification','identification','en-tête','entete']);
-  const SKIP_START = /^(chantier|opérateur|operateur|entreprise|lieu|client|rédacteur|redacteur|date|société|societe)\b\s*[:/]/i;
+  // Filtres
+  const SKIP_EXACT  = new Set(['compte rendu de chantier','compte rendu chantier','fiche chantier','fiche de chantier','procès-verbal de réception','procès verbal de réception','proces verbal de reception','pvr','fch','crch','première section','premier section','informations générales','informations generales','localisation et identification','identification','en-tête','entete']);
+  const SKIP_START  = /^(chantier|opérateur|operateur|entreprise|lieu|client|rédacteur|redacteur|date|société|societe)\b\s*[:/]/i;
 
-  const lines = text.split('\n');
   let inSection = false;
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
+  for (const line of text.split('\n')) {
     const trimmed = line.trim();
-    const clean = trimmed.toLowerCase().replace(/[*#:\-_]/g,'').trim();
-
-    if (!trimmed) {
-      continue;
-    }
+    if (!trimmed) continue;
+    const clean   = trimmed.toLowerCase().replace(/[*#:\-_]/g,'').trim();
+    const stripped = trimmed.replace(/\*\*/g,'').trim();
     if (trimmed.match(/^\.(jpeg|jpg|png|pdf|doc|docx)$/i)) continue;
     if (trimmed.match(/^(WhatsApp Image|IMG_|DSC)/i)) continue;
     if (trimmed.match(/^---+$/)) continue;
     if (SKIP_EXACT.has(clean)) continue;
-    // Filtre "Chantier : X", "**Chantier :** X", etc. — toute ligne info redondante
-    const stripped = trimmed.replace(/\*\*/g,'').trim();
     if (SKIP_START.test(stripped)) continue;
-    // Filtre générique : "Mot(s) : valeur" sur une seule ligne hors section (ex: "Chantier : Lucas")
     if (!inSection && /^[A-ZÀ-Ÿa-zà-ÿ\s]{2,30}\s*:\s*.+$/.test(stripped) && !stripped.match(/^#{1,3} /)) continue;
 
-    // Titre section ## ou **TITRE**
     if (line.match(/^## /) || (trimmed.match(/^\*\*[^*]+\*\*$/) && trimmed.length < 80)) {
       if (inSection) { html += '</div></div>'; inSection = false; }
       const title = trimmed.replace(/^## /,'').replace(/\*\*/g,'');
       if (SKIP_EXACT.has(title.toLowerCase())) continue;
       html += `<div class="doc-section"><div class="doc-section-title">${title}</div><div class="doc-section-body">`;
       inSection = true;
-    }
-    // Sous-titre ### → style lavande
-    else if (line.match(/^### /)) {
-      const subtitle = trimmed.replace(/^### /,'');
-      html += `<div class="doc-subsection-title">${subtitle}</div>`;
-    }
-    // Bullet
-    else if (trimmed.match(/^[-•·▸] /)) {
-      const txt = trimmed.replace(/^[-•·▸] /,'').replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
-      html += `<div class="doc-bullet">${txt}</div>`;
-    }
-    // Texte normal
-    else {
+    } else if (line.match(/^### /)) {
+      html += `<div class="doc-subsection-title">${trimmed.replace(/^### /,'')}</div>`;
+    } else if (trimmed.match(/^[-•·▸] /)) {
+      html += `<div class="doc-bullet">${trimmed.replace(/^[-•·▸] /,'').replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')}</div>`;
+    } else {
       const fmt = trimmed.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
-      if (inSection) {
-        html += `<div class="doc-text">${fmt}</div>`;
-      } else {
-        html += `<div class="doc-text-plain">${fmt}</div>`;
-      }
+      html += inSection ? `<div class="doc-text">${fmt}</div>` : `<div class="doc-text-plain">${fmt}</div>`;
     }
   }
   if (inSection) html += '</div></div>';
 
-  // Photos
-  const photos = currentFiles.filter(f => f.type && f.type.startsWith('image/'));
-  if (photos.length > 0) {
-    html += `<div class="photo-section-title">📷 Photos du chantier</div><div class="doc-photos" id="doc-photos-section">`;
-    photos.forEach((f,i) => {
-      html += `<img class="doc-photo" src="data:${f.type};base64,${f.data}" onclick="openLightbox(${i})">`;
-    });
-    html += '</div>';
-  }
-
   const docContent = document.getElementById('doc-content');
   docContent.innerHTML = html;
-  // Pour pied de page PDF
-  docContent.setAttribute('data-chantier', chantierVal || '');
+  docContent.setAttribute('data-chantier', currentChantier);
   docContent.setAttribute('data-date', new Date().toLocaleDateString('fr-FR'));
+
+  // Photos depuis currentFiles
+  afficherPhotosDoc();
 }
 
-function openLightbox(idx) {
-  const photos = currentFiles.filter(f => f.type && f.type.startsWith('image/'));
-  document.getElementById('lightbox-img').src = `data:${photos[idx].type};base64,${photos[idx].data}`;
-  document.getElementById('lightbox').classList.add('open');
-}
-function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); }
-
-// ── SAUVEGARDE AUTOMATIQUE (silencieuse) ─────────────────────────────
+// ── Sauvegarde auto ──────────────────────────────
 async function sauvegarderAuto() {
+  if (!currentChantier) return; // sécurité : ne pas sauvegarder si données vides
   const msg = document.getElementById('save-msg');
-  // Utiliser les variables globales — indépendant du DOM
-  const chantier = currentChantier || document.getElementById('chantier').value.trim();
-  const operateur = currentOperateur || document.getElementById('operateur').value.trim();
-  // Nettoyer les images base64 du contenu avant sauvegarde (trop lourdes pour Sheets)
-  // Les photos sont sauvegardées séparément dans files
-  const docFrameClone = document.getElementById('doc-frame').cloneNode(true);
-  docFrameClone.querySelectorAll('img.doc-photo').forEach(img => img.remove());
-  const photoSection = docFrameClone.querySelector('.photo-section-title');
-  if (photoSection) photoSection.remove();
-  const photoDiv = docFrameClone.querySelector('#doc-photos-section');
-  if (photoDiv) photoDiv.remove();
-  const contenu = docFrameClone.innerHTML;
-  const date = new Date().toISOString().slice(0,10);
-  // Purger les images base64 de l'historique pour alléger le payload
-  const historyClean = cleanHistory(conversationHistory);
-  const filesData = currentFiles.map(f => ({ name: f.name, type: f.type, data: f.data }));
   isSaving = true;
+  msg.innerHTML = '<span class="save-pendule">🕰️</span> Sauvegarde…';
+
+  // Contenu HTML sans les images base64 (stockées séparément dans files)
+  const clone = document.getElementById('doc-frame').cloneNode(true);
+  clone.querySelectorAll('img.doc-photo').forEach(img => img.remove());
+  clone.querySelectorAll('.photo-section-title, .doc-photos').forEach(el => el.remove());
+  const contenu = clone.innerHTML;
+
+  const filesData = currentFiles.map(f => ({ name: f.name, type: f.type, data: f.data }));
+
   try {
-    msg.innerHTML = '<span class="save-pendule">🕰️</span><span>Sauvegarde…</span>';
     const data = await callGAS({
-      action: currentDocId ? 'update' : 'save',
-      id: currentDocId,
-      type: selectedType,
-      chantier, operateur, date, contenu,
-      files: filesData,
-      history: historyClean
+      action:    currentDocId ? 'update' : 'save',
+      id:        currentDocId,
+      type:      selectedType,
+      chantier:  currentChantier,
+      operateur: currentOperateur,
+      date:      new Date().toISOString().slice(0,10),
+      contenu,
+      files:     filesData,
+      history:   cleanHistory(conversationHistory)
     });
-    if (data.ok) {
-      currentDocId = data.id || currentDocId;
-      msg.innerHTML = '<span class="save-ok">✅ Sauvegardé</span>';
-    } else {
-      msg.innerHTML = '<span class="save-err">⚠️ ' + (data.error || 'Erreur GAS') + '</span>';
-      console.error('GAS save error:', data.error);
-    }
+    currentDocId = data.id || currentDocId;
+    msg.innerHTML = '<span class="save-ok">✅ Sauvegardé</span>';
   } catch(e) {
-    msg.innerHTML = '<span class="save-err">⚠️ Erreur réseau</span>';
+    msg.innerHTML = '<span class="save-err">⚠️ ' + e.message + '</span>';
     console.error('sauvegarderAuto:', e);
   }
   isSaving = false;
-  // Garder ✅ visible 4 secondes puis afficher statut discret
   setTimeout(() => {
-    if (currentDocId) {
-      msg.innerHTML = '<span style="color:#aaa;font-size:10px">✓ Sauvegardé</span>';
-    } else {
-      msg.innerHTML = '';
-    }
+    msg.innerHTML = currentDocId ? '<span style="color:#aaa;font-size:10px">✓ Sauvegardé</span>' : '';
   }, 4000);
 }
 
-// ── RESET ────────────────────────────────────────
+// ── Reset ────────────────────────────────────────
 function resetForm() {
   document.getElementById('form-section').style.display = 'block';
   document.getElementById('doc-result').classList.remove('visible');
@@ -774,23 +557,20 @@ function resetForm() {
   document.getElementById('loading').classList.remove('visible');
   document.getElementById('modif-input').value = '';
   document.getElementById('save-msg').innerHTML = '';
-  conversationHistory = [];
-  currentDocId = null;
-  currentChantier = '';
-  currentOperateur = '';
-  currentFiles = [];
+  conversationHistory  = [];
+  currentDocId         = null;
+  currentChantier      = '';
+  currentOperateur     = '';
+  currentFiles         = [];
   renderFilesList();
 }
 
-// ── IMPRIMER ─────────────────────────────────────
+// ── Imprimer ─────────────────────────────────────
 function imprimerDoc() {
-  const chantier = (document.getElementById('chantier').value || '').split(/[-–,]/)[0].trim();
-  const operateur = document.getElementById('operateur').value.trim();
-  const date = new Date().toISOString().slice(0,10);
   const parts = [TYPE_SHORT[selectedType] || selectedType];
-  if (chantier) parts.push(chantier);
-  if (operateur) parts.push(operateur);
-  parts.push(date);
+  if (currentChantier)  parts.push(currentChantier.split(/[-–,]/)[0].trim());
+  if (currentOperateur) parts.push(currentOperateur);
+  parts.push(new Date().toISOString().slice(0,10));
   document.title = parts.join(' - ');
   setTimeout(() => {
     window.print();
@@ -798,22 +578,18 @@ function imprimerDoc() {
   }, 200);
 }
 
-// ── ONGLETS ──────────────────────────────────────
+// ── Onglets ──────────────────────────────────────
 function showTab(tab) {
-  // Si sauvegarde en cours, attendre qu'elle finisse avant de naviguer
   if (isSaving) {
     const msg = document.getElementById('save-msg');
-    msg.innerHTML = '<span class="save-pendule">🕰️</span><span>Attendre la sauvegarde…</span>';
-    const wait = setInterval(() => {
-      if (!isSaving) { clearInterval(wait); showTab(tab); }
-    }, 300);
+    msg.innerHTML = '<span class="save-pendule">🕰️</span> Attendre…';
+    const wait = setInterval(() => { if (!isSaving) { clearInterval(wait); showTab(tab); } }, 300);
     return;
   }
   document.getElementById('tab-btn-nouveau').classList.toggle('active', tab === 'nouveau');
   document.getElementById('tab-btn-liste').classList.toggle('active', tab === 'liste');
   document.getElementById('tab-nouveau').style.display = tab === 'nouveau' ? 'block' : 'none';
-  document.getElementById('tab-liste').style.display = tab === 'liste' ? 'block' : 'none';
-
+  document.getElementById('tab-liste').style.display   = tab === 'liste'   ? 'block' : 'none';
   if (tab === 'liste') {
     document.getElementById('doc-result').style.display = 'none';
     document.getElementById('doc-result').classList.remove('visible');
@@ -822,21 +598,20 @@ function showTab(tab) {
     chargerListe();
   }
   if (tab === 'nouveau') {
-    document.getElementById('doc-result').style.display = '';
-    // Reset formulaire vide
-    document.getElementById('chantier').value = '';
-    document.getElementById('operateur').value = '';
+    document.getElementById('chantier').value    = '';
+    document.getElementById('operateur').value   = '';
     document.getElementById('observations').value = '';
-    document.getElementById('reserves').value = '';
+    document.getElementById('reserves').value    = '';
     document.getElementById('doc-result').classList.remove('visible');
     document.getElementById('loading').classList.remove('visible');
     document.getElementById('form-section').style.display = 'block';
     currentDocId = null; currentFiles = []; conversationHistory = [];
+    currentChantier = ''; currentOperateur = '';
     renderFilesList();
   }
 }
 
-// ── LISTE DOCUMENTS ──────────────────────────────
+// ── Liste documents ───────────────────────────────
 async function chargerListe() {
   const container = document.getElementById('docs-list-container');
   container.innerHTML = '<div class="empty-state">⏳ Chargement…</div>';
@@ -850,7 +625,7 @@ async function chargerListe() {
       <div class="doc-list-header"><div>Type</div><div>Chantier · Opérateur</div><div>Date</div><div style="text-align:right">Actions</div></div>
       ${data.docs.map(d => `
       <div class="doc-list-item">
-        <div><span class="doc-type-badge" style="font-size:8px;white-space:normal;line-height:1.2">${TYPE_LABELS[d.type]||d.type}</span></div>
+        <div><span class="doc-type-badge">${TYPE_LABELS[d.type]||d.type}</span></div>
         <div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.chantier||'—'} <span style="font-weight:400;color:var(--muted)">· ${d.operateur||''}</span></div>
         <div style="color:var(--muted);font-size:12px">${(d.date||'').slice(0,10).split('-').reverse().join('/')}</div>
         <div class="doc-list-actions">
@@ -863,49 +638,34 @@ async function chargerListe() {
 }
 
 async function ouvrirDoc(id) {
-  const data = await callGAS({ action: 'get', id });
-  if (!data.ok) return;
-  currentDocId = data.id;
-  selectedType = data.type;
-  currentChantier = data.chantier || '';
-  currentOperateur = data.operateur || '';
-  document.getElementById('chantier').value = currentChantier;
-  document.getElementById('operateur').value = currentOperateur;
-  conversationHistory = data.history || [];
-  // Restaurer les fichiers (photos) depuis la base
-  currentFiles = (data.files || []).map(f => ({ name: f.name, type: f.type, data: f.data }));
-  renderFilesList();
-  // Aller sur onglet nouveau et afficher
-  document.getElementById('tab-btn-nouveau').classList.add('active');
-  document.getElementById('tab-btn-liste').classList.remove('active');
-  document.getElementById('tab-nouveau').style.display = 'block';
-  document.getElementById('tab-liste').style.display = 'none';
-  document.getElementById('form-section').style.display = 'none';
-  document.getElementById('doc-result').style.display = '';
-  document.getElementById('doc-result').classList.add('visible');
-  // Restaurer le contenu HTML (sans les photos — elles peuvent être tronquées par Sheets)
-  // On nettoie les éventuelles sections photos corrompues du contenu sauvegardé
-  let contenuPropre = data.contenu || '';
-  // Supprimer l'ancienne section photos du HTML sauvegardé (on va la reconstruire)
-  contenuPropre = contenuPropre.replace(/<div class="photo-section-title">[\s\S]*$/i, '');
-  document.getElementById('doc-frame').innerHTML = contenuPropre;
-
-  // Re-injecter les photos depuis currentFiles (source fiable)
-  const photos = currentFiles.filter(f => f.type && f.type.startsWith('image/'));
-  if (photos.length > 0) {
-    const docContent = document.getElementById('doc-content');
-    if (docContent) {
-      const photoHtml = `<div class="photo-section-title">📷 Photos du chantier</div>
-        <div class="doc-photos" id="doc-photos-section">
-          ${photos.map((f,i) => `<img class="doc-photo" src="data:${f.type};base64,${f.data}" onclick="openLightbox(${i})">`).join('')}
-        </div>`;
-      docContent.insertAdjacentHTML('beforeend', photoHtml);
-    }
-  }
-
-  const msg = document.getElementById('save-msg');
-  msg.innerHTML = '<span style="color:var(--lav2)">📄 Document chargé</span>';
-  setTimeout(() => msg.innerHTML = '', 2000);
+  try {
+    const data = await callGAS({ action: 'get', id });
+    currentDocId     = data.id;
+    selectedType     = data.type;
+    currentChantier  = data.chantier  || '';
+    currentOperateur = data.operateur || '';
+    conversationHistory = data.history || [];
+    // Restaurer fichiers (photos) depuis la base
+    currentFiles = (data.files || []).map(f => ({ name: f.name, type: f.type, data: f.data }));
+    renderFilesList();
+    // Afficher
+    document.getElementById('chantier').value  = currentChantier;
+    document.getElementById('operateur').value = currentOperateur;
+    document.getElementById('tab-btn-nouveau').classList.add('active');
+    document.getElementById('tab-btn-liste').classList.remove('active');
+    document.getElementById('tab-nouveau').style.display = 'block';
+    document.getElementById('tab-liste').style.display   = 'none';
+    document.getElementById('form-section').style.display = 'none';
+    document.getElementById('doc-result').style.display  = '';
+    document.getElementById('doc-result').classList.add('visible');
+    // Restaurer contenu (sans images corrompues) puis réinjecter photos
+    let contenu = data.contenu || '';
+    document.getElementById('doc-frame').innerHTML = contenu;
+    afficherPhotosDoc();
+    const msg = document.getElementById('save-msg');
+    msg.innerHTML = '<span style="color:var(--lav2)">📄 Document chargé</span>';
+    setTimeout(() => msg.innerHTML = '<span style="color:#aaa;font-size:10px">✓ Sauvegardé</span>', 2000);
+  } catch(e) { alert('Erreur ouverture : ' + e.message); }
 }
 
 async function supprimerDoc(id) {
@@ -916,4 +676,3 @@ async function supprimerDoc(id) {
 </script>
 </body>
 </html>
-
