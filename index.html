@@ -421,11 +421,11 @@ let currentDocId = null;
 let progressTimer = null;
 let isSaving = false;
 
-// Bloquer navigation si sauvegarde en cours
+// Bloquer uniquement si on quitte le site (pas la navigation interne)
 window.addEventListener('beforeunload', e => {
   if (isSaving) {
     e.preventDefault();
-    e.returnValue = 'Sauvegarde en cours, attendez avant de quitter.';
+    e.returnValue = '';
   }
 });
 
@@ -729,6 +729,15 @@ function imprimerDoc() {
 
 // ── ONGLETS ──────────────────────────────────────
 function showTab(tab) {
+  // Si sauvegarde en cours, attendre qu'elle finisse avant de naviguer
+  if (isSaving) {
+    const msg = document.getElementById('save-msg');
+    msg.innerHTML = '<span class="save-pendule">🕰️</span><span>Attendre la sauvegarde…</span>';
+    const wait = setInterval(() => {
+      if (!isSaving) { clearInterval(wait); showTab(tab); }
+    }, 300);
+    return;
+  }
   document.getElementById('tab-btn-nouveau').classList.toggle('active', tab === 'nouveau');
   document.getElementById('tab-btn-liste').classList.toggle('active', tab === 'liste');
   document.getElementById('tab-nouveau').style.display = tab === 'nouveau' ? 'block' : 'none';
