@@ -524,9 +524,9 @@ function setSavingUI(saving, label) {
   if (saving) {
     isSaving = true;
     msg.innerHTML = `<span class="save-pendule">🕰️</span> ${label || 'Sauvegarde…'}`;
-    if (btnModif) { btnModif.disabled = true; btnModif.style.opacity = '0.5'; }
+    // Ne pas bloquer les boutons — juste indiquer visuellement
   } else {
-    if (btnModif) { btnModif.disabled = false; btnModif.style.opacity = '1'; }
+    isSaving = false;
   }
 }
 
