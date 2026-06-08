@@ -463,14 +463,20 @@ function closeLightbox() {
 
 function showTab(tab) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelector(`[id="tab-btn-${tab}"]`).classList.add('active');
+  document.getElementById('tab-btn-' + tab).classList.add('active');
   document.getElementById('tab-nouveau').style.display = tab === 'nouveau' ? 'block' : 'none';
   document.getElementById('tab-liste').style.display = tab === 'liste' ? 'block' : 'none';
   if (tab === 'liste') {
-    // Masquer le document en cours
     document.getElementById('doc-result').classList.remove('visible');
     document.getElementById('form-section').style.display = 'none';
     chargerListe();
+  }
+  if (tab === 'nouveau') {
+    // Si pas de doc en cours, montrer le formulaire
+    if (!document.getElementById('doc-result').classList.contains('visible')) {
+      document.getElementById('form-section').style.display = 'block';
+      document.getElementById('loading').classList.remove('visible');
+    }
   }
 }
 
