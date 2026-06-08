@@ -673,7 +673,21 @@ async function ouvrirDoc(id) {
     document.getElementById('doc-result').classList.add('visible');
     // Restaurer contenu (sans images corrompues) puis réinjecter photos
     let contenu = data.contenu || '';
+    // Restaurer le contenu dans doc-frame
     document.getElementById('doc-frame').innerHTML = contenu;
+    // Si doc-content absent du contenu restauré, le recréer
+    if (!document.getElementById('doc-content')) {
+      const dc = document.createElement('div');
+      dc.id = 'doc-content';
+      dc.style.padding = '4px 0';
+      document.getElementById('doc-frame').appendChild(dc);
+    }
+    // Restaurer attributs pour pied de page PDF
+    const dc = document.getElementById('doc-content');
+    if (dc) {
+      dc.setAttribute('data-chantier', currentChantier);
+      dc.setAttribute('data-date', new Date().toLocaleDateString('fr-FR'));
+    }
     afficherPhotosDoc();
     const msg = document.getElementById('save-msg');
     msg.innerHTML = '<span style="color:var(--lav2)">📄 Document chargé</span>';
