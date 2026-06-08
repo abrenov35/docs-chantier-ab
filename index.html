@@ -384,10 +384,12 @@ function afficherDoc(text) {
     if (trimmed === '·' || trimmed === '•' || trimmed === '-') continue;
     if (trimmed.match(/^(AB Renov|AB RENOV|Société)/i)) continue;
     if (trimmed.match(/^(Chantier\/Client|Chantier|Opérateur|Lieu|Client|Rédacteur)\s*[:/]/i)) continue;
-    // Filtrer tout titre qui répète le type de document
+    // Filtrer titres répétés et lignes parasites
     const cleanLine = trimmed.toLowerCase().replace(/[*#:\-_]/g,'').trim();
-    const docTitles = ['compte rendu de chantier','compte rendu chantier','fiche chantier','fiche de chantier','procès verbal de réception','proces verbal de reception','pvr','fch','crch'];
-    if (docTitles.some(t => cleanLine === t || cleanLine === t.toUpperCase())) continue;
+    const docTitles = ['compte rendu de chantier','compte rendu chantier','fiche chantier','fiche de chantier','procès verbal de réception','proces verbal de reception','pvr','fch','crch','première section','premier section','informations générales','informations generales','localisation et identification','identification'];
+    if (docTitles.some(t => cleanLine === t)) continue;
+    // Filtrer lignes "Chantier : X" et "Opérateur : X"
+    if (trimmed.match(/^(Chantier|Opérateur|Entreprise|Lieu|Client|Rédacteur|Date)\s*:/i)) continue;
 
     // Titre principal (# ou ## en début)
     if (line.match(/^# /)) {
