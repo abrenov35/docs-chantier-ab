@@ -229,6 +229,14 @@ textarea { resize: vertical; min-height: 90px; }
         <div class="section-label">Modifier / Compléter</div>
         <textarea id="modif-input" placeholder="Ex: Ajoute une réserve sur la peinture du couloir…" style="min-height:60px;background:#EDE9F4;border-color:var(--lav)"></textarea>
         <button class="btn-modif" onclick="modifier()">✏️ Modifier le document</button>
+        <div class="section-label" style="margin-top:14px">Pièces jointes</div>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <button class="btn-file btn-photo" onclick="document.getElementById('modif-photo-input').click()">📷 Photos</button>
+          <button class="btn-file btn-doc" onclick="document.getElementById('modif-doc-input').click()">📎 Documents</button>
+        </div>
+        <input type="file" id="modif-photo-input" accept="image/*" multiple capture="environment" style="display:none" onchange="ajouterFichiersModif(this.files)">
+        <input type="file" id="modif-doc-input" accept=".pdf,.doc,.docx" multiple style="display:none" onchange="ajouterFichiersModif(this.files)">
+        <div id="modif-files-list" style="display:flex;flex-wrap:wrap;gap:6px;min-height:0"></div>
       </div>
     </div>
 
@@ -273,9 +281,28 @@ function handleFiles(input) {
 }
 function removeFile(i) { currentFiles.splice(i, 1); renderFilesList(); }
 function renderFilesList() {
-  document.getElementById('files-list').innerHTML = currentFiles.map((f,i) =>
+  const tags = currentFiles.map((f,i) =>
     `<div class="file-tag">📄 ${f.name} <button onclick="removeFile(${i})">✕</button></div>`
   ).join('');
+  const el = document.getElementById('files-list');
+  if (el) el.innerHTML = tags;
+  const el2 = document.getElementById('modif-files-list');
+  if (el2) el2.innerHTML = tags;
+}
+function ajouterFichiersModif(files) {
+  Array.from(files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      currentFiles.push({ name: file.name, type: file.type, data: e.target.result.split(',')[1] });
+      renderFilesList();
+      const photos = currentFiles.filter(f => f.type && f.type.startsWith('image/'));
+      const ps = document.getElementById('doc-photos-section');
+      if (ps) ps.innerHTML = photos.map((f,i) =>
+        `<img class="doc-photo" src="data:${f.type};base64,${f.data}" onclick="openLightbox(${i})">`
+      ).join('');
+    };
+    reader.readAsDataURL(file);
+  });
 }
 
 // ── PROGRESS ──────────────────────────────────────
@@ -421,7 +448,7 @@ function afficherDoc(text) {
   // Photos
   const photos = currentFiles.filter(f => f.type && f.type.startsWith('image/'));
   if (photos.length > 0) {
-    html += `<div class="photo-section-title">📷 Photos du chantier</div><div class="doc-photos">`;
+    html += `<div class="photo-section-title">📷 Photos du chantier</div><div class="doc-photos" id="doc-photos-section">`;
     photos.forEach((f,i) => {
       html += `<img class="doc-photo" src="data:${f.type};base64,${f.data}" onclick="openLightbox(${i})">`;
     });
