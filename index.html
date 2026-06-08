@@ -302,20 +302,23 @@ function ajouterFichiersModif(files) {
   const existingPhotos = currentFiles.filter(f => f.type && f.type.startsWith('image/')).length;
   const newPhotos = Array.from(files).filter(f => f.type.startsWith('image/')).length;
   if (existingPhotos + newPhotos > 6) { alert('Maximum 6 photos.'); return; }
+  setSavingUI(true, '📥 Chargement photo…');
+  let pending = Array.from(files).length;
+  const done = () => { pending--; if (pending === 0 && currentDocId) sauvegarderAuto(); };
   Array.from(files).forEach(file => {
     if (file.type.startsWith('image/')) {
       compressImage(file, c => {
         currentFiles.push(c);
         renderFilesList();
         afficherPhotosDoc();
-        if (currentDocId) sauvegarderAuto();
+        done();
       });
     } else {
       const r = new FileReader();
       r.onload = e => {
         currentFiles.push({ name: file.name, type: file.type, data: e.target.result.split(',')[1] });
         renderFilesList();
-        if (currentDocId) sauvegarderAuto();
+        done();
       };
       r.readAsDataURL(file);
     }
@@ -512,12 +515,26 @@ function afficherDoc(text) {
   afficherPhotosDoc();
 }
 
+// ── UI sauvegarde ────────────────────────────────
+function setSavingUI(saving, label) {
+  const msg = document.getElementById('save-msg');
+  const btnPhoto = document.getElementById('modif-photo-input');
+  const btnDoc   = document.getElementById('modif-doc-input');
+  const btnModif = document.querySelector('.btn-modif');
+  if (saving) {
+    isSaving = true;
+    msg.innerHTML = `<span class="save-pendule">🕰️</span> ${label || 'Sauvegarde…'}`;
+    if (btnModif) { btnModif.disabled = true; btnModif.style.opacity = '0.5'; }
+  } else {
+    if (btnModif) { btnModif.disabled = false; btnModif.style.opacity = '1'; }
+  }
+}
+
 // ── Sauvegarde auto ──────────────────────────────
 async function sauvegarderAuto() {
   if (!currentChantier) return; // sécurité : ne pas sauvegarder si données vides
   const msg = document.getElementById('save-msg');
-  isSaving = true;
-  msg.innerHTML = '<span class="save-pendule">🕰️</span> Sauvegarde…';
+  setSavingUI(true, 'Sauvegarde…');
 
   // Contenu HTML sans les images base64 (stockées séparément dans files)
   const clone = document.getElementById('doc-frame').cloneNode(true);
@@ -559,7 +576,9 @@ async function sauvegarderAuto() {
   }
   msg.innerHTML = '<span class="save-ok">✅ Sauvegardé</span>';
   isSaving = false;
+  setSavingUI(false);
   setTimeout(() => {
+    const msg = document.getElementById('save-msg');
     msg.innerHTML = currentDocId ? '<span style="color:#aaa;font-size:10px">✓ Sauvegardé</span>' : '';
   }, 4000);
 }
