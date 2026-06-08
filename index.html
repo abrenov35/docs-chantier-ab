@@ -811,8 +811,7 @@ async function chargerListe() {
         <div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.chantier||'—'} <span style="font-weight:400;color:var(--muted)">· ${d.operateur||''}</span></div>
         <div style="color:var(--muted);font-size:12px">${(d.date||'').slice(0,10).split('-').reverse().join('/')}</div>
         <div class="doc-list-actions">
-          <button title="Ouvrir" onclick="ouvrirDoc('${d.id}')">👁</button>
-          <button title="Modifier" onclick="ouvrirDoc('${d.id}')">✏️</button>
+          <button title="Ouvrir / Modifier" onclick="ouvrirDoc('${d.id}')">✏️</button>
           <button class="btn-delete" title="Supprimer" onclick="supprimerDoc('${d.id}')">🗑</button>
         </div>
       </div>`).join('')}
