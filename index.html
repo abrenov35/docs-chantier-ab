@@ -383,7 +383,11 @@ function afficherDoc(text) {
     if (trimmed.match(/^(WhatsApp Image|IMG_|DSC)/i)) continue;
     if (trimmed.match(/^---+$/)) continue;
     if (SKIP_EXACT.has(clean)) continue;
-    if (SKIP_START.test(trimmed.replace(/\*\*/g,''))) continue;
+    // Filtre "Chantier : X", "**Chantier :** X", etc. — toute ligne info redondante
+    const stripped = trimmed.replace(/\*\*/g,'').trim();
+    if (SKIP_START.test(stripped)) continue;
+    // Filtre générique : "Mot(s) : valeur" sur une seule ligne hors section (ex: "Chantier : Lucas")
+    if (!inSection && /^[A-ZÀ-Ÿa-zà-ÿ\s]{2,30}\s*:\s*.+$/.test(stripped) && !stripped.match(/^#{1,3} /)) continue;
 
     // Titre section ## ou **TITRE**
     if (line.match(/^## /) || (trimmed.match(/^\*\*[^*]+\*\*$/) && trimmed.length < 80)) {
