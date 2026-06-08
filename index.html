@@ -365,7 +365,7 @@ function afficherDoc(text) {
 
   // Lignes à filtrer
   const SKIP_EXACT = new Set(['compte rendu de chantier','compte rendu chantier','fiche chantier','fiche de chantier','procès-verbal de réception','procès verbal de réception','proces verbal de reception','pvr','fch','crch','première section','premier section','informations générales','informations generales','localisation et identification','identification','en-tête','entete']);
-  const SKIP_START = /^(chantier|opérateur|operateur|entreprise|lieu|client|rédacteur|redacteur|date|société|societe)\s*[:/]/i;
+  const SKIP_START = /^(chantier|opérateur|operateur|entreprise|lieu|client|rédacteur|redacteur|date|société|societe)\b\s*[:/]/i;
 
   const lines = text.split('\n');
   let inSection = false;
@@ -383,7 +383,7 @@ function afficherDoc(text) {
     if (trimmed.match(/^(WhatsApp Image|IMG_|DSC)/i)) continue;
     if (trimmed.match(/^---+$/)) continue;
     if (SKIP_EXACT.has(clean)) continue;
-    if (SKIP_START.test(trimmed)) continue;
+    if (SKIP_START.test(trimmed.replace(/\*\*/g,''))) continue;
 
     // Titre section ## ou **TITRE**
     if (line.match(/^## /) || (trimmed.match(/^\*\*[^*]+\*\*$/) && trimmed.length < 80)) {
