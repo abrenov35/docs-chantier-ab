@@ -23,7 +23,17 @@ html, body { min-height: 100%; background: var(--beige); font-family: 'Segoe UI'
 .logo-sub { font-size: 9px; color: var(--lav); letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
 .header-band { height: 3px; background: linear-gradient(90deg, var(--lav), var(--lav2), var(--navy)); }
 
-.main { max-width: 640px; margin: 0 auto; padding: 20px 16px 40px; }
+.main { max-width: 640px; margin: 0 auto; padding: 0 16px 40px; }
+.tabs { display: flex; gap: 0; margin-bottom: 20px; border-bottom: 2px solid var(--navy); padding-top: 14px; }
+.tab-btn { flex: 1; padding: 10px 6px; background: none; border: none; font-size: 13px; font-weight: 700; color: var(--muted); cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+.tab-btn.active { color: var(--navy); border-bottom-color: var(--navy); }
+.doc-list-item { background: var(--white); border-radius: 8px; padding: 12px 14px; margin-bottom: 8px; cursor: pointer; border: 1.5px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.doc-list-item:hover { border-color: var(--navy); }
+.doc-list-meta { font-size: 11px; color: var(--muted); margin-top: 3px; }
+.doc-list-title { font-weight: 700; font-size: 14px; color: var(--navy); }
+.doc-list-type { font-size: 10px; font-weight: 800; background: var(--navy); color: white; border-radius: 4px; padding: 2px 7px; }
+.btn-delete { background: none; border: none; color: #cc4444; font-size: 18px; cursor: pointer; padding: 0 4px; }
+.empty-state { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 14px; }
 .section-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; }
 
 .type-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px; }
@@ -142,6 +152,12 @@ textarea { resize: vertical; min-height: 90px; }
 
 <div class="main">
 
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showTab('nouveau')">✏️ Nouveau</button>
+    <button class="tab-btn" onclick="showTab('liste')">📂 Mes documents</button>
+  </div>
+
+  <div id="tab-nouveau">
   <div id="form-section">
     <div class="section-label">Type de document</div>
     <div class="type-grid">
@@ -182,6 +198,12 @@ textarea { resize: vertical; min-height: 90px; }
     <button class="btn-generate" onclick="generer()">⚡ Générer le document</button>
   </div>
 
+  </div><!-- fin tab-nouveau -->
+
+  <div id="tab-liste" style="display:none">
+    <div id="docs-list-container"><div class="empty-state">Chargement…</div></div>
+  </div>
+
   <div id="loading">
     <div class="spinner"></div>
     <div style="display:flex;align-items:center;gap:8px;margin:12px 0 4px">
@@ -194,8 +216,10 @@ textarea { resize: vertical; min-height: 90px; }
   <div id="doc-result">
     <div class="actions">
       <button class="btn-action btn-reset" onclick="resetForm()">← Retour</button>
+      <button class="btn-action" style="background:var(--lav);color:white" onclick="sauvegarder()">💾 Sauvegarder</button>
       <button class="btn-action btn-print" onclick="imprimerDoc()">🖨️ Imprimer</button>
     </div>
+    <div id="save-msg" style="text-align:center;font-size:12px;color:var(--lav2);min-height:16px;margin-bottom:6px"></div>
     <div id="doc-frame">
     <div id="doc-content"></div>
     </div>
@@ -215,7 +239,7 @@ textarea { resize: vertical; min-height: 90px; }
 </div>
 
 <script>
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbxkxZ71UhLWUsq7DK5utewVbTcJGirALgQElAu9BgPOf7SwhTqwYsiM4w6vJemNc5ulmQ/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbys2aZhzFPt6Unow3w1JC0GLoYSfwKbIePTehxb--_PIpLFFE096G43_ja1cy8CquV6/exec';
 
 let selectedType = 'CRCh';
 let conversationHistory = [];
@@ -435,12 +459,97 @@ function closeLightbox() {
   document.getElementById('lightbox').classList.remove('open');
 }
 
+function showTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.tab-btn[onclick="showTab('${tab}')"]`).classList.add('active');
+  document.getElementById('tab-nouveau').style.display = tab === 'nouveau' ? 'block' : 'none';
+  document.getElementById('tab-liste').style.display = tab === 'liste' ? 'block' : 'none';
+  if (tab === 'liste') chargerListe();
+}
+
+let currentDocId = null;
+
+async function sauvegarder() {
+  const msg = document.getElementById('save-msg');
+  msg.textContent = 'Sauvegarde…';
+  const contenu = document.getElementById('doc-content').innerHTML;
+  const chantier = document.getElementById('chantier').value.trim();
+  const operateur = document.getElementById('operateur').value.trim();
+  const today = new Date().toISOString().slice(0,10);
+  try {
+    const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({
+      action: currentDocId ? 'update' : 'save',
+      id: currentDocId,
+      type: selectedType, chantier, operateur, date: today,
+      contenu, history: conversationHistory
+    })});
+    const data = await res.json();
+    if (data.ok) {
+      currentDocId = data.id || currentDocId;
+      msg.textContent = '✅ Sauvegardé';
+      setTimeout(() => msg.textContent = '', 2000);
+    }
+  } catch(e) { msg.textContent = 'Erreur sauvegarde'; }
+}
+
+async function chargerListe() {
+  const container = document.getElementById('docs-list-container');
+  container.innerHTML = '<div class="empty-state">Chargement…</div>';
+  try {
+    const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'list' }) });
+    const data = await res.json();
+    if (!data.docs || data.docs.length === 0) {
+      container.innerHTML = '<div class="empty-state">Aucun document sauvegardé</div>';
+      return;
+    }
+    const typeLabels = { CRCh: 'CR Chantier', FCh: 'Fiche Chantier', PVR: 'PV Réception' };
+    container.innerHTML = data.docs.map(d => `
+      <div class="doc-list-item" onclick="ouvrirDoc('${d.id}')">
+        <div>
+          <div class="doc-list-title">${d.chantier || '—'} <span style="font-weight:400;color:var(--muted)">· ${d.operateur || ''}</span></div>
+          <div class="doc-list-meta">${typeLabels[d.type] || d.type} · ${d.date || ''}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="doc-list-type">${d.type}</span>
+          <button class="btn-delete" onclick="event.stopPropagation();supprimerDoc('${d.id}')">🗑</button>
+        </div>
+      </div>`).join('');
+  } catch(e) { container.innerHTML = '<div class="empty-state">Erreur de chargement</div>'; }
+}
+
+async function ouvrirDoc(id) {
+  const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get', id }) });
+  const data = await res.json();
+  if (!data.ok) return;
+  currentDocId = data.id;
+  selectedType = data.type;
+  document.getElementById('chantier').value = data.chantier || '';
+  document.getElementById('operateur').value = data.operateur || '';
+  conversationHistory = data.history || [];
+  showTab('nouveau');
+  document.getElementById('form-section').style.display = 'none';
+  afficherDoc(data.contenu);
+  document.getElementById('doc-content').innerHTML = data.contenu;
+  document.getElementById('doc-result').classList.add('visible');
+  document.getElementById('save-msg').textContent = '📄 Document chargé';
+  setTimeout(() => document.getElementById('save-msg').textContent = '', 2000);
+}
+
+async function supprimerDoc(id) {
+  if (!confirm('Supprimer ce document ?')) return;
+  await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', id }) });
+  chargerListe();
+}
+
 function resetForm() {
   document.getElementById('form-section').style.display = 'block';
   document.getElementById('doc-result').classList.remove('visible');
   document.getElementById('loading').classList.remove('visible');
   document.getElementById('modif-input').value = '';
   conversationHistory = [];
+  currentDocId = null;
+  currentFiles = [];
+  renderFilesList();
 }
 
 function imprimerDoc() {
