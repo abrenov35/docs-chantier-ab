@@ -488,7 +488,7 @@ async function sauvegarder() {
   const t = setInterval(() => { secs++; msg.textContent = '💾 Sauvegarde... ' + secs + 's'; }, 1000);
   const chantier = document.getElementById('chantier').value.trim();
   const operateur = document.getElementById('operateur').value.trim();
-  const contenu = document.getElementById('doc-content').innerHTML;
+  const contenu = document.getElementById('doc-frame').innerHTML;
   const date = new Date().toISOString().slice(0,10);
   try {
     const data = await callGAS({ action: currentDocId ? 'update' : 'save', id: currentDocId, type: selectedType, chantier, operateur, date, contenu, history: conversationHistory });
@@ -601,7 +601,7 @@ async function ouvrirDoc(id) {
   document.getElementById('form-section').style.display = 'none';
   document.getElementById('doc-result').style.display = '';
   document.getElementById('doc-result').classList.add('visible');
-  document.getElementById('doc-content').innerHTML = data.contenu;
+  document.getElementById('doc-frame').innerHTML = data.contenu;
   const msg = document.getElementById('save-msg');
   msg.textContent = '📄 Document chargé';
   setTimeout(() => msg.textContent = '', 2000);
