@@ -75,7 +75,11 @@ textarea { resize: vertical; min-height: 90px; }
 .btn-retour { background: var(--white); color: var(--navy); border: 2px solid var(--border) !important; }
 .btn-save { background: var(--lav); color: white; }
 .btn-print { background: var(--navy); color: white; }
-#save-msg { text-align: center; font-size: 12px; color: var(--lav2); min-height: 18px; margin-bottom: 6px; font-weight: 600; }
+#save-msg { text-align: center; font-size: 12px; color: var(--lav2); min-height: 18px; margin-bottom: 6px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; }
+.save-pendule { display: inline-block; animation: pendule 0.6s ease-in-out infinite alternate; transform-origin: top center; }
+@keyframes pendule { from { transform: rotate(-25deg); } to { transform: rotate(25deg); } }
+.save-ok { color: #3aaa6e; }
+.save-err { color: #e05050; }
 
 /* CADRE DOCUMENT */
 #doc-frame { border: 2.5px solid var(--navy); border-radius: 6px; overflow: hidden; margin-bottom: 14px; background: white; }
@@ -499,18 +503,18 @@ async function sauvegarderAuto() {
   // Sauvegarder aussi les fichiers base64 pour persistance photos
   const filesData = currentFiles.map(f => ({ name: f.name, type: f.type, data: f.data }));
   try {
-    msg.textContent = '💾 Sauvegarde…';
+    msg.innerHTML = '<span class="save-pendule">🕰️</span><span>Sauvegarde…</span>';
     const data = await callGAS({ action: currentDocId ? 'update' : 'save', id: currentDocId, type: selectedType, chantier, operateur, date, contenu, files: filesData, history: conversationHistory });
     if (data.ok) {
       currentDocId = data.id || currentDocId;
-      msg.textContent = '✅ Sauvegardé';
+      msg.innerHTML = '<span class="save-ok">✅ Sauvegardé</span>';
     } else {
-      msg.textContent = '⚠️ ' + (data.error || 'Erreur');
+      msg.innerHTML = '<span class="save-err">⚠️ ' + (data.error || 'Erreur') + '</span>';
     }
   } catch(e) {
-    msg.textContent = '⚠️ ' + e.message;
+    msg.innerHTML = '<span class="save-err">⚠️ ' + e.message + '</span>';
   }
-  setTimeout(() => msg.textContent = '', 2500);
+  setTimeout(() => msg.innerHTML = '', 2500);
 }
 
 // ── RESET ────────────────────────────────────────
