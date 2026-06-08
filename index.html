@@ -472,11 +472,18 @@ function showTab(tab) {
     chargerListe();
   }
   if (tab === 'nouveau') {
-    // Si pas de doc en cours, montrer le formulaire
-    if (!document.getElementById('doc-result').classList.contains('visible')) {
-      document.getElementById('form-section').style.display = 'block';
-      document.getElementById('loading').classList.remove('visible');
-    }
+    // Toujours reset vers formulaire vide
+    document.getElementById('chantier').value = '';
+    document.getElementById('operateur').value = '';
+    document.getElementById('observations').value = '';
+    document.getElementById('reserves').value = '';
+    document.getElementById('doc-result').classList.remove('visible');
+    document.getElementById('loading').classList.remove('visible');
+    document.getElementById('form-section').style.display = 'block';
+    currentDocId = null;
+    currentFiles = [];
+    conversationHistory = [];
+    renderFilesList();
   }
 }
 
