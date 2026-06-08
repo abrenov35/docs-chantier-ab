@@ -685,7 +685,15 @@ async function sauvegarderAuto() {
   // Utiliser les variables globales — indépendant du DOM
   const chantier = currentChantier || document.getElementById('chantier').value.trim();
   const operateur = currentOperateur || document.getElementById('operateur').value.trim();
-  const contenu = document.getElementById('doc-frame').innerHTML;
+  // Nettoyer les images base64 du contenu avant sauvegarde (trop lourdes pour Sheets)
+  // Les photos sont sauvegardées séparément dans files
+  const docFrameClone = document.getElementById('doc-frame').cloneNode(true);
+  docFrameClone.querySelectorAll('img.doc-photo').forEach(img => img.remove());
+  const photoSection = docFrameClone.querySelector('.photo-section-title');
+  if (photoSection) photoSection.remove();
+  const photoDiv = docFrameClone.querySelector('#doc-photos-section');
+  if (photoDiv) photoDiv.remove();
+  const contenu = docFrameClone.innerHTML;
   const date = new Date().toISOString().slice(0,10);
   // Purger les images base64 de l'historique pour alléger le payload
   const historyClean = cleanHistory(conversationHistory);
@@ -840,7 +848,26 @@ async function ouvrirDoc(id) {
   document.getElementById('form-section').style.display = 'none';
   document.getElementById('doc-result').style.display = '';
   document.getElementById('doc-result').classList.add('visible');
-  document.getElementById('doc-frame').innerHTML = data.contenu;
+  // Restaurer le contenu HTML (sans les photos — elles peuvent être tronquées par Sheets)
+  // On nettoie les éventuelles sections photos corrompues du contenu sauvegardé
+  let contenuPropre = data.contenu || '';
+  // Supprimer l'ancienne section photos du HTML sauvegardé (on va la reconstruire)
+  contenuPropre = contenuPropre.replace(/<div class="photo-section-title">[\s\S]*$/i, '');
+  document.getElementById('doc-frame').innerHTML = contenuPropre;
+
+  // Re-injecter les photos depuis currentFiles (source fiable)
+  const photos = currentFiles.filter(f => f.type && f.type.startsWith('image/'));
+  if (photos.length > 0) {
+    const docContent = document.getElementById('doc-content');
+    if (docContent) {
+      const photoHtml = `<div class="photo-section-title">📷 Photos du chantier</div>
+        <div class="doc-photos" id="doc-photos-section">
+          ${photos.map((f,i) => `<img class="doc-photo" src="data:${f.type};base64,${f.data}" onclick="openLightbox(${i})">`).join('')}
+        </div>`;
+      docContent.insertAdjacentHTML('beforeend', photoHtml);
+    }
+  }
+
   const msg = document.getElementById('save-msg');
   msg.innerHTML = '<span style="color:var(--lav2)">📄 Document chargé</span>';
   setTimeout(() => msg.innerHTML = '', 2000);
