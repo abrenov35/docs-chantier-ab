@@ -264,6 +264,15 @@ let conversationHistory = [];
 let currentFiles = [];
 let currentDocId = null;
 let progressTimer = null;
+let isSaving = false;
+
+// Bloquer navigation si sauvegarde en cours
+window.addEventListener('beforeunload', e => {
+  if (isSaving) {
+    e.preventDefault();
+    e.returnValue = 'Sauvegarde en cours, attendez avant de quitter.';
+  }
+});
 
 // ── TYPE ──────────────────────────────────────────
 function selectType(el) {
@@ -502,6 +511,7 @@ async function sauvegarderAuto() {
   const date = new Date().toISOString().slice(0,10);
   // Sauvegarder aussi les fichiers base64 pour persistance photos
   const filesData = currentFiles.map(f => ({ name: f.name, type: f.type, data: f.data }));
+  isSaving = true;
   try {
     msg.innerHTML = '<span class="save-pendule">🕰️</span><span>Sauvegarde…</span>';
     const data = await callGAS({ action: currentDocId ? 'update' : 'save', id: currentDocId, type: selectedType, chantier, operateur, date, contenu, files: filesData, history: conversationHistory });
@@ -514,6 +524,7 @@ async function sauvegarderAuto() {
   } catch(e) {
     msg.innerHTML = '<span class="save-err">⚠️ ' + e.message + '</span>';
   }
+  isSaving = false;
   setTimeout(() => msg.innerHTML = '', 2500);
 }
 
