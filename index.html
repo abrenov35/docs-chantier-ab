@@ -515,11 +515,20 @@ function stopProgress() {
 
 // ── Appel GAS ────────────────────────────────────
 async function callGAS(payload) {
-  const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
-  if (!res.ok) throw new Error('HTTP ' + res.status);
-  const data = await res.json();
-  if (data.ok === false) throw new Error(data.error || 'Erreur GAS');
-  return data;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 25000);
+  try {
+    const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload), signal: controller.signal });
+    clearTimeout(timeout);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (data.ok === false) throw new Error(data.error || 'Erreur GAS');
+    return data;
+  } catch(e) {
+    clearTimeout(timeout);
+    if (e.name === 'AbortError') throw new Error('Timeout — réessaie');
+    throw e;
+  }
 }
 
 // Purger images base64 de l'historique (trop lourd pour GAS)
