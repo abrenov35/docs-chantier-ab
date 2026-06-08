@@ -130,7 +130,7 @@ textarea { resize: vertical; min-height: 90px; }
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
   html, body { background: white !important; }
   .header, .tabs, .actions, .modif-zone, #form-section, #loading, #save-msg, #tab-liste { display: none !important; }
-  #doc-result { display: block !important; }
+  #doc-result { display: block !important; visibility: visible !important; }
   #doc-frame { border: 2px solid #162D49 !important; border-radius: 0 !important; overflow: hidden !important; }
   .doc-type-header { background: #162D49 !important; }
   .doc-section { box-shadow: none !important; break-inside: avoid !important; }
@@ -269,6 +269,14 @@ function selectType(el) {
 
 // ── FICHIERS ──────────────────────────────────────
 function handleFiles(input) {
+  // Limite : 6 photos maximum
+  const photos = currentFiles.filter(f => f.type && f.type.startsWith('image/'));
+  const newPhotos = Array.from(input.files).filter(f => f.type.startsWith('image/'));
+  if (photos.length + newPhotos.length > 6) {
+    alert('Maximum 6 photos autorisées.');
+    input.value = '';
+    return;
+  }
   Array.from(input.files).forEach(file => {
     const reader = new FileReader();
     reader.onload = e => {
@@ -290,6 +298,13 @@ function renderFilesList() {
   if (el2) el2.innerHTML = tags;
 }
 function ajouterFichiersModif(files) {
+  // Limite : 6 photos maximum
+  const existingPhotos = currentFiles.filter(f => f.type && f.type.startsWith('image/'));
+  const newPhotos = Array.from(files).filter(f => f.type.startsWith('image/'));
+  if (existingPhotos.length + newPhotos.length > 6) {
+    alert('Maximum 6 photos autorisées.');
+    return;
+  }
   Array.from(files).forEach(file => {
     const reader = new FileReader();
     reader.onload = e => {
@@ -465,22 +480,50 @@ function openLightbox(idx) {
 }
 function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); }
 
-// ── SAUVEGARDER ──────────────────────────────────
-async function sauvegarder() {
+// ── SAUVEGARDER — téléchargement HTML local (sans GAS) ──────────────
+function sauvegarder() {
   const msg = document.getElementById('save-msg');
-  let secs = 0;
-  msg.textContent = '💾 Sauvegarde en cours... 0s';
-  const t = setInterval(() => { secs++; msg.textContent = '💾 Sauvegarde en cours... ' + secs + 's'; }, 1000);
-  const chantier = document.getElementById('chantier').value.trim();
-  const operateur = document.getElementById('operateur').value.trim();
-  const contenu = document.getElementById('doc-content').innerHTML;
-  const date = new Date().toISOString().slice(0,10);
   try {
-    const data = await callGAS({ action: currentDocId ? 'update' : 'save', id: currentDocId, type: selectedType, chantier, operateur, date, contenu, history: conversationHistory });
-    clearInterval(t);
-    if (data.ok) { currentDocId = data.id || currentDocId; msg.textContent = '✅ Sauvegardé !'; }
-    else msg.textContent = '❌ Erreur : ' + (data.error || '');
-  } catch(e) { clearInterval(t); msg.textContent = '❌ ' + e.message; }
+    const chantier = (document.getElementById('chantier').value.trim() || 'document').replace(/[^a-zA-Z0-9À-ÿ_-]/g, '_');
+    const operateur = (document.getElementById('operateur').value.trim() || '').replace(/[^a-zA-Z0-9À-ÿ_-]/g, '_');
+    const date = new Date().toISOString().slice(0,10);
+    const typeShort = (TYPE_SHORT[selectedType] || selectedType).replace(/\s/g, '_');
+    // Nom de fichier : TYPE-Chantier-Operateur-date.html
+    const filename = [typeShort, chantier, operateur, date].filter(Boolean).join('-') + '.html';
+    // Contenu HTML autonome avec styles embarqués
+    const docHtml = document.getElementById('doc-frame').outerHTML;
+    const blob = new Blob([`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
+<title>${filename}</title>
+<style>
+body{font-family:'Segoe UI',sans-serif;margin:20px;background:#F3EAE2;}
+#doc-frame{border:2px solid #162D49;border-radius:6px;overflow:hidden;background:white;max-width:700px;margin:0 auto;}
+.doc-type-header{background:#162D49;padding:10px 16px;}
+.type-full{color:white;font-weight:800;font-size:14px;letter-spacing:1px;font-family:'Century Gothic','Futura',sans-serif;text-transform:uppercase;}
+.doc-info-bar{background:#EEF4FA;padding:7px 16px;display:flex;gap:16px;flex-wrap:wrap;}
+.doc-info-item{font-size:12px;color:#162D49;font-weight:700;}
+.doc-info-item span{font-weight:400;}
+.doc-section{background:white;padding:0;margin:8px 0;box-shadow:0 1px 4px rgba(22,45,73,.1);}
+.doc-section-title{font-weight:800;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:white;background:#162D49;padding:7px 16px;}
+.doc-subsection-title{font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:#162D49;background:#DDD7EC;padding:5px 16px;border-left:3px solid #7B6BA8;}
+.doc-section-body{padding:8px 16px 10px;}
+.doc-text,.doc-text-plain{font-size:13px;line-height:1.6;color:#162D49;margin:3px 0;}
+.doc-text-plain{padding:0 16px;}
+.doc-bullet{font-size:13px;line-height:1.6;color:#162D49;padding-left:28px;position:relative;margin:2px 0;}
+.doc-bullet::before{content:"▸";position:absolute;left:16px;color:#7B6BA8;font-size:11px;top:2px;}
+.doc-photos{display:flex;flex-wrap:wrap;gap:8px;padding:10px 16px 12px;}
+.doc-photo{width:calc(33% - 6px);aspect-ratio:4/3;object-fit:cover;border-radius:4px;}
+.photo-section-title{background:#162D49;padding:7px 16px;font-weight:800;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:white;margin-top:8px;}
+#doc-content{padding:4px 0;}
+</style></head><body>${docHtml}</body></html>`], { type: 'text/html;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    msg.textContent = '✅ Téléchargé !';
+  } catch(e) {
+    msg.textContent = '❌ ' + e.message;
+  }
   setTimeout(() => msg.textContent = '', 3000);
 }
 
