@@ -259,7 +259,7 @@ function compressImage(file, callback) {
   const img = new Image();
   const url = URL.createObjectURL(file);
   img.onload = () => {
-    const MAX = 800;
+    const MAX = 600;
     let w = img.width, h = img.height;
     if (w > MAX || h > MAX) {
       if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
@@ -268,7 +268,7 @@ function compressImage(file, callback) {
     const canvas = document.createElement('canvas');
     canvas.width = w; canvas.height = h;
     canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-    const data = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
+    const data = canvas.toDataURL('image/jpeg', 0.55).split(',')[1];
     URL.revokeObjectURL(url);
     callback({ name: file.name.split('.')[0] + '.jpg', type: 'image/jpeg', data });
   };
@@ -523,8 +523,7 @@ async function sauvegarderAuto() {
   clone.querySelectorAll('.photo-section-title, .doc-photos').forEach(el => el.remove());
   const contenu = clone.innerHTML;
 
-  const filesData = currentFiles.map(f => ({ name: f.name, type: f.type, data: f.data }));
-
+  // Étape 1 : sauvegarder texte + history (sans photos)
   try {
     const data = await callGAS({
       action:    currentDocId ? 'update' : 'save',
@@ -534,15 +533,29 @@ async function sauvegarderAuto() {
       operateur: currentOperateur,
       date:      new Date().toISOString().slice(0,10),
       contenu,
-      files:     filesData,
+      files:     [], // photos envoyées séparément
       history:   cleanHistory(conversationHistory)
     });
     currentDocId = data.id || currentDocId;
-    msg.innerHTML = '<span class="save-ok">✅ Sauvegardé</span>';
   } catch(e) {
     msg.innerHTML = '<span class="save-err">⚠️ ' + e.message + '</span>';
-    console.error('sauvegarderAuto:', e);
+    console.error('sauvegarderAuto step1:', e);
+    isSaving = false;
+    setTimeout(() => { msg.innerHTML = currentDocId ? '<span style="color:#aaa;font-size:10px">✓ Sauvegardé</span>' : ''; }, 4000);
+    return;
   }
+
+  // Étape 2 : sauvegarder photos séparément (payload réduit)
+  const filesData = currentFiles.map(f => ({ name: f.name, type: f.type, data: f.data }));
+  if (filesData.length > 0) {
+    try {
+      await callGAS({ action: 'update_files', id: currentDocId, files: filesData });
+    } catch(e) {
+      console.error('sauvegarderAuto step2 photos:', e);
+      // Ne pas bloquer — le texte est sauvegardé
+    }
+  }
+  msg.innerHTML = '<span class="save-ok">✅ Sauvegardé</span>';
   isSaving = false;
   setTimeout(() => {
     msg.innerHTML = currentDocId ? '<span style="color:#aaa;font-size:10px">✓ Sauvegardé</span>' : '';
