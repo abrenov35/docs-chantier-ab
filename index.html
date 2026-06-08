@@ -123,9 +123,10 @@ textarea { resize: vertical; min-height: 90px; }
 .doc-list-item:last-child { border-bottom: none; }
 .doc-list-item:hover { background: var(--blue-light); }
 .doc-type-badge { font-size: 9px; font-weight: 800; background: var(--navy); color: white; border-radius: 3px; padding: 2px 6px; display: inline-block; white-space: nowrap; }
-.doc-list-actions { display: flex; gap: 2px; justify-content: flex-end; }
-.doc-list-actions button { background: none; border: none; cursor: pointer; font-size: 16px; padding: 3px 5px; border-radius: 4px; }
+.doc-list-actions { display: flex; gap: 4px; justify-content: flex-end; align-items: center; }
+.doc-list-actions button { background: none; border: none; cursor: pointer; font-size: 18px; padding: 6px 8px; border-radius: 6px; line-height: 1; }
 .doc-list-actions button:hover { background: var(--border); }
+.doc-list-actions .btn-delete { margin-left: 6px; color: #c0392b; }
 .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 14px; }
 
 /* IMPRESSION */
@@ -605,9 +606,8 @@ async function chargerListe() {
         <div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.chantier||'—'} <span style="font-weight:400;color:var(--muted)">· ${d.operateur||''}</span></div>
         <div style="color:var(--muted);font-size:12px">${(d.date||'').slice(0,10).split('-').reverse().join('/')}</div>
         <div class="doc-list-actions">
-          <button title="Ouvrir" onclick="ouvrirDoc('${d.id}')">👁</button>
-          <button title="Modifier" onclick="ouvrirDoc('${d.id}')">✏️</button>
-          <button title="Supprimer" onclick="supprimerDoc('${d.id}')">🗑</button>
+          <button title="Ouvrir / Modifier" onclick="ouvrirDoc('${d.id}')">👁</button>
+          <button class="btn-delete" title="Supprimer" onclick="supprimerDoc('${d.id}')">🗑</button>
         </div>
       </div>`).join('')}
     </div>`;
