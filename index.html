@@ -691,14 +691,23 @@ async function sauvegarderAuto() {
     return;
   }
 
-  // Étape 2 : sauvegarder photos séparément (payload réduit)
+  // Étape 2 : sauvegarder photos une par une pour éviter limite Sheets
+  const photos = currentFiles.filter(f => f.type && f.type.startsWith('image/'));
+  const docs   = currentFiles.filter(f => !f.type || !f.type.startsWith('image/'));
+  // Envoyer chaque photo séparément puis merger côté GAS
+  // Plus simple : envoyer toutes en une fois mais loguer l'erreur clairement
   const filesData = currentFiles.map(f => ({ name: f.name, type: f.type, data: f.data }));
   if (filesData.length > 0) {
     try {
-      await callGAS({ action: 'update_files', id: currentDocId, files: filesData });
+      const r = await callGAS({ action: 'update_files', id: currentDocId, files: filesData });
+      console.log('update_files ok:', r);
     } catch(e) {
-      console.error('sauvegarderAuto step2 photos:', e);
-      // Ne pas bloquer — le texte est sauvegardé
+      console.error('update_files ERREUR:', e.message);
+      msg.innerHTML = '<span class="save-badge save-badge-err">⚠️ Photos non sauvegardées : ' + e.message + '</span>';
+      isSaving = false;
+      setSavingUI(false);
+      setTimeout(() => { msg.innerHTML = '<span class="save-badge save-badge-idle">✓ Texte sauvegardé</span>'; }, 4000);
+      return;
     }
   }
   msg.innerHTML = '<span class="save-badge save-badge-ok">✅ Sauvegardé</span>';
