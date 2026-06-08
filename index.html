@@ -243,9 +243,7 @@ let currentOperateur = '';
 let progressTimer = null;
 let isSaving = false;
 
-window.addEventListener('beforeunload', e => {
-  if (isSaving) { e.preventDefault(); e.returnValue = ''; }
-});
+// pas de blocage beforeunload
 
 // ── Type ─────────────────────────────────────────
 function selectType(el) {
@@ -447,7 +445,7 @@ async function modifier() {
   const modif = document.getElementById('modif-input').value.trim();
   if (!modif) return;
   const btn = document.querySelector('.btn-modif');
-  btn.disabled = true; btn.textContent = '⏳ Modification…';
+  btn.textContent = '⏳ Modification…';
   try {
     const data = await callGAS({ modif, history: cleanHistory(conversationHistory) });
     conversationHistory = data.history;
@@ -455,7 +453,7 @@ async function modifier() {
     document.getElementById('modif-input').value = '';
     if (currentDocId) await sauvegarderAuto();
   } catch(e) { alert('Erreur modification : ' + e.message); }
-  finally { btn.disabled = false; btn.textContent = '✏️ Modifier le document'; }
+  finally { btn.textContent = '✏️ Modifier le document'; }
 }
 
 // ── Afficher doc ─────────────────────────────────
@@ -614,12 +612,7 @@ function imprimerDoc() {
 
 // ── Onglets ──────────────────────────────────────
 function showTab(tab) {
-  if (isSaving) {
-    const msg = document.getElementById('save-msg');
-    msg.innerHTML = '<span class="save-pendule">🕰️</span> Attendre…';
-    const wait = setInterval(() => { if (!isSaving) { clearInterval(wait); showTab(tab); } }, 300);
-    return;
-  }
+  // navigation libre même pendant sauvegarde
   document.getElementById('tab-btn-nouveau').classList.toggle('active', tab === 'nouveau');
   document.getElementById('tab-btn-liste').classList.toggle('active', tab === 'liste');
   document.getElementById('tab-nouveau').style.display = tab === 'nouveau' ? 'block' : 'none';
