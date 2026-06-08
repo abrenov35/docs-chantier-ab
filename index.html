@@ -110,30 +110,156 @@ textarea { resize: vertical; min-height: 90px; }
 .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 14px; }
 
 /* IMPRESSION */
-@page { size: A4 portrait; margin: 18mm 14mm 20mm 14mm; }
+@page {
+  size: A4 portrait;
+  margin: 15mm 12mm 18mm 12mm;
+}
 @media print {
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-  html, body { background: white !important; }
-  .header, .tabs, .actions, .modif-zone, #form-section, #loading, #save-msg, #tab-liste, .lightbox { display: none !important; }
+  html, body { background: white !important; font-family: 'Segoe UI', Arial, sans-serif !important; }
+
+  /* Masquer UI */
+  .header, .tabs, .actions, .modif-zone, #form-section,
+  #loading, #save-msg, #tab-liste, .lightbox { display: none !important; }
+
+  /* Résultat pleine page */
   #doc-result { display: block !important; visibility: visible !important; }
   .main { padding: 0 !important; max-width: 100% !important; margin: 0 !important; }
-  #doc-frame { border: none !important; border-radius: 0 !important; overflow: visible !important; box-shadow: none !important; width: 100% !important; }
-  .doc-type-header { background: #162D49 !important; padding: 14px 18px !important; display: flex !important; justify-content: space-between !important; align-items: center !important; break-after: avoid !important; }
-  .doc-type-header::after { content: 'AB RENOV 35'; color: #A495C3; font-size: 10px; font-weight: 800; letter-spacing: 2px; font-family: 'Century Gothic','Futura',Arial,sans-serif; }
-  .type-full { color: white !important; font-size: 15px !important; font-weight: 800 !important; letter-spacing: 1.5px !important; }
-  .doc-info-bar { background: #EEF4FA !important; padding: 8px 18px !important; display: flex !important; gap: 20px !important; border-bottom: 2px solid #162D49 !important; break-after: avoid !important; }
-  .doc-info-item { font-size: 11px !important; color: #162D49 !important; font-weight: 700 !important; }
+
+  /* Cadre sans bordure */
+  #doc-frame { border: none !important; border-radius: 0 !important;
+    overflow: visible !important; box-shadow: none !important; width: 100% !important; }
+
+  /* ── EN-TÊTE ── */
+  .doc-type-header {
+    background: #162D49 !important;
+    padding: 16px 20px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+  .doc-type-header::after {
+    content: 'AB RENOV 35';
+    color: #A495C3 !important;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-family: 'Century Gothic','Futura',Arial,sans-serif;
+  }
+  .type-full {
+    color: white !important;
+    font-size: 16px !important;
+    font-weight: 800 !important;
+    letter-spacing: 2px !important;
+    font-family: 'Century Gothic','Futura',Arial,sans-serif !important;
+  }
+
+  /* ── BARRE INFOS ── */
+  .doc-info-bar {
+    background: #EEF4FA !important;
+    padding: 10px 20px !important;
+    display: flex !important;
+    gap: 24px !important;
+    border-bottom: 3px solid #162D49 !important;
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+  .doc-info-item { font-size: 12px !important; color: #162D49 !important; font-weight: 700 !important; }
   .doc-info-item span { font-weight: 400 !important; }
-  .doc-section { box-shadow: none !important; break-inside: avoid !important; page-break-inside: avoid !important; margin: 6px 0 !important; border: 1px solid #E0D8F0 !important; }
-  .doc-section-title { background: #162D49 !important; color: white !important; font-size: 9px !important; padding: 6px 14px !important; break-after: avoid !important; page-break-after: avoid !important; }
-  .doc-subsection-title { background: #DDD7EC !important; color: #162D49 !important; font-size: 9px !important; padding: 5px 14px !important; break-after: avoid !important; }
-  .doc-section-body { padding: 7px 14px 9px !important; }
-  .doc-text, .doc-text-plain, .doc-bullet { font-size: 11px !important; line-height: 1.55 !important; color: #162D49 !important; orphans: 3 !important; widows: 3 !important; }
-  .doc-bullet::before { color: #7B6BA8 !important; }
-  .photo-section-title { background: #162D49 !important; color: white !important; font-size: 9px !important; padding: 6px 14px !important; break-after: avoid !important; margin-top: 10px !important; }
-  .doc-photos { display: grid !important; grid-template-columns: repeat(3,1fr) !important; gap: 6px !important; padding: 8px 14px 10px !important; break-inside: avoid !important; page-break-inside: avoid !important; }
-  .doc-photo { display: block !important; width: 100% !important; aspect-ratio: 4/3 !important; object-fit: cover !important; border-radius: 3px !important; border: 1px solid #E0D8F0 !important; }
-  #doc-content::after { content: 'AB RENOV 35  —  ' attr(data-chantier) '  —  ' attr(data-date); display: block; font-size: 8px; color: #8A9BAD; text-align: center; margin-top: 16px; padding-top: 8px; border-top: 1px solid #E0D8F0; }
+
+  /* ── SECTIONS ── */
+  #doc-content { padding: 4px 0 !important; }
+  .doc-section {
+    box-shadow: none !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    margin: 5px 0 !important;
+    border-left: 3px solid #162D49 !important;
+    border-right: none !important;
+    border-top: none !important;
+    border-bottom: 1px solid #E8E4F0 !important;
+  }
+  .doc-section-title {
+    background: #162D49 !important;
+    color: white !important;
+    font-size: 10px !important;
+    font-weight: 800 !important;
+    padding: 7px 16px !important;
+    letter-spacing: 1.5px !important;
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+  .doc-subsection-title {
+    background: #EDE9F4 !important;
+    color: #162D49 !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    padding: 5px 16px !important;
+    border-left: 3px solid #A495C3 !important;
+    break-after: avoid !important;
+  }
+  .doc-section-body { padding: 8px 16px 10px !important; }
+  .doc-text, .doc-text-plain {
+    font-size: 12px !important;
+    line-height: 1.6 !important;
+    color: #162D49 !important;
+    margin: 2px 0 !important;
+    orphans: 3 !important; widows: 3 !important;
+  }
+  .doc-bullet {
+    font-size: 12px !important;
+    line-height: 1.6 !important;
+    color: #162D49 !important;
+    padding-left: 20px !important;
+    margin: 3px 0 !important;
+    orphans: 3 !important; widows: 3 !important;
+  }
+  .doc-bullet::before { color: #7B6BA8 !important; content: "▸" !important; }
+
+  /* ── PHOTOS ── */
+  .photo-section-title {
+    background: #162D49 !important;
+    color: white !important;
+    font-size: 10px !important;
+    font-weight: 800 !important;
+    padding: 7px 16px !important;
+    letter-spacing: 1.5px !important;
+    margin-top: 12px !important;
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+  .doc-photos {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+    padding: 10px 16px 14px !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+  .doc-photo {
+    display: block !important;
+    width: 100% !important;
+    height: 160px !important;
+    object-fit: cover !important;
+    border-radius: 4px !important;
+    border: 1px solid #DDD7EC !important;
+  }
+
+  /* ── PIED DE PAGE ── */
+  #doc-frame::after {
+    content: 'AB RENOV 35  ·  ' attr(data-footer);
+    display: block;
+    font-size: 9px;
+    color: #A495C3;
+    text-align: center;
+    margin-top: 20px;
+    padding-top: 8px;
+    border-top: 2px solid #162D49;
+    letter-spacing: 1px;
+  }
 }
 </style>
 </head>
@@ -508,6 +634,9 @@ function afficherDoc(text) {
   docContent.innerHTML = html;
   docContent.setAttribute('data-chantier', currentChantier);
   docContent.setAttribute('data-date', new Date().toLocaleDateString('fr-FR'));
+  // Pied de page PDF
+  const docFrame = document.getElementById('doc-frame');
+  docFrame.setAttribute('data-footer', currentChantier + (currentOperateur ? '  ·  ' + currentOperateur : '') + '  ·  ' + new Date().toLocaleDateString('fr-FR'));
 
   // Photos depuis currentFiles
   afficherPhotosDoc();
