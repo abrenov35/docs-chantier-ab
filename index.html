@@ -519,6 +519,21 @@ async function callGAS(payload) {
   return data;
 }
 
+// Purger images base64 de l'historique pour alléger le payload GAS
+function cleanHistory(history) {
+  return (history || []).map(msg => {
+    if (!Array.isArray(msg.content)) return msg;
+    return {
+      ...msg,
+      content: msg.content.map(block => {
+        if (block.type === 'image') return { type: 'text', text: '[image]' };
+        if (block.type === 'document') return { type: 'text', text: '[document]' };
+        return block;
+      })
+    };
+  });
+}
+
 // ── GÉNÉRER ──────────────────────────────────────
 async function generer() {
   const chantier = document.getElementById('chantier').value.trim();
@@ -793,7 +808,8 @@ async function chargerListe() {
         <div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.chantier||'—'} <span style="font-weight:400;color:var(--muted)">· ${d.operateur||''}</span></div>
         <div style="color:var(--muted);font-size:12px">${(d.date||'').slice(0,10).split('-').reverse().join('/')}</div>
         <div class="doc-list-actions">
-          <button title="Ouvrir / Modifier" onclick="ouvrirDoc('${d.id}')">👁</button>
+          <button title="Ouvrir" onclick="ouvrirDoc('${d.id}')">👁</button>
+          <button title="Modifier" onclick="ouvrirDoc('${d.id}')">✏️</button>
           <button class="btn-delete" title="Supprimer" onclick="supprimerDoc('${d.id}')">🗑</button>
         </div>
       </div>`).join('')}
