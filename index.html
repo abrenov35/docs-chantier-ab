@@ -337,23 +337,25 @@ function renderFilesList() {
 // Affiche/met à jour la section photos dans doc-content
 function afficherPhotosDoc() {
   const photos = currentFiles.filter(f => f.type && f.type.startsWith('image/'));
-  const docContent = document.getElementById('doc-content');
-  if (!docContent) return;
-  // Supprimer ancienne section photos
-  const oldTitle = docContent.querySelector('.photo-section-title');
-  const oldGrid  = docContent.querySelector('.doc-photos');
-  if (oldTitle) oldTitle.remove();
-  if (oldGrid)  oldGrid.remove();
-  // Réinjecter si photos présentes
-  if (photos.length > 0) {
-    const div = document.createElement('div');
-    div.innerHTML = `<div class="photo-section-title">📷 Photos du chantier</div>
-      <div class="doc-photos" id="doc-photos-section">
-        ${photos.map((f,i) => `<img class="doc-photo" src="data:${f.type};base64,${f.data}" onclick="openLightbox(${i})">`).join('')}
-      </div>`;
-    docContent.appendChild(div.querySelector('.photo-section-title'));
-    docContent.appendChild(div.querySelector('.doc-photos'));
-  }
+  // Chercher dans doc-frame entier (couvre doc-content et contenu restauré)
+  const docFrame = document.getElementById('doc-frame');
+  if (!docFrame) return;
+  // Supprimer toutes les anciennes sections photos où qu'elles soient
+  docFrame.querySelectorAll('.photo-section-title, .doc-photos').forEach(el => el.remove());
+  if (photos.length === 0) return;
+  // Injecter à la fin de doc-content si présent, sinon à la fin de doc-frame
+  const target = document.getElementById('doc-content') || docFrame;
+  const titleEl = document.createElement('div');
+  titleEl.className = 'photo-section-title';
+  titleEl.textContent = '📷 Photos du chantier';
+  const gridEl = document.createElement('div');
+  gridEl.className = 'doc-photos';
+  gridEl.id = 'doc-photos-section';
+  gridEl.innerHTML = photos.map((f,i) =>
+    `<img class="doc-photo" src="data:${f.type};base64,${f.data}" onclick="openLightbox(${i})">`
+  ).join('');
+  target.appendChild(titleEl);
+  target.appendChild(gridEl);
 }
 
 // ── Lightbox ─────────────────────────────────────
