@@ -89,6 +89,7 @@ textarea { resize: vertical; min-height: 90px; }
 /* SECTIONS */
 .doc-section { background: var(--white); padding: 0; margin: 8px 0; box-shadow: 0 1px 4px rgba(22,45,73,0.10); }
 .doc-section-title { font-weight: 800; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--white); background: var(--navy); padding: 7px 16px; }
+.doc-subsection-title { font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--navy); background: #DDD7EC; padding: 5px 16px; border-left: 3px solid var(--lav2); }
 .doc-section-body { padding: 8px 16px 10px; }
 .doc-text { font-size: 13px; line-height: 1.6; color: var(--navy); margin: 3px 0; }
 .doc-text-plain { font-size: 13px; line-height: 1.6; color: var(--navy); margin: 3px 0; padding: 0 16px; }
@@ -134,6 +135,7 @@ textarea { resize: vertical; min-height: 90px; }
   .doc-type-header { background: #162D49 !important; }
   .doc-section { box-shadow: none !important; break-inside: avoid !important; }
   .doc-section-title { background: #162D49 !important; }
+  .doc-subsection-title { background: #DDD7EC !important; }
   .doc-photos { break-inside: avoid !important; }
   .main { padding: 0 !important; max-width: 100% !important; }
 }
@@ -384,12 +386,17 @@ function afficherDoc(text) {
     if (SKIP_START.test(trimmed)) continue;
 
     // Titre section ## ou **TITRE**
-    if (line.match(/^#{1,3} /) || (trimmed.match(/^\*\*[^*]+\*\*$/) && trimmed.length < 80)) {
+    if (line.match(/^## /) || (trimmed.match(/^\*\*[^*]+\*\*$/) && trimmed.length < 80)) {
       if (inSection) { html += '</div></div>'; inSection = false; }
-      const title = trimmed.replace(/^#{1,3} /,'').replace(/\*\*/g,'');
+      const title = trimmed.replace(/^## /,'').replace(/\*\*/g,'');
       if (SKIP_EXACT.has(title.toLowerCase())) continue;
       html += `<div class="doc-section"><div class="doc-section-title">${title}</div><div class="doc-section-body">`;
       inSection = true;
+    }
+    // Sous-titre ### → style lavande
+    else if (line.match(/^### /)) {
+      const subtitle = trimmed.replace(/^### /,'');
+      html += `<div class="doc-subsection-title">${subtitle}</div>`;
     }
     // Bullet
     else if (trimmed.match(/^[-•·▸] /)) {
@@ -563,3 +570,4 @@ async function supprimerDoc(id) {
 </script>
 </body>
 </html>
+
