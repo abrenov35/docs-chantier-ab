@@ -554,7 +554,7 @@ async function modifier() {
   const btn = document.querySelector('.btn-modif');
   btn.disabled = true; btn.textContent = '⏳ Modification…';
   try {
-    const data = await callGAS({ modif, history: conversationHistory });
+    const data = await callGAS({ modif, history: cleanHistory(conversationHistory) });
     conversationHistory = data.history;
     afficherDoc(data.text);
     document.getElementById('modif-input').value = '';
@@ -668,20 +668,30 @@ async function sauvegarderAuto() {
   const operateur = document.getElementById('operateur').value.trim();
   const contenu = document.getElementById('doc-frame').innerHTML;
   const date = new Date().toISOString().slice(0,10);
-  // Sauvegarder aussi les fichiers base64 pour persistance photos
+  // Purger les images base64 de l'historique pour alléger le payload
+  const historyClean = cleanHistory(conversationHistory);
   const filesData = currentFiles.map(f => ({ name: f.name, type: f.type, data: f.data }));
   isSaving = true;
   try {
     msg.innerHTML = '<span class="save-pendule">🕰️</span><span>Sauvegarde…</span>';
-    const data = await callGAS({ action: currentDocId ? 'update' : 'save', id: currentDocId, type: selectedType, chantier, operateur, date, contenu, files: filesData, history: conversationHistory });
+    const data = await callGAS({
+      action: currentDocId ? 'update' : 'save',
+      id: currentDocId,
+      type: selectedType,
+      chantier, operateur, date, contenu,
+      files: filesData,
+      history: historyClean
+    });
     if (data.ok) {
       currentDocId = data.id || currentDocId;
       msg.innerHTML = '<span class="save-ok">✅ Sauvegardé</span>';
     } else {
-      msg.innerHTML = '<span class="save-err">⚠️ ' + (data.error || 'Erreur') + '</span>';
+      msg.innerHTML = '<span class="save-err">⚠️ ' + (data.error || 'Erreur GAS') + '</span>';
+      console.error('GAS save error:', data.error);
     }
   } catch(e) {
-    msg.innerHTML = '<span class="save-err">⚠️ ' + e.message + '</span>';
+    msg.innerHTML = '<span class="save-err">⚠️ Erreur réseau</span>';
+    console.error('sauvegarderAuto:', e);
   }
   isSaving = false;
   setTimeout(() => msg.innerHTML = '', 2500);
