@@ -376,7 +376,6 @@ function afficherDoc(text) {
     const clean = trimmed.toLowerCase().replace(/[*#:\-_]/g,'').trim();
 
     if (!trimmed) {
-      if (inSection) { html += '</div></div>'; inSection = false; }
       continue;
     }
     if (trimmed.match(/^\.(jpeg|jpg|png|pdf|doc|docx)$/i)) continue;
