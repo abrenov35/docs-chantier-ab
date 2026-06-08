@@ -428,7 +428,7 @@ function ajouterFichiersModif(files) {
   if (existingPhotos + newPhotos > 6) { alert('Maximum 6 photos.'); return; }
   setSavingUI(true, '📥 Chargement photo…');
   let pending = Array.from(files).length;
-  const done = () => { pending--; if (pending === 0 && currentDocId) sauvegarderAuto(); };
+  const done = () => { pending--; if (pending === 0) sauvegarderDebounce(); };
   Array.from(files).forEach(file => {
     if (file.type.startsWith('image/')) {
       compressImage(file, c => {
