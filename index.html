@@ -130,21 +130,175 @@ textarea { resize: vertical; min-height: 90px; }
 .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 14px; }
 
 /* IMPRESSION */
-@page { size: A4 portrait; margin: 14mm 12mm; }
+@page {
+  size: A4 portrait;
+  margin: 18mm 14mm 20mm 14mm;
+}
+@page :first {
+  margin-top: 10mm;
+}
+
+/* En-tête et pied de page via @page */
 @media print {
+
+  /* ── Reset global ── */
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-  html, body { background: white !important; }
-  .header, .tabs, .actions, .modif-zone, #form-section, #loading, #save-msg, #tab-liste { display: none !important; }
+  html, body { background: white !important; font-family: 'Segoe UI', Arial, sans-serif !important; }
+
+  /* ── Masquer tout sauf le doc ── */
+  .header, .tabs, .actions, .modif-zone, #form-section,
+  #loading, #save-msg, #tab-liste, .lightbox { display: none !important; }
+
+  /* ── Zone résultat ── */
   #doc-result { display: block !important; visibility: visible !important; }
-  #doc-frame { border: 2px solid #162D49 !important; border-radius: 0 !important; overflow: hidden !important; }
-  .doc-type-header { background: #162D49 !important; }
-  .doc-section { box-shadow: none !important; break-inside: avoid !important; }
-  .doc-section-title { background: #162D49 !important; }
-  .doc-subsection-title { background: #DDD7EC !important; }
-  .doc-photos { break-inside: avoid !important; display: flex !important; flex-wrap: wrap !important; }
-  .doc-photo { display: block !important; width: 30% !important; -webkit-print-color-adjust: exact !important; }
-  img { display: block !important; max-width: 100% !important; }
-  .main { padding: 0 !important; max-width: 100% !important; }
+  .main { padding: 0 !important; max-width: 100% !important; margin: 0 !important; }
+
+  /* ── Cadre document ── */
+  #doc-frame {
+    border: none !important;
+    border-radius: 0 !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+    width: 100% !important;
+  }
+
+  /* ── En-tête document : bandeau navy pleine largeur ── */
+  .doc-type-header {
+    background: #162D49 !important;
+    padding: 14px 18px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    break-inside: avoid !important;
+    break-after: avoid !important;
+  }
+  .doc-type-header::after {
+    content: 'AB RENOV 35';
+    color: #A495C3;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-family: 'Century Gothic', 'Futura', Arial, sans-serif;
+  }
+  .type-full {
+    color: white !important;
+    font-size: 15px !important;
+    font-weight: 800 !important;
+    letter-spacing: 1.5px !important;
+    font-family: 'Century Gothic', 'Futura', Arial, sans-serif !important;
+  }
+
+  /* ── Barre infos chantier ── */
+  .doc-info-bar {
+    background: #EEF4FA !important;
+    padding: 8px 18px !important;
+    display: flex !important;
+    gap: 20px !important;
+    border-bottom: 2px solid #162D49 !important;
+    break-inside: avoid !important;
+    break-after: avoid !important;
+  }
+  .doc-info-item {
+    font-size: 11px !important;
+    color: #162D49 !important;
+    font-weight: 700 !important;
+  }
+  .doc-info-item span { font-weight: 400 !important; }
+
+  /* ── Séparateur décoratif sous l'en-tête ── */
+  .doc-info-bar::after {
+    content: '';
+    display: block;
+    height: 3px;
+    background: linear-gradient(90deg, #A495C3, #162D49);
+  }
+
+  /* ── Sections : jamais coupées ── */
+  .doc-section {
+    box-shadow: none !important;
+    break-inside: avoid !important;
+    margin: 6px 0 !important;
+    border: 1px solid #E0D8F0 !important;
+    border-radius: 0 !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* ── Titre de section : toujours avec son contenu ── */
+  .doc-section-title {
+    background: #162D49 !important;
+    color: white !important;
+    font-size: 9px !important;
+    padding: 6px 14px !important;
+    letter-spacing: 1.5px !important;
+    break-inside: avoid !important;
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  /* ── Sous-titre lavande ── */
+  .doc-subsection-title {
+    background: #DDD7EC !important;
+    color: #162D49 !important;
+    font-size: 9px !important;
+    padding: 5px 14px !important;
+    break-inside: avoid !important;
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  /* ── Corps de section ── */
+  .doc-section-body {
+    padding: 7px 14px 9px !important;
+  }
+  .doc-text, .doc-text-plain, .doc-bullet {
+    font-size: 11px !important;
+    line-height: 1.55 !important;
+    color: #162D49 !important;
+    orphans: 3 !important;
+    widows: 3 !important;
+  }
+  .doc-bullet::before { color: #7B6BA8 !important; }
+
+  /* ── Photos : grille propre, jamais coupée ── */
+  .photo-section-title {
+    background: #162D49 !important;
+    color: white !important;
+    font-size: 9px !important;
+    padding: 6px 14px !important;
+    break-inside: avoid !important;
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+    margin-top: 10px !important;
+  }
+  .doc-photos {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 6px !important;
+    padding: 8px 14px 10px !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+  .doc-photo {
+    display: block !important;
+    width: 100% !important;
+    aspect-ratio: 4/3 !important;
+    object-fit: cover !important;
+    border-radius: 3px !important;
+    border: 1px solid #E0D8F0 !important;
+  }
+
+  /* ── Pied de page automatique ── */
+  #doc-content::after {
+    content: 'AB RENOV 35  —  ' attr(data-chantier) '  —  Document généré le ' attr(data-date);
+    display: block;
+    font-size: 8px;
+    color: #8A9BAD;
+    text-align: center;
+    margin-top: 16px;
+    padding-top: 8px;
+    border-top: 1px solid #E0D8F0;
+  }
 }
 </style>
 </head>
@@ -493,7 +647,11 @@ function afficherDoc(text) {
     html += '</div>';
   }
 
-  document.getElementById('doc-content').innerHTML = html;
+  const docContent = document.getElementById('doc-content');
+  docContent.innerHTML = html;
+  // Pour pied de page PDF
+  docContent.setAttribute('data-chantier', chantierVal || '');
+  docContent.setAttribute('data-date', new Date().toLocaleDateString('fr-FR'));
 }
 
 function openLightbox(idx) {
