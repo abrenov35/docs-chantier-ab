@@ -537,8 +537,8 @@ async function generer() {
     stopProgress();
     setTimeout(async () => {
       afficherDoc(data.text);
-      // Sauvegarde automatique
-      await sauvegarderAuto();
+      // Sauvegarde automatique avec valeurs capturées avant reset éventuel
+      await sauvegarderAuto(chantier, operateur);
     }, 400);
   } catch(e) {
     stopProgress();
@@ -559,7 +559,9 @@ async function modifier() {
     afficherDoc(data.text);
     document.getElementById('modif-input').value = '';
     // Sauvegarde automatique après modification
-    await sauvegarderAuto();
+    const ch = document.getElementById('chantier').value.trim();
+    const op = document.getElementById('operateur').value.trim();
+    await sauvegarderAuto(ch, op);
   } catch(e) { alert('Erreur : ' + e.message); }
   finally { btn.disabled = false; btn.textContent = '✏️ Modifier le document'; }
 }
@@ -662,10 +664,11 @@ function openLightbox(idx) {
 function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); }
 
 // ── SAUVEGARDE AUTOMATIQUE (silencieuse) ─────────────────────────────
-async function sauvegarderAuto() {
+async function sauvegarderAuto(chantierParam, operateurParam) {
   const msg = document.getElementById('save-msg');
-  const chantier = document.getElementById('chantier').value.trim();
-  const operateur = document.getElementById('operateur').value.trim();
+  // Priorité aux params passés, sinon lire le DOM
+  const chantier = chantierParam || document.getElementById('chantier').value.trim();
+  const operateur = operateurParam || document.getElementById('operateur').value.trim();
   const contenu = document.getElementById('doc-frame').innerHTML;
   const date = new Date().toISOString().slice(0,10);
   // Purger les images base64 de l'historique pour alléger le payload
