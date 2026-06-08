@@ -27,8 +27,8 @@ html, body { min-height: 100%; background: var(--beige); font-family: 'Segoe UI'
 .tabs { display: flex; gap: 0; margin-bottom: 20px; border-bottom: 2px solid var(--navy); padding-top: 14px; }
 .tab-btn { flex: 1; padding: 10px 6px; background: none; border: none; font-size: 13px; font-weight: 700; color: var(--muted); cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; }
 .tab-btn.active { color: var(--navy); border-bottom-color: var(--navy); }
-.doc-list-header { display: grid; grid-template-columns: 80px 1fr 90px 90px; gap: 8px; padding: 6px 12px; font-size: 10px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid var(--border); margin-bottom: 4px; }
-.doc-list-item { display: grid; grid-template-columns: 80px 1fr 90px 90px; gap: 8px; align-items: center; padding: 8px 12px; background: var(--white); border-bottom: 1px solid var(--border); font-size: 13px; }
+.doc-list-header { display: grid; grid-template-columns: 110px 1fr 80px 80px; gap: 8px; padding: 6px 12px; font-size: 10px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid var(--border); margin-bottom: 4px; }
+.doc-list-item { display: grid; grid-template-columns: 110px 1fr 80px 80px; gap: 8px; align-items: center; padding: 8px 12px; background: var(--white); border-bottom: 1px solid var(--border); font-size: 13px; }
 .doc-list-item:hover { background: #F0F4F8; }
 .doc-list-type-badge { font-size: 9px; font-weight: 800; background: var(--navy); color: white; border-radius: 3px; padding: 2px 6px; display: inline-block; }
 .doc-list-actions { display: flex; gap: 4px; justify-content: flex-end; }
@@ -526,7 +526,7 @@ async function chargerListe() {
         </div>
         ${data.docs.map(d => `
         <div class="doc-list-item">
-          <div><span class="doc-list-type-badge">${d.type}</span></div>
+          <div><span class="doc-list-type-badge" style="font-size:8px;padding:2px 5px;white-space:nowrap">${{CRCh:'CR Chantier',FCh:'Fiche Chantier',PVR:'PV Réception'}[d.type]||d.type}</span></div>
           <div style="font-weight:600;color:var(--navy);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.chantier || '—'} <span style="font-weight:400;color:var(--muted)">· ${d.operateur || ''}</span></div>
           <div style="color:var(--muted);font-size:12px">${d.date || ''}</div>
           <div class="doc-list-actions">
