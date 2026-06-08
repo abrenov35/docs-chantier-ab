@@ -405,29 +405,33 @@ function handleFiles(input) {
 }
 
 function ajouterFichiersModif(files) {
+  const fileArr = Array.from(files);
+  if (!fileArr.length) return;
   const existingPhotos = currentFiles.filter(f => f.type && f.type.startsWith('image/')).length;
-  const newPhotos = Array.from(files).filter(f => f.type.startsWith('image/')).length;
+  const newPhotos = fileArr.filter(f => f.type && f.type.startsWith('image/')).length;
   if (existingPhotos + newPhotos > 6) { alert('Maximum 6 photos.'); return; }
-  setSavingUI(true, '📥 Chargement photo…');
-  let pending = Array.from(files).length;
-  const done = () => { pending--; if (pending === 0) sauvegarderDebounce(); };
-  Array.from(files).forEach(file => {
-    if (file.type.startsWith('image/')) {
-      compressImage(file, c => {
-        currentFiles.push(c);
-        renderFilesList();
-        afficherPhotosDoc();
-        done();
-      });
-    } else {
-      const r = new FileReader();
-      r.onload = e => {
-        currentFiles.push({ name: file.name, type: file.type, data: e.target.result.split(',')[1] });
-        renderFilesList();
-        done();
-      };
-      r.readAsDataURL(file);
-    }
+
+  let loaded = 0;
+  const total = fileArr.length;
+
+  setSavingUI(true, `📥 0/${total} chargé…`);
+
+  fileArr.forEach((file, idx) => {
+    const r = new FileReader();
+    r.onload = e => {
+      const data = e.target.result.split(',')[1];
+      currentFiles.push({ name: file.name, type: file.type, data });
+      loaded++;
+      setSavingUI(true, `📥 ${loaded}/${total} chargé…`);
+      renderFilesList();
+      afficherPhotosDoc();
+      if (loaded === total) sauvegarderDebounce();
+    };
+    r.onerror = () => {
+      loaded++;
+      if (loaded === total) sauvegarderDebounce();
+    };
+    r.readAsDataURL(file);
   });
 }
 
