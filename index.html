@@ -848,20 +848,29 @@ async function sauvegarderAuto() {
   const msg = document.getElementById('save-msg');
   setSavingUI(true, 'Sauvegarde…');
 
-  // Étape 1 : uploader vers Dropbox les photos qui ont encore leur base64
-  const timestamp   = Date.now();
-  const photoItems  = currentFiles.filter(f => f.type && f.type.startsWith('image/'));
+  const timestamp = Date.now();
+
+  // Photos déjà sur Dropbox — conserver telles quelles
+  const photosExistantes = currentFiles
+    .filter(f => f.type && f.type.startsWith('image/') && f.url);
+
+  // Nouvelles photos (base64, pas encore uploadées)
+  const photosAUploader = currentFiles
+    .filter(f => f.type && f.type.startsWith('image/') && f.data && !f.url);
+
   let dbxErrors = 0;
-  for (let i = 0; i < photoItems.length; i++) {
-    if (photoItems[i].url || !photoItems[i].data) continue; // déjà uploadée
-    setSavingUI(true, `☁️ Photo ${i + 1}/${photoItems.length}…`);
+  const nouvellesUploadees = [];
+
+  for (let i = 0; i < photosAUploader.length; i++) {
+    setSavingUI(true, `☁️ Photo ${i + 1}/${photosAUploader.length}…`);
     try {
       const filename = `photo-${timestamp}-${i}.jpg`;
-      const path = await uploadToDropbox(photoItems[i].data, filename);
+      const path = await uploadToDropbox(photosAUploader[i].data, filename);
       const url  = await getDropboxUrl(path);
-      const idx  = currentFiles.indexOf(photoItems[i]);
+      const idx  = currentFiles.indexOf(photosAUploader[i]);
       if (idx >= 0) { currentFiles[idx].url = url; currentFiles[idx].data = null; }
-      photoItems[i].url = url; photoItems[i].data = null;
+      photosAUploader[i].url = url; photosAUploader[i].data = null;
+      nouvellesUploadees.push({ name: photosAUploader[i].name, type: photosAUploader[i].type, url });
       console.log('URL stockée:', url);
     } catch(e) {
       dbxErrors++;
@@ -876,10 +885,11 @@ async function sauvegarderAuto() {
   clone.querySelectorAll('.photo-section-title, .doc-photos').forEach(el => el.remove());
   const contenu = clone.innerHTML;
 
-  // URLs des photos pour colonne 9 (pas de base64)
-  const filesPayload = currentFiles
-    .filter(f => f.type && f.type.startsWith('image/') && f.url)
-    .map(f => ({ name: f.name, type: f.type, url: f.url }));
+  // Fusion : existantes Dropbox + nouvellement uploadées
+  const filesPayload = [
+    ...photosExistantes.map(f => ({ name: f.name, type: f.type, url: f.url })),
+    ...nouvellesUploadees
+  ];
   console.log('Payload files:', JSON.stringify(currentFiles.map(f => ({ name: f.name, url: f.url }))));
 
   // Étape 2 : sauvegarder texte + URLs + history dans GAS
