@@ -859,10 +859,10 @@ async function sauvegarderAuto() {
       const filename = `photo-${timestamp}-${i}.jpg`;
       const path = await uploadToDropbox(photoItems[i].data, filename);
       const url  = await getDropboxUrl(path);
-      console.log('URL photo obtenue:', url);
       const idx  = currentFiles.indexOf(photoItems[i]);
       if (idx >= 0) { currentFiles[idx].url = url; currentFiles[idx].data = null; }
       photoItems[i].url = url; photoItems[i].data = null;
+      console.log('URL stockée:', url);
     } catch(e) {
       dbxErrors++;
       console.log('ERREUR upload:', e.message);
@@ -880,7 +880,7 @@ async function sauvegarderAuto() {
   const filesPayload = currentFiles
     .filter(f => f.type && f.type.startsWith('image/') && f.url)
     .map(f => ({ name: f.name, type: f.type, url: f.url }));
-  console.log('Files envoyés au GAS:', JSON.stringify(filesPayload));
+  console.log('Payload files:', JSON.stringify(currentFiles.map(f => ({ name: f.name, url: f.url }))));
 
   // Étape 2 : sauvegarder texte + URLs + history dans GAS
   try {
@@ -1002,7 +1002,7 @@ async function chargerListe() {
 async function ouvrirDoc(id) {
   try {
     const data = await callGAS({ action: 'get', id });
-    console.log('Colonne 9 reçue:', data[8], '| data.files:', data.files);
+    console.log('Colonne 9 brute:', data[8]);
     currentDocId     = data.id;
     selectedType     = data.type;
     currentChantier  = data.chantier  || '';
