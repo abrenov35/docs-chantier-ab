@@ -93,11 +93,12 @@ function generateId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 }
 
-// Sauvegarde texte + history uniquement — les photos arrivent via upload_photo.
+// Sauvegarde texte + history + photos (URLs Dropbox en colonne 9).
 function saveOrUpdate(p) {
   const sheet = getSheet();
-  const { action, id, type, chantier, operateur, date, contenu, history } = p;
-  const historyJson = JSON.stringify(history || []);
+  const { action, id, type, chantier, operateur, date, contenu, history, files } = p;
+  const historyJson   = JSON.stringify(history || []);
+  const photoUrlsJson = files && files.length ? JSON.stringify(files) : null;
 
   if (action === 'update' && id) {
     const rows = sheet.getDataRange().getValues();
@@ -110,6 +111,7 @@ function saveOrUpdate(p) {
         sheet.getRange(r, COL.date).setValue(date);
         sheet.getRange(r, COL.contenu).setValue(contenu);
         sheet.getRange(r, COL.history).setValue(historyJson);
+        if (photoUrlsJson !== null) sheet.getRange(r, COL.photoUrls).setValue(photoUrlsJson);
         return { id };
       }
     }
@@ -124,6 +126,7 @@ function saveOrUpdate(p) {
   row[COL.date      - 1] = date;
   row[COL.contenu   - 1] = contenu;
   row[COL.history   - 1] = historyJson;
+  if (photoUrlsJson !== null) row[COL.photoUrls - 1] = photoUrlsJson;
   sheet.appendRow(row);
   return { id: newId };
 }
