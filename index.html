@@ -928,10 +928,11 @@ function imprimerDoc() {
   if (currentChantier)  parts.push(currentChantier.split(/[-–,]/)[0].trim());
   if (currentOperateur) parts.push(currentOperateur);
   document.title = parts.join(' - ');
-  setTimeout(() => {
-    window.print();
-    setTimeout(() => { document.title = 'AB RENOV 35 — Documents Chantier'; }, 1000);
-  }, 200);
+  window.addEventListener('afterprint', function restore() {
+    document.title = 'AB RENOV 35 — Documents Chantier';
+    window.removeEventListener('afterprint', restore);
+  });
+  setTimeout(() => window.print(), 200);
 }
 
 // ── Onglets ──────────────────────────────────────
