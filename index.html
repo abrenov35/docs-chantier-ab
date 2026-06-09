@@ -286,6 +286,7 @@ textarea { resize: vertical; min-height: 90px; }
 <div class="main">
   <div class="tabs">
     <button class="tab-btn active" id="tab-btn-nouveau" onclick="showTab('nouveau')">✏️ Nouveau</button>
+    <button class="tab-btn" id="tab-btn-retour" onclick="showTab('nouveau')" style="display:none">← Retour</button>
     <button class="tab-btn" id="tab-btn-liste" onclick="showTab('liste')">📂 Mes documents</button>
   </div>
 
@@ -779,8 +780,9 @@ function showTab(tab) {
   document.getElementById('tab-btn-liste').classList.toggle('active', tab === 'liste');
   document.getElementById('tab-nouveau').style.display = tab === 'nouveau' ? 'block' : 'none';
   document.getElementById('tab-liste').style.display   = tab === 'liste'   ? 'block' : 'none';
-  // Label dynamique selon contexte
-  document.getElementById('tab-btn-nouveau').textContent = tab === 'liste' ? '← Retour' : '✏️ Nouveau';
+  // Afficher bouton Retour sur la liste, Nouveau sur formulaire
+  document.getElementById('tab-btn-nouveau').style.display = tab === 'liste' ? 'none' : 'block';
+  document.getElementById('tab-btn-retour').style.display  = tab === 'liste' ? 'block' : 'none';
   if (tab === 'liste') {
     document.getElementById('doc-result').style.display = 'none';
     document.getElementById('doc-result').classList.remove('visible');
