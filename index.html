@@ -301,8 +301,6 @@ textarea { resize: vertical; min-height: 90px; }
         <input type="text" id="operateur" placeholder="Ton prénom ou initiales">
         <label>Travaux réalisés / Observations</label>
         <textarea id="observations" placeholder="Décris les travaux du jour, observations, points importants…"></textarea>
-        <label>Réserves / Problèmes (optionnel)</label>
-        <textarea id="reserves" placeholder="Réserves, problèmes, points à surveiller…" style="min-height:60px"></textarea>
         <label>Photos / Documents (optionnel)</label>
         <div class="file-btns">
           <button type="button" class="btn-file btn-photo" onclick="document.getElementById('photo-input').click()">📷 Prendre des photos</button>
@@ -527,7 +525,6 @@ async function generer() {
   const chantier     = document.getElementById('chantier').value.trim();
   const operateur    = document.getElementById('operateur').value.trim();
   const observations = document.getElementById('observations').value.trim();
-  const reserves     = document.getElementById('reserves').value.trim();
   if (!chantier || !observations) { alert('Chantier et observations obligatoires.'); return; }
 
   // Stocker dans globales AVANT tout appel async
@@ -539,7 +536,7 @@ async function generer() {
   startProgress();
 
   try {
-    const data = await callGAS({ type: selectedType, chantier, operateur, observations, reserves, files: currentFiles, history: [] });
+    const data = await callGAS({ type: selectedType, chantier, operateur, observations, files: currentFiles, history: [] });
     conversationHistory = data.history;
     stopProgress();
     setTimeout(async () => {
@@ -754,7 +751,6 @@ function showTab(tab) {
     document.getElementById('chantier').value    = '';
     document.getElementById('operateur').value   = '';
     document.getElementById('observations').value = '';
-    document.getElementById('reserves').value    = '';
     document.getElementById('doc-result').classList.remove('visible');
     document.getElementById('loading').classList.remove('visible');
     document.getElementById('form-section').style.display = 'block';
