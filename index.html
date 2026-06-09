@@ -777,7 +777,9 @@ async function getDropboxToken() {
 }
 
 async function uploadToDropbox(base64, filename) {
+  console.log('Début upload', filename);
   const token  = await getDropboxToken();
+  console.log('Token obtenu:', token ? 'OK' : 'ECHEC');
   const binary = atob(base64);
   const bytes  = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
@@ -793,10 +795,12 @@ async function uploadToDropbox(base64, filename) {
   });
   if (!res.ok) throw new Error('Dropbox upload: HTTP ' + res.status);
   const d = await res.json();
+  console.log('Upload result:', res.status, d);
   return d.path_lower || path.toLowerCase();
 }
 
 async function getDropboxUrl(path) {
+  console.log('Création lien partage pour:', path);
   const token = await getDropboxToken();
   const res = await fetch('https://api.dropboxapi.com/2/sharing/create_shared_link_with_settings', {
     method: 'POST',
@@ -853,6 +857,7 @@ async function sauvegarderAuto() {
       photoItems[i].url = url; photoItems[i].data = null;
     } catch(e) {
       dbxErrors++;
+      console.log('ERREUR upload:', e.message);
       console.error('Dropbox upload erreur [' + i + ']:', e.message);
     }
   }
