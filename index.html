@@ -129,7 +129,7 @@ textarea { resize: vertical; min-height: 90px; }
 
   /* ── CADRE GLOBAL ── */
   #doc-frame {
-    border: none !important;
+    border: 2px solid #162D49 !important;
     border-radius: 0 !important;
     overflow: visible !important;
     box-shadow: none !important;
@@ -148,11 +148,12 @@ textarea { resize: vertical; min-height: 90px; }
   }
   .doc-type-header::after {
     content: 'AB RENOV 35';
-    color: #A495C3 !important;
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 3px;
-    font-family: 'Century Gothic','Futura',Arial,sans-serif;
+    color: #B8AADB !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    letter-spacing: 4px !important;
+    font-family: 'Century Gothic','Futura',Arial,sans-serif !important;
+    text-transform: uppercase !important;
   }
   .type-full {
     color: white !important;
@@ -190,10 +191,11 @@ textarea { resize: vertical; min-height: 90px; }
   .doc-section-title {
     background: #162D49 !important;
     color: white !important;
-    font-size: 10px !important;
+    font-size: 11px !important;
     font-weight: 800 !important;
     padding: 9px 20px !important;
     letter-spacing: 2px !important;
+    text-transform: uppercase !important;
     break-after: avoid !important;
     page-break-after: avoid !important;
   }
@@ -201,47 +203,50 @@ textarea { resize: vertical; min-height: 90px; }
   .doc-subsection-title {
     background: #EAE4F5 !important;
     color: #162D49 !important;
-    font-size: 10px !important;
+    font-size: 11px !important;
     font-weight: 800 !important;
     padding: 7px 20px 7px 15px !important;
     border-left: 4px solid #7B6BA8 !important;
     letter-spacing: 1px !important;
     break-after: avoid !important;
+    page-break-after: avoid !important;
   }
 
   .doc-section-body { padding: 10px 20px 14px !important; }
   .doc-text, .doc-text-plain {
     font-size: 12px !important;
     line-height: 1.75 !important;
-    color: #1A2F47 !important;
+    color: #162D49 !important;
     margin: 3px 0 !important;
     orphans: 3 !important; widows: 3 !important;
   }
   .doc-bullet {
     font-size: 12px !important;
     line-height: 1.75 !important;
-    color: #1A2F47 !important;
-    padding-left: 20px !important;
+    color: #162D49 !important;
+    padding-left: 22px !important;
     margin: 3px 0 !important;
     orphans: 3 !important; widows: 3 !important;
   }
-  .doc-bullet::before { color: #7B6BA8 !important; content: "▸  " !important; }
+  .doc-bullet::before { color: #7B6BA8 !important; content: "▸" !important; font-size: 10px !important; top: 3px !important; }
 
-  /* ── PHOTOS ── */
+  /* ── PHOTOS — grille 2 colonnes ── */
   .photo-section-title {
     background: #162D49 !important;
     color: white !important;
-    font-size: 10px !important;
+    font-size: 11px !important;
     font-weight: 800 !important;
     padding: 9px 20px !important;
     letter-spacing: 2px !important;
+    text-transform: uppercase !important;
+    margin-top: 0 !important;
     break-after: avoid !important;
     page-break-after: avoid !important;
   }
   .doc-photos {
     display: grid !important;
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: 10px !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
     padding: 14px 20px 18px !important;
     break-inside: avoid !important;
     page-break-inside: avoid !important;
@@ -252,21 +257,22 @@ textarea { resize: vertical; min-height: 90px; }
     height: 200px !important;
     object-fit: cover !important;
     border-radius: 6px !important;
-    border: 1px solid #C8BFD8 !important;
+    border: 1.5px solid #C8BFE0 !important;
   }
 
   /* ── PIED DE PAGE ── */
   #doc-frame::after {
     content: 'AB RENOV 35  ·  ' attr(data-footer);
-    display: block;
-    font-size: 9px;
-    color: #A495C3;
-    text-align: center;
-    margin-top: 16px;
-    padding-top: 10px;
-    border-top: 2px solid #162D49;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
+    display: block !important;
+    font-size: 10px !important;
+    font-weight: 600 !important;
+    color: #7B6BA8 !important;
+    text-align: center !important;
+    margin-top: 18px !important;
+    padding-top: 10px !important;
+    border-top: 2px solid #162D49 !important;
+    letter-spacing: 1.5px !important;
+    text-transform: uppercase !important;
   }
 }
 </style>
