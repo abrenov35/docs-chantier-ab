@@ -362,8 +362,7 @@ textarea { resize: vertical; min-height: 90px; }
       <div class="modif-zone">
         <div class="section-label">Modifier / Compléter</div>
         <textarea id="modif-input" placeholder="Ex: Ajoute une réserve sur la peinture du couloir…" style="min-height:60px;background:#EDE9F4;border-color:var(--lav)"></textarea>
-        <button class="btn-modif" onclick="modifier()">✏️ Modifier le document</button>
-        <button class="btn-regen" onclick="regenAvecPhotos()">🔄 Régénérer avec les photos</button>
+        <button class="btn-regen" onclick="mettreAJour()">🔄 Mettre à jour le document</button>
         <div class="section-label" style="margin-top:16px">Photos / Documents</div>
         <div class="file-btns">
           <button type="button" class="btn-file btn-photo" onclick="document.getElementById('modif-photo-input').click()">📷 Prendre des photos</button>
@@ -655,41 +654,31 @@ async function generer() {
   }
 }
 
-// ── Modifier ─────────────────────────────────────
-async function modifier() {
+// ── Mettre à jour (texte + photos) ───────────────
+async function mettreAJour() {
   const modif = document.getElementById('modif-input').value.trim();
-  if (!modif) return;
-  const btn = document.querySelector('.btn-modif');
-  btn.textContent = '⏳ Modification…';
-  try {
-    const data = await callGAS({ modif, history: cleanHistory(conversationHistory) });
-    conversationHistory = data.history;
-    afficherDoc(data.text);
-    document.getElementById('modif-input').value = '';
-    if (currentDocId) await sauvegarderAuto();
-  } catch(e) { alert('Erreur modification : ' + e.message); }
-  finally { btn.textContent = '✏️ Modifier le document'; }
-}
-
-// ── Ajouter photos au doc existant ───────────────
-async function regenAvecPhotos() {
-  if (!currentChantier) { alert('Informations chantier manquantes.'); return; }
-
-  const btn = document.querySelector('.btn-regen');
-  btn.textContent = '⏳ Sauvegarde photos…';
-  btn.disabled = true;
+  const btn   = document.querySelector('.btn-regen');
+  btn.textContent = '⏳ Mise à jour…';
+  btn.disabled    = true;
 
   try {
-    // Upload nouvelles photos + fusion avec existantes + sauvegarde GAS
-    // Le contenu texte du document n'est pas modifié
-    await sauvegarderAuto();
-    // Mettre à jour l'affichage des photos dans le doc affiché
-    afficherPhotosDoc();
+    if (modif) {
+      // Texte de modification saisi → appel IA + sauvegarde avec photos fusionnées
+      const data = await callGAS({ modif, history: cleanHistory(conversationHistory) });
+      conversationHistory = data.history;
+      afficherDoc(data.text);
+      document.getElementById('modif-input').value = '';
+      await sauvegarderAuto();
+    } else {
+      // Pas de texte → conserver contenu existant, uploader/fusionner photos uniquement
+      await sauvegarderAuto();
+      afficherPhotosDoc();
+    }
   } catch(e) {
-    alert('Erreur sauvegarde photos : ' + e.message);
+    alert('Erreur mise à jour : ' + e.message);
   } finally {
-    btn.textContent = '🔄 Ajouter les photos';
-    btn.disabled = false;
+    btn.textContent = '🔄 Mettre à jour le document';
+    btn.disabled    = false;
   }
 }
 
