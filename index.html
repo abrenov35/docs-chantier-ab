@@ -398,6 +398,7 @@ let currentFiles  = [];   // { name, type, data (base64), url (Dropbox) }
 let currentDocId  = null;
 let currentChantier  = '';
 let currentOperateur = '';
+let currentDocDate   = '';
 let progressTimer = null;
 let isSaving = false;
 let _dbxToken    = null;
@@ -620,6 +621,7 @@ async function generer() {
   // Stocker dans globales AVANT tout appel async
   currentChantier  = chantier;
   currentOperateur = operateur;
+  currentDocDate   = new Date().toISOString().slice(0, 10);
 
   document.getElementById('form-section').style.display = 'none';
   document.getElementById('loading').classList.add('visible');
@@ -677,6 +679,7 @@ async function regenAvecPhotos() {
     const filesWithoutPhotos = currentFiles.filter(f => !f.type || !f.type.startsWith('image/'));
     const data = await callGAS({ type: selectedType, chantier: currentChantier, operateur: currentOperateur, observations, files: filesWithoutPhotos, history: [] });
     conversationHistory = data.history;
+    currentDocDate = new Date().toISOString().slice(0, 10);
     stopProgress();
     setTimeout(async () => {
       afficherDoc(data.text);
@@ -914,16 +917,18 @@ function resetForm() {
   currentDocId         = null;
   currentChantier      = '';
   currentOperateur     = '';
+  currentDocDate       = '';
   currentFiles         = [];
   renderFilesList();
 }
 
 // ── Imprimer ─────────────────────────────────────
 function imprimerDoc() {
-  const parts = [TYPE_SHORT[selectedType] || selectedType];
+  const date = currentDocDate || new Date().toISOString().slice(0, 10);
+  const type = TYPE_SHORT[selectedType] || selectedType;
+  const parts = [date, type];
   if (currentChantier)  parts.push(currentChantier.split(/[-–,]/)[0].trim());
   if (currentOperateur) parts.push(currentOperateur);
-  parts.push(new Date().toISOString().slice(0,10));
   document.title = parts.join(' - ');
   setTimeout(() => {
     window.print();
@@ -953,7 +958,7 @@ function showTab(tab) {
     document.getElementById('loading').classList.remove('visible');
     document.getElementById('form-section').style.display = 'block';
     currentDocId = null; currentFiles = []; conversationHistory = [];
-    currentChantier = ''; currentOperateur = '';
+    currentChantier = ''; currentOperateur = ''; currentDocDate = '';
     renderFilesList();
   }
 }
@@ -991,6 +996,7 @@ async function ouvrirDoc(id) {
     selectedType     = data.type;
     currentChantier  = data.chantier  || '';
     currentOperateur = data.operateur || '';
+    currentDocDate   = (data.date     || '').slice(0, 10);
     conversationHistory = data.history || [];
     // Restaurer fichiers (photos) depuis la base — URL Drive ou base64 legacy
     currentFiles = (data.files || []).map(f => ({ name: f.name, type: f.type || 'image/jpeg', url: f.url || null, data: f.data || null }));
