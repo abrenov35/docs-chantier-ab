@@ -845,6 +845,7 @@ async function sauvegarderAuto() {
       const filename = `photo-${timestamp}-${i}.jpg`;
       const path = await uploadToDropbox(photoItems[i].data, filename);
       const url  = await getDropboxUrl(path);
+      console.log('URL photo obtenue:', url);
       const idx  = currentFiles.indexOf(photoItems[i]);
       if (idx >= 0) { currentFiles[idx].url = url; currentFiles[idx].data = null; }
       photoItems[i].url = url; photoItems[i].data = null;
@@ -862,9 +863,10 @@ async function sauvegarderAuto() {
   const contenu = clone.innerHTML;
 
   // URLs des photos pour colonne 9 (pas de base64)
-  const photoUrls = currentFiles
+  const filesPayload = currentFiles
     .filter(f => f.type && f.type.startsWith('image/') && f.url)
     .map(f => ({ name: f.name, type: f.type, url: f.url }));
+  console.log('Files envoyés au GAS:', JSON.stringify(filesPayload));
 
   // Étape 2 : sauvegarder texte + URLs + history dans GAS
   try {
@@ -876,7 +878,7 @@ async function sauvegarderAuto() {
       operateur: currentOperateur,
       date:      new Date().toISOString().slice(0,10),
       contenu,
-      files:     photoUrls,
+      files:     filesPayload,
       history:   cleanHistory(conversationHistory)
     });
     currentDocId = data.id || currentDocId;
@@ -986,6 +988,7 @@ async function chargerListe() {
 async function ouvrirDoc(id) {
   try {
     const data = await callGAS({ action: 'get', id });
+    console.log('Colonne 9 reçue:', data[8], '| data.files:', data.files);
     currentDocId     = data.id;
     selectedType     = data.type;
     currentChantier  = data.chantier  || '';
