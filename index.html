@@ -671,39 +671,24 @@ async function modifier() {
   finally { btn.textContent = '✏️ Modifier le document'; }
 }
 
-// ── Régénérer avec photos ────────────────────────
+// ── Ajouter photos au doc existant ───────────────
 async function regenAvecPhotos() {
-  const observations = document.getElementById('modif-input').value.trim();
   if (!currentChantier) { alert('Informations chantier manquantes.'); return; }
 
   const btn = document.querySelector('.btn-regen');
-  btn.textContent = '⏳ Régénération…';
+  btn.textContent = '⏳ Sauvegarde photos…';
   btn.disabled = true;
 
-  document.getElementById('doc-result').style.display = 'none';
-  document.getElementById('doc-result').classList.remove('visible');
-  document.getElementById('loading').classList.add('visible');
-  startProgress();
-
   try {
-    const filesWithoutPhotos = currentFiles.filter(f => !f.type || !f.type.startsWith('image/'));
-    const data = await callGAS({ type: selectedType, chantier: currentChantier, operateur: currentOperateur, observations, files: filesWithoutPhotos, history: [] });
-    conversationHistory = data.history;
-    currentDocDate = new Date().toISOString().slice(0, 10);
-    stopProgress();
-    setTimeout(async () => {
-      afficherDoc(data.text);
-      document.getElementById('modif-input').value = '';
-      await sauvegarderAuto();
-    }, 400);
+    // Upload nouvelles photos + fusion avec existantes + sauvegarde GAS
+    // Le contenu texte du document n'est pas modifié
+    await sauvegarderAuto();
+    // Mettre à jour l'affichage des photos dans le doc affiché
+    afficherPhotosDoc();
   } catch(e) {
-    stopProgress();
-    alert('Erreur régénération : ' + e.message);
-    document.getElementById('doc-result').style.display = '';
-    document.getElementById('doc-result').classList.add('visible');
-    document.getElementById('loading').classList.remove('visible');
+    alert('Erreur sauvegarde photos : ' + e.message);
   } finally {
-    btn.textContent = '🔄 Régénérer avec les photos';
+    btn.textContent = '🔄 Ajouter les photos';
     btn.disabled = false;
   }
 }
