@@ -93,6 +93,7 @@ textarea { resize: vertical; min-height: 90px; }
 
 .modif-zone { background: var(--white); border-radius: 12px; padding: 16px; border: 1px solid var(--border); margin-top: 14px; }
 .btn-modif { width: 100%; padding: 11px; background: var(--lav); color: var(--white); border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 10px; }
+.btn-regen { width: 100%; padding: 11px; background: var(--lav2); color: var(--white); border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; }
 
 .lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 999; align-items: center; justify-content: center; }
 .lightbox.open { display: flex; }
@@ -338,6 +339,7 @@ textarea { resize: vertical; min-height: 90px; }
         <div class="section-label">Modifier / Compléter</div>
         <textarea id="modif-input" placeholder="Ex: Ajoute une réserve sur la peinture du couloir…" style="min-height:60px;background:#EDE9F4;border-color:var(--lav)"></textarea>
         <button class="btn-modif" onclick="modifier()">✏️ Modifier le document</button>
+        <button class="btn-regen" onclick="regenAvecPhotos()">🔄 Régénérer avec les photos</button>
         <div class="section-label" style="margin-top:16px">Photos / Documents</div>
         <div class="file-btns">
           <button type="button" class="btn-file btn-photo" onclick="document.getElementById('modif-photo-input').click()">📷 Prendre des photos</button>
@@ -575,6 +577,42 @@ async function modifier() {
     if (currentDocId) await sauvegarderAuto();
   } catch(e) { alert('Erreur modification : ' + e.message); }
   finally { btn.textContent = '✏️ Modifier le document'; }
+}
+
+// ── Régénérer avec photos ────────────────────────
+async function regenAvecPhotos() {
+  const observations = document.getElementById('modif-input').value.trim();
+  if (!observations) { alert('Saisis des observations dans le champ ci-dessus.'); return; }
+  if (!currentChantier) { alert('Informations chantier manquantes.'); return; }
+
+  const btn = document.querySelector('.btn-regen');
+  btn.textContent = '⏳ Régénération…';
+  btn.disabled = true;
+
+  document.getElementById('doc-result').style.display = 'none';
+  document.getElementById('doc-result').classList.remove('visible');
+  document.getElementById('loading').classList.add('visible');
+  startProgress();
+
+  try {
+    const data = await callGAS({ type: selectedType, chantier: currentChantier, operateur: currentOperateur, observations, files: currentFiles, history: [] });
+    conversationHistory = data.history;
+    stopProgress();
+    setTimeout(async () => {
+      afficherDoc(data.text);
+      document.getElementById('modif-input').value = '';
+      await sauvegarderAuto();
+    }, 400);
+  } catch(e) {
+    stopProgress();
+    alert('Erreur régénération : ' + e.message);
+    document.getElementById('doc-result').style.display = '';
+    document.getElementById('doc-result').classList.add('visible');
+    document.getElementById('loading').classList.remove('visible');
+  } finally {
+    btn.textContent = '🔄 Régénérer avec les photos';
+    btn.disabled = false;
+  }
 }
 
 // ── Afficher doc ─────────────────────────────────
