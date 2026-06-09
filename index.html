@@ -801,24 +801,16 @@ async function uploadToDropbox(base64, filename) {
 }
 
 async function getDropboxUrl(path) {
-  console.log('Création lien partage pour:', path);
+  console.log('Création lien temporaire pour:', path);
   const token = await getDropboxToken();
-  const res = await fetch('https://api.dropboxapi.com/2/sharing/create_shared_link_with_settings', {
+  const res = await fetch('https://api.dropboxapi.com/2/files/get_temporary_link', {
     method: 'POST',
     headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ path, settings: { requested_visibility: 'public' } })
+    body: JSON.stringify({ path })
   });
-  let url;
-  if (res.ok) {
-    url = (await res.json()).url;
-  } else if (res.status === 409) {
-    const d = await res.json();
-    url = d.error?.shared_link_already_exists?.metadata?.url;
-    if (!url) throw new Error('Dropbox URL: lien existant mais URL introuvable');
-  } else {
-    throw new Error('Dropbox URL: HTTP ' + res.status);
-  }
-  return url.replace('www.dropbox.com', 'dl.dropboxusercontent.com').replace(/[?&]dl=0/, '');
+  if (!res.ok) throw new Error('Dropbox get_temporary_link: HTTP ' + res.status);
+  const d = await res.json();
+  return d.link;
 }
 
 // ── UI sauvegarde ────────────────────────────────
