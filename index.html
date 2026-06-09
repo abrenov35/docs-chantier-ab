@@ -662,6 +662,9 @@ async function mettreAJour() {
   btn.disabled    = true;
 
   try {
+    const allPhotos = currentFiles.filter(f => f.type && f.type.startsWith('image/'));
+    console.log('allPhotos avant sauvegarde:', JSON.stringify(allPhotos.map(f => ({ name: f.name, url: f.url }))));
+
     if (modif) {
       // Texte de modification saisi → appel IA + sauvegarde avec photos fusionnées
       const data = await callGAS({ modif, history: cleanHistory(conversationHistory) });
@@ -864,7 +867,7 @@ async function sauvegarderAuto() {
     ...photosExistantes.map(f => ({ name: f.name, type: f.type, url: f.url })),
     ...nouvellesUploadees
   ];
-  console.log('Payload files:', JSON.stringify(currentFiles.map(f => ({ name: f.name, url: f.url }))));
+  console.log('filesPayload envoyé au GAS:', JSON.stringify(filesPayload));
 
   // Étape 2 : sauvegarder texte + URLs + history dans GAS
   try {
