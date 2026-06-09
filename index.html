@@ -491,9 +491,10 @@ function afficherPhotosDoc() {
   const gridEl = document.createElement('div');
   gridEl.className = 'doc-photos';
   gridEl.id = 'doc-photos-section';
-  gridEl.innerHTML = photos.map((f,i) =>
-    `<img class="doc-photo" src="data:${f.type};base64,${f.data}" onclick="openLightbox(${i})">`
-  ).join('');
+  gridEl.innerHTML = photos.map((f,i) => {
+    const src = f.url || `data:${f.type};base64,${f.data}`;
+    return `<img class="doc-photo" src="${src}" onclick="openLightbox(${i})">`;
+  }).join('');
   target.appendChild(titleEl);
   target.appendChild(gridEl);
 }
@@ -502,7 +503,8 @@ function afficherPhotosDoc() {
 function openLightbox(idx) {
   const photos = currentFiles.filter(f => f.type && f.type.startsWith('image/'));
   if (!photos[idx]) return;
-  document.getElementById('lightbox-img').src = `data:${photos[idx].type};base64,${photos[idx].data}`;
+  const p = photos[idx];
+  document.getElementById('lightbox-img').src = p.url || `data:${p.type};base64,${p.data}`;
   document.getElementById('lightbox').classList.add('open');
 }
 function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); }
@@ -866,8 +868,8 @@ async function ouvrirDoc(id) {
     currentChantier  = data.chantier  || '';
     currentOperateur = data.operateur || '';
     conversationHistory = data.history || [];
-    // Restaurer fichiers (photos) depuis la base
-    currentFiles = (data.files || []).map(f => ({ name: f.name, type: f.type, data: f.data }));
+    // Restaurer fichiers (photos) depuis la base — URL Drive ou base64 legacy
+    currentFiles = (data.files || []).map(f => ({ name: f.name, type: f.type || 'image/jpeg', url: f.url || null, data: f.data || null }));
     renderFilesList();
     // Afficher
     document.getElementById('chantier').value  = currentChantier;
