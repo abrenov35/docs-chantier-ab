@@ -389,7 +389,7 @@ const TYPE_SHORT  = { CRCh: 'CR Chantier', FCh: 'Fiche Chantier', PVR: 'PV Réce
 const DROPBOX_APP_KEY       = 'npkaaglhu1pg76f';
 const DROPBOX_APP_SECRET    = 'jrotkenty0xbblm';
 const DROPBOX_REFRESH_TOKEN = 'NgaR3TStT4IAAAAAAAAAARqPWRHst_DHSe57Ggb2wdKTceyP5GMQOcDWLN94DrCR';
-const DROPBOX_FOLDER        = '/docs-chantier/';
+const DROPBOX_FOLDER        = '/AB RENOV 35/CLIENTS AB RENOV 35/• SUIVI CHANTIER - DOCS/photos/';
 
 // ── État global ──────────────────────────────────
 let selectedType = 'CRCh';
@@ -998,8 +998,18 @@ async function ouvrirDoc(id) {
     currentOperateur = data.operateur || '';
     currentDocDate   = (data.date     || '').slice(0, 10);
     conversationHistory = data.history || [];
-    // Restaurer fichiers (photos) depuis la base — URL Drive ou base64 legacy
-    currentFiles = (data.files || []).map(f => ({ name: f.name, type: f.type || 'image/jpeg', url: f.url || null, data: f.data || null }));
+    // Restaurer fichiers (photos) depuis la base — colonne 9 : JSON array d'URLs Dropbox ou objets legacy
+    let rawFiles = data.files;
+    if (typeof rawFiles === 'string') {
+      try { rawFiles = rawFiles.startsWith('[') ? JSON.parse(rawFiles) : []; }
+      catch(e) { rawFiles = []; }
+    }
+    currentFiles = (rawFiles || []).map((f, i) => ({
+      name: f.name || ('photo-' + (i + 1) + '.jpg'),
+      type: f.type || 'image/jpeg',
+      url:  f.url  || null,
+      data: f.data || null
+    }));
     renderFilesList();
     // Afficher
     document.getElementById('chantier').value  = currentChantier;
