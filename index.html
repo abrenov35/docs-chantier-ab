@@ -529,10 +529,17 @@ function afficherPhotosDoc() {
   const gridEl = document.createElement('div');
   gridEl.className = 'doc-photos';
   gridEl.id = 'doc-photos-section';
-  gridEl.innerHTML = photos.map((f,i) => {
-    const src = f.url || `data:${f.type};base64,${f.data}`;
-    return `<img class="doc-photo" src="${src}" onclick="openLightbox(${i})">`;
-  }).join('');
+  photos.forEach((f, i) => {
+    const img = document.createElement('img');
+    img.className = 'doc-photo';
+    img.onclick = () => openLightbox(i);
+    if (f.url && f.url.startsWith('dropbox:')) {
+      resolveDropboxUrl(f.url.replace('dropbox:', '')).then(link => { img.src = link; });
+    } else {
+      img.src = f.url || `data:${f.type};base64,${f.data}`;
+    }
+    gridEl.appendChild(img);
+  });
   target.appendChild(titleEl);
   target.appendChild(gridEl);
 }
@@ -542,7 +549,12 @@ function openLightbox(idx) {
   const photos = currentFiles.filter(f => f.type && f.type.startsWith('image/'));
   if (!photos[idx]) return;
   const p = photos[idx];
-  document.getElementById('lightbox-img').src = p.url || `data:${p.type};base64,${p.data}`;
+  const imgEl = document.getElementById('lightbox-img');
+  if (p.url && p.url.startsWith('dropbox:')) {
+    resolveDropboxUrl(p.url.replace('dropbox:', '')).then(link => { imgEl.src = link; });
+  } else {
+    imgEl.src = p.url || `data:${p.type};base64,${p.data}`;
+  }
   document.getElementById('lightbox').classList.add('open');
 }
 function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); }
@@ -801,26 +813,18 @@ async function uploadToDropbox(base64, filename) {
 }
 
 async function getDropboxUrl(path) {
-  console.log('Création lien partage pour:', path);
+  return 'dropbox:' + path;
+}
+
+async function resolveDropboxUrl(path) {
   const token = await getDropboxToken();
-  const res = await fetch('https://api.dropboxapi.com/2/sharing/create_shared_link_with_settings', {
+  const res = await fetch('https://api.dropboxapi.com/2/files/get_temporary_link', {
     method: 'POST',
     headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ path, settings: { requested_visibility: 'public' } })
+    body: JSON.stringify({ path })
   });
   const d = await res.json();
-  if (d.error && d.error['.tag'] === 'shared_link_already_exists') {
-    const res2 = await fetch('https://api.dropboxapi.com/2/sharing/list_shared_links', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ path, direct_only: true })
-    });
-    const d2 = await res2.json();
-    const url = d2.links[0].url;
-    return url.replace('www.dropbox.com', 'dl.dropboxusercontent.com').replace('?dl=0', '');
-  }
-  if (!d.url) throw new Error('Dropbox shared link: ' + JSON.stringify(d));
-  return d.url.replace('www.dropbox.com', 'dl.dropboxusercontent.com').replace('?dl=0', '');
+  return d.link;
 }
 
 // ── UI sauvegarde ────────────────────────────────
