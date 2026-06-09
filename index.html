@@ -801,16 +801,26 @@ async function uploadToDropbox(base64, filename) {
 }
 
 async function getDropboxUrl(path) {
-  console.log('Création lien temporaire pour:', path);
+  console.log('Création lien partage pour:', path);
   const token = await getDropboxToken();
-  const res = await fetch('https://api.dropboxapi.com/2/files/get_temporary_link', {
+  const res = await fetch('https://api.dropboxapi.com/2/sharing/create_shared_link_with_settings', {
     method: 'POST',
     headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ path })
+    body: JSON.stringify({ path, settings: { requested_visibility: 'public' } })
   });
-  if (!res.ok) throw new Error('Dropbox get_temporary_link: HTTP ' + res.status);
   const d = await res.json();
-  return d.link;
+  if (d.error && d.error['.tag'] === 'shared_link_already_exists') {
+    const res2 = await fetch('https://api.dropboxapi.com/2/sharing/list_shared_links', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path, direct_only: true })
+    });
+    const d2 = await res2.json();
+    const url = d2.links[0].url;
+    return url.replace('www.dropbox.com', 'dl.dropboxusercontent.com').replace('?dl=0', '');
+  }
+  if (!d.url) throw new Error('Dropbox shared link: ' + JSON.stringify(d));
+  return d.url.replace('www.dropbox.com', 'dl.dropboxusercontent.com').replace('?dl=0', '');
 }
 
 // ── UI sauvegarde ────────────────────────────────
