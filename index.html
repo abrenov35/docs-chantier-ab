@@ -129,7 +129,7 @@ textarea { resize: vertical; min-height: 90px; }
 
   /* ── CADRE GLOBAL ── */
   #doc-frame {
-    border: 2px solid #162D49 !important;
+    border: none !important;
     border-radius: 0 !important;
     overflow: visible !important;
     box-shadow: none !important;
@@ -139,7 +139,7 @@ textarea { resize: vertical; min-height: 90px; }
   /* ── EN-TÊTE ── */
   .doc-type-header {
     background: #162D49 !important;
-    padding: 12px 16px !important;
+    padding: 16px 20px !important;
     display: flex !important;
     justify-content: space-between !important;
     align-items: center !important;
@@ -149,33 +149,33 @@ textarea { resize: vertical; min-height: 90px; }
   .doc-type-header::after {
     content: 'AB RENOV 35';
     color: #A495C3 !important;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 800;
     letter-spacing: 3px;
     font-family: 'Century Gothic','Futura',Arial,sans-serif;
   }
   .type-full {
     color: white !important;
-    font-size: 14px !important;
+    font-size: 16px !important;
     font-weight: 800 !important;
-    letter-spacing: 2px !important;
+    letter-spacing: 2.5px !important;
     font-family: 'Century Gothic','Futura',Arial,sans-serif !important;
   }
 
   /* ── BARRE INFOS ── */
   .doc-info-bar {
-    background: #EEF4FA !important;
-    padding: 7px 16px !important;
+    background: #F0F4F8 !important;
+    padding: 10px 20px !important;
     display: flex !important;
-    gap: 20px !important;
-    border-bottom: 2px solid #162D49 !important;
+    gap: 28px !important;
+    border-bottom: 3px solid #162D49 !important;
     break-after: avoid !important;
     page-break-after: avoid !important;
   }
-  .doc-info-item { font-size: 11px !important; color: #162D49 !important; font-weight: 700 !important; }
-  .doc-info-item span { font-weight: 400 !important; }
+  .doc-info-item { font-size: 12px !important; color: #162D49 !important; font-weight: 800 !important; }
+  .doc-info-item span { font-weight: 400 !important; color: #3A5068 !important; }
 
-  /* ── SECTIONS — jointives, sans espace ── */
+  /* ── SECTIONS ── */
   #doc-content { padding: 0 !important; }
   .doc-section {
     box-shadow: none !important;
@@ -183,45 +183,49 @@ textarea { resize: vertical; min-height: 90px; }
     page-break-inside: avoid !important;
     margin: 0 !important;
     border: none !important;
-    border-bottom: 1px solid #C8D8E8 !important;
+    border-bottom: 1.5px solid #D8E6F0 !important;
   }
   .doc-section:last-child { border-bottom: none !important; }
+
   .doc-section-title {
     background: #162D49 !important;
     color: white !important;
-    font-size: 9px !important;
+    font-size: 10px !important;
     font-weight: 800 !important;
-    padding: 6px 16px !important;
-    letter-spacing: 1.5px !important;
+    padding: 9px 20px !important;
+    letter-spacing: 2px !important;
     break-after: avoid !important;
     page-break-after: avoid !important;
   }
+
   .doc-subsection-title {
-    background: #EDE9F4 !important;
+    background: #EAE4F5 !important;
     color: #162D49 !important;
-    font-size: 9px !important;
-    font-weight: 700 !important;
-    padding: 4px 16px !important;
-    border-left: 3px solid #A495C3 !important;
+    font-size: 10px !important;
+    font-weight: 800 !important;
+    padding: 7px 20px 7px 15px !important;
+    border-left: 4px solid #7B6BA8 !important;
+    letter-spacing: 1px !important;
     break-after: avoid !important;
   }
-  .doc-section-body { padding: 6px 16px 8px !important; }
+
+  .doc-section-body { padding: 10px 20px 14px !important; }
   .doc-text, .doc-text-plain {
-    font-size: 11px !important;
-    line-height: 1.55 !important;
-    color: #162D49 !important;
-    margin: 1px 0 !important;
+    font-size: 12px !important;
+    line-height: 1.75 !important;
+    color: #1A2F47 !important;
+    margin: 3px 0 !important;
     orphans: 3 !important; widows: 3 !important;
   }
   .doc-bullet {
-    font-size: 11px !important;
-    line-height: 1.55 !important;
-    color: #162D49 !important;
-    padding-left: 18px !important;
-    margin: 2px 0 !important;
+    font-size: 12px !important;
+    line-height: 1.75 !important;
+    color: #1A2F47 !important;
+    padding-left: 20px !important;
+    margin: 3px 0 !important;
     orphans: 3 !important; widows: 3 !important;
   }
-  .doc-bullet::before { color: #7B6BA8 !important; content: "▸" !important; }
+  .doc-bullet::before { color: #7B6BA8 !important; content: "▸  " !important; }
 
   /* ── PHOTOS ── */
   .photo-section-title {
@@ -229,27 +233,26 @@ textarea { resize: vertical; min-height: 90px; }
     color: white !important;
     font-size: 10px !important;
     font-weight: 800 !important;
-    padding: 7px 16px !important;
-    letter-spacing: 1.5px !important;
-    margin-top: 12px !important;
+    padding: 9px 20px !important;
+    letter-spacing: 2px !important;
     break-after: avoid !important;
     page-break-after: avoid !important;
   }
   .doc-photos {
     display: grid !important;
     grid-template-columns: repeat(3, 1fr) !important;
-    gap: 8px !important;
-    padding: 10px 16px 14px !important;
+    gap: 10px !important;
+    padding: 14px 20px 18px !important;
     break-inside: avoid !important;
     page-break-inside: avoid !important;
   }
   .doc-photo {
     display: block !important;
     width: 100% !important;
-    height: 160px !important;
+    height: 200px !important;
     object-fit: cover !important;
-    border-radius: 4px !important;
-    border: 1px solid #DDD7EC !important;
+    border-radius: 6px !important;
+    border: 1px solid #C8BFD8 !important;
   }
 
   /* ── PIED DE PAGE ── */
@@ -259,10 +262,11 @@ textarea { resize: vertical; min-height: 90px; }
     font-size: 9px;
     color: #A495C3;
     text-align: center;
-    margin-top: 20px;
-    padding-top: 8px;
+    margin-top: 16px;
+    padding-top: 10px;
     border-top: 2px solid #162D49;
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
   }
 }
 </style>
