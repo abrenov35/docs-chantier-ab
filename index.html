@@ -544,6 +544,8 @@ async function generer() {
   currentOperateur = operateur;
 
   document.getElementById('form-section').style.display = 'none';
+  document.getElementById('type-grid').style.display = 'none';
+  document.getElementById('type-grid').previousElementSibling.style.display = 'none';
   document.getElementById('loading').classList.add('visible');
   startProgress();
 
@@ -758,6 +760,8 @@ function resetForm() {
   currentOperateur     = '';
   currentFiles         = [];
   renderFilesList();
+  document.getElementById('type-grid').style.display = 'grid';
+  document.getElementById('type-grid').previousElementSibling.style.display = 'block';
 }
 
 // ── Imprimer ─────────────────────────────────────
@@ -797,6 +801,8 @@ function showTab(tab) {
     document.getElementById('doc-result').classList.remove('visible');
     document.getElementById('loading').classList.remove('visible');
     document.getElementById('form-section').style.display = 'block';
+    document.getElementById('type-grid').style.display = 'grid';
+    document.getElementById('type-grid').previousElementSibling.style.display = 'block';
     currentDocId = null; currentFiles = []; conversationHistory = [];
     currentChantier = ''; currentOperateur = '';
     renderFilesList();
@@ -848,6 +854,8 @@ async function ouvrirDoc(id) {
     document.getElementById('tab-nouveau').style.display = 'block';
     document.getElementById('tab-liste').style.display   = 'none';
     document.getElementById('form-section').style.display = 'none';
+    document.getElementById('type-grid').style.display = 'none';
+    document.getElementById('type-grid').previousElementSibling.style.display = 'none';
     document.getElementById('doc-result').style.display  = '';
     document.getElementById('doc-result').classList.add('visible');
     // Restaurer contenu (sans images corrompues) puis réinjecter photos
