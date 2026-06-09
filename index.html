@@ -922,12 +922,9 @@ function resetForm() {
 
 // ── Imprimer ─────────────────────────────────────
 function imprimerDoc() {
-  const date = currentDocDate || new Date().toISOString().slice(0, 10);
-  const type = TYPE_SHORT[selectedType] || selectedType;
-  const parts = [date, type];
-  if (currentChantier)  parts.push(currentChantier.split(/[-–,]/)[0].trim());
-  if (currentOperateur) parts.push(currentOperateur);
-  document.title = parts.join(' - ');
+  const typeLabel = selectedType === 'CRCh' ? 'CR Chantier' : selectedType === 'FCh' ? 'Fiche Chantier' : 'PV Réception';
+  const dateParts = currentDocDate || new Date().toISOString().slice(0, 10);
+  document.title = dateParts + ' - ' + typeLabel + ' - ' + currentChantier + ' - ' + currentOperateur;
   window.addEventListener('afterprint', function restore() {
     document.title = 'AB RENOV 35 — Documents Chantier';
     window.removeEventListener('afterprint', restore);
