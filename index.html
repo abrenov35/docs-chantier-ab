@@ -616,7 +616,6 @@ async function generer() {
   const chantier     = document.getElementById('chantier').value.trim();
   const operateur    = document.getElementById('operateur').value.trim();
   const observations = document.getElementById('observations').value.trim();
-  if (!chantier || !observations) { alert('Chantier et observations obligatoires.'); return; }
 
   // Stocker dans globales AVANT tout appel async
   currentChantier  = chantier;
@@ -663,7 +662,6 @@ async function modifier() {
 // ── Régénérer avec photos ────────────────────────
 async function regenAvecPhotos() {
   const observations = document.getElementById('modif-input').value.trim();
-  if (!observations) { alert('Saisis des observations dans le champ ci-dessus.'); return; }
   if (!currentChantier) { alert('Informations chantier manquantes.'); return; }
 
   const btn = document.querySelector('.btn-regen');
