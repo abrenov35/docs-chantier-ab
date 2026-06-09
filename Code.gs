@@ -15,7 +15,7 @@ const MAX_PHOTO_CHARS = 700000;
 // Colonnes de la feuille (1-based)
 // A: id | B: type | C: chantier | D: operateur | E: date
 // F: contenu | G: history | H: (réservé) | I: photoUrls
-const COL = { id:1, type:2, chantier:3, operateur:4, date:5, contenu:6, history:7, photoUrls:9 };
+const COL = { id:1, type:2, chantier:3, operateur:4, date:5, contenu:6, history:7, photoUrls:8 };
 
 // ── Point d'entrée ────────────────────────────────────────────────────────────
 function doPost(e) {
