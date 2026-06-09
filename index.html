@@ -386,15 +386,23 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbxkxZ71UhLWUsq7DK5utewV
 const TYPE_LABELS = { CRCh: 'Compte Rendu de Chantier', FCh: 'Fiche Chantier', PVR: 'Procès-Verbal de Réception' };
 const TYPE_SHORT  = { CRCh: 'CR Chantier', FCh: 'Fiche Chantier', PVR: 'PV Réception' };
 
+const DROPBOX_APP_KEY       = 'npkaaglhu1pg76f';
+const DROPBOX_APP_SECRET    = 'jrotkenty0xbblm';
+const DROPBOX_REFRESH_TOKEN = 'NgaR3TStT4IAAAAAAAAAARqPWRHst_DHSe57Ggb2wdKTceyP5GMQOcDWLN94DrCR';
+const DROPBOX_FOLDER        = '/docs-chantier/';
+
 // ── État global ──────────────────────────────────
 let selectedType = 'CRCh';
 let conversationHistory = [];
-let currentFiles  = [];   // { name, type, data (base64) }
+let currentFiles  = [];   // { name, type, data (base64), url (Dropbox) }
 let currentDocId  = null;
 let currentChantier  = '';
 let currentOperateur = '';
 let progressTimer = null;
 let isSaving = false;
+let _dbxToken    = null;
+let _dbxTokenExp = 0;
+let _saveDebounceTimer = null;
 
 // pas de blocage beforeunload
 
@@ -406,12 +414,36 @@ function selectType(el) {
 }
 
 // ── Compression image ────────────────────────────
+function canvasCompress(img, maxPx, quality) {
+  let w = img.naturalWidth || img.width;
+  let h = img.naturalHeight || img.height;
+  if (w >= h ? w > maxPx : h > maxPx) {
+    if (w >= h) { h = Math.round(h * maxPx / w); w = maxPx; }
+    else        { w = Math.round(w * maxPx / h); h = maxPx; }
+  }
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  c.getContext('2d').drawImage(img, 0, 0, w, h);
+  return c.toDataURL('image/jpeg', quality).split(',')[1];
+}
+
 function compressImage(file, callback) {
-  // Lecture directe sans compression — plus fiable sur iOS Safari
-  const r = new FileReader();
-  r.onload = e => callback({ name: file.name, type: file.type, data: e.target.result.split(',')[1] });
-  r.onerror = () => callback({ name: file.name, type: file.type, data: '' });
-  r.readAsDataURL(file);
+  const img = new Image();
+  const url = URL.createObjectURL(file);
+  img.onload = function() {
+    URL.revokeObjectURL(url);
+    let data = canvasCompress(img, 800, 0.5);
+    if (data.length > 1_000_000) data = canvasCompress(img, 400, 0.4);
+    callback({ name: file.name, type: 'image/jpeg', data });
+  };
+  img.onerror = function() {
+    URL.revokeObjectURL(url);
+    const r = new FileReader();
+    r.onload = e => callback({ name: file.name, type: file.type, data: e.target.result.split(',')[1] });
+    r.onerror = () => callback({ name: file.name, type: file.type, data: '' });
+    r.readAsDataURL(file);
+  };
+  img.src = url;
 }
 
 // ── Fichiers ─────────────────────────────────────
@@ -558,6 +590,21 @@ function cleanHistory(h) {
   });
 }
 
+// ── Filtre images avant envoi API ────────────────
+// Recompresse toute image dont le base64 dépasse 1 MB.
+function prepareFilesForApi(files) {
+  return Promise.all(files.map(f => {
+    if (!f.type || !f.type.startsWith('image/') || !f.data || f.data.length <= 1_000_000)
+      return Promise.resolve(f);
+    return new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => resolve({ ...f, type: 'image/jpeg', data: canvasCompress(img, 400, 0.4) });
+      img.onerror = () => resolve(f);
+      img.src = 'data:' + f.type + ';base64,' + f.data;
+    });
+  }));
+}
+
 // ── Générer ──────────────────────────────────────
 async function generer() {
   const chantier     = document.getElementById('chantier').value.trim();
@@ -574,7 +621,8 @@ async function generer() {
   startProgress();
 
   try {
-    const data = await callGAS({ type: selectedType, chantier, operateur, observations, files: currentFiles, history: [] });
+    const filesWithoutPhotos = currentFiles.filter(f => !f.type || !f.type.startsWith('image/'));
+    const data = await callGAS({ type: selectedType, chantier, operateur, observations, files: filesWithoutPhotos, history: [] });
     conversationHistory = data.history;
     stopProgress();
     setTimeout(async () => {
@@ -621,7 +669,8 @@ async function regenAvecPhotos() {
   startProgress();
 
   try {
-    const data = await callGAS({ type: selectedType, chantier: currentChantier, operateur: currentOperateur, observations, files: currentFiles, history: [] });
+    const filesWithoutPhotos = currentFiles.filter(f => !f.type || !f.type.startsWith('image/'));
+    const data = await callGAS({ type: selectedType, chantier: currentChantier, operateur: currentOperateur, observations, files: filesWithoutPhotos, history: [] });
     conversationHistory = data.history;
     stopProgress();
     setTimeout(async () => {
@@ -701,6 +750,66 @@ function afficherDoc(text) {
   afficherPhotosDoc();
 }
 
+// ── Dropbox ──────────────────────────────────────
+async function getDropboxToken() {
+  if (_dbxToken && Date.now() < _dbxTokenExp) return _dbxToken;
+  const res = await fetch('https://api.dropbox.com/oauth2/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type:    'refresh_token',
+      refresh_token: DROPBOX_REFRESH_TOKEN,
+      client_id:     DROPBOX_APP_KEY,
+      client_secret: DROPBOX_APP_SECRET
+    })
+  });
+  if (!res.ok) throw new Error('Dropbox token: HTTP ' + res.status);
+  const d = await res.json();
+  _dbxToken    = d.access_token;
+  _dbxTokenExp = Date.now() + ((d.expires_in || 14400) - 60) * 1000;
+  return _dbxToken;
+}
+
+async function uploadToDropbox(base64, filename) {
+  const token  = await getDropboxToken();
+  const binary = atob(base64);
+  const bytes  = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  const path = DROPBOX_FOLDER + filename;
+  const res = await fetch('https://content.dropboxapi.com/2/files/upload', {
+    method: 'POST',
+    headers: {
+      'Authorization':   'Bearer ' + token,
+      'Content-Type':    'application/octet-stream',
+      'Dropbox-API-Arg': JSON.stringify({ path, mode: 'overwrite', autorename: false, mute: true })
+    },
+    body: bytes
+  });
+  if (!res.ok) throw new Error('Dropbox upload: HTTP ' + res.status);
+  const d = await res.json();
+  return d.path_lower || path.toLowerCase();
+}
+
+async function getDropboxUrl(path) {
+  const token = await getDropboxToken();
+  const res = await fetch('https://api.dropboxapi.com/2/sharing/create_shared_link_with_settings', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ path, settings: { requested_visibility: 'public' } })
+  });
+  let url;
+  if (res.ok) {
+    url = (await res.json()).url;
+  } else if (res.status === 409) {
+    const d = await res.json();
+    url = d.error?.shared_link_already_exists?.metadata?.url;
+    if (!url) throw new Error('Dropbox URL: lien existant mais URL introuvable');
+  } else {
+    throw new Error('Dropbox URL: HTTP ' + res.status);
+  }
+  return url.replace('www.dropbox.com', 'dl.dropboxusercontent.com').replace(/[?&]dl=0/, '');
+}
+
 // ── UI sauvegarde ────────────────────────────────
 function setSavingUI(saving, label) {
   const msg = document.getElementById('save-msg');
@@ -718,17 +827,42 @@ function setSavingUI(saving, label) {
 
 // ── Sauvegarde auto ──────────────────────────────
 async function sauvegarderAuto() {
-  if (!currentChantier) return; // sécurité : ne pas sauvegarder si données vides
+  if (!currentChantier) return;
   const msg = document.getElementById('save-msg');
   setSavingUI(true, 'Sauvegarde…');
 
-  // Contenu HTML sans les images base64 (stockées séparément dans files)
+  // Étape 1 : uploader vers Dropbox les photos qui ont encore leur base64
+  const timestamp   = Date.now();
+  const photoItems  = currentFiles.filter(f => f.type && f.type.startsWith('image/'));
+  let dbxErrors = 0;
+  for (let i = 0; i < photoItems.length; i++) {
+    if (photoItems[i].url || !photoItems[i].data) continue; // déjà uploadée
+    setSavingUI(true, `☁️ Photo ${i + 1}/${photoItems.length}…`);
+    try {
+      const filename = `photo-${timestamp}-${i}.jpg`;
+      const path = await uploadToDropbox(photoItems[i].data, filename);
+      const url  = await getDropboxUrl(path);
+      const idx  = currentFiles.indexOf(photoItems[i]);
+      if (idx >= 0) { currentFiles[idx].url = url; currentFiles[idx].data = null; }
+      photoItems[i].url = url; photoItems[i].data = null;
+    } catch(e) {
+      dbxErrors++;
+      console.error('Dropbox upload erreur [' + i + ']:', e.message);
+    }
+  }
+
+  // Contenu HTML sans balises img (photos référencées par URL)
   const clone = document.getElementById('doc-frame').cloneNode(true);
   clone.querySelectorAll('img.doc-photo').forEach(img => img.remove());
   clone.querySelectorAll('.photo-section-title, .doc-photos').forEach(el => el.remove());
   const contenu = clone.innerHTML;
 
-  // Étape 1 : sauvegarder texte + history (sans photos)
+  // URLs des photos pour colonne 9 (pas de base64)
+  const photoUrls = currentFiles
+    .filter(f => f.type && f.type.startsWith('image/') && f.url)
+    .map(f => ({ name: f.name, type: f.type, url: f.url }));
+
+  // Étape 2 : sauvegarder texte + URLs + history dans GAS
   try {
     const data = await callGAS({
       action:    currentDocId ? 'update' : 'save',
@@ -738,44 +872,29 @@ async function sauvegarderAuto() {
       operateur: currentOperateur,
       date:      new Date().toISOString().slice(0,10),
       contenu,
-      files:     [], // photos envoyées séparément
+      files:     photoUrls,
       history:   cleanHistory(conversationHistory)
     });
     currentDocId = data.id || currentDocId;
+    const errMsg = dbxErrors > 0 ? ` (${dbxErrors} photo(s) non uploadée(s))` : '';
+    msg.innerHTML = '<span class="save-badge save-badge-ok">✅ Sauvegardé' + errMsg + '</span>';
+    isSaving = false;
+    setSavingUI(false);
+    setTimeout(() => {
+      const msg = document.getElementById('save-msg');
+      msg.innerHTML = currentDocId ? '<span class="save-badge save-badge-idle">✓ Sauvegardé</span>' : '';
+    }, 4000);
   } catch(e) {
     msg.innerHTML = '<span class="save-badge save-badge-err">⚠️ ' + e.message + '</span>';
-    console.error('sauvegarderAuto step1:', e);
+    console.error('sauvegarderAuto GAS:', e);
     isSaving = false;
     setTimeout(() => { msg.innerHTML = currentDocId ? '<span class="save-badge save-badge-idle">✓ Sauvegardé</span>' : ''; }, 4000);
-    return;
   }
+}
 
-  // Étape 2 : sauvegarder photos une par une pour éviter limite Sheets
-  const photos = currentFiles.filter(f => f.type && f.type.startsWith('image/'));
-  const docs   = currentFiles.filter(f => !f.type || !f.type.startsWith('image/'));
-  // Envoyer chaque photo séparément puis merger côté GAS
-  // Plus simple : envoyer toutes en une fois mais loguer l'erreur clairement
-  const filesData = currentFiles.map(f => ({ name: f.name, type: f.type, data: f.data }));
-  if (filesData.length > 0) {
-    try {
-      const r = await callGAS({ action: 'update_files', id: currentDocId, files: filesData });
-      console.log('update_files ok:', r);
-    } catch(e) {
-      console.error('update_files ERREUR:', e.message);
-      msg.innerHTML = '<span class="save-badge save-badge-err">⚠️ Photos non sauvegardées : ' + e.message + '</span>';
-      isSaving = false;
-      setSavingUI(false);
-      setTimeout(() => { msg.innerHTML = '<span class="save-badge save-badge-idle">✓ Texte sauvegardé</span>'; }, 4000);
-      return;
-    }
-  }
-  msg.innerHTML = '<span class="save-badge save-badge-ok">✅ Sauvegardé</span>';
-  isSaving = false;
-  setSavingUI(false);
-  setTimeout(() => {
-    const msg = document.getElementById('save-msg');
-    msg.innerHTML = currentDocId ? '<span class="save-badge save-badge-idle">✓ Sauvegardé</span>' : '';
-  }, 4000);
+function sauvegarderDebounce() {
+  clearTimeout(_saveDebounceTimer);
+  _saveDebounceTimer = setTimeout(() => sauvegarderAuto(), 800);
 }
 
 // ── Reset ────────────────────────────────────────
