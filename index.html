@@ -783,13 +783,14 @@ async function uploadToDropbox(base64, filename) {
   const binary = atob(base64);
   const bytes  = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-  const path = DROPBOX_FOLDER + filename;
+  const path     = DROPBOX_FOLDER + filename;
+  const safePath = path.split('').map(c => c.charCodeAt(0) > 127 ? encodeURIComponent(c) : c).join('');
   const res = await fetch('https://content.dropboxapi.com/2/files/upload', {
     method: 'POST',
     headers: {
       'Authorization':   'Bearer ' + token,
       'Content-Type':    'application/octet-stream',
-      'Dropbox-API-Arg': JSON.stringify({ path, mode: 'overwrite', autorename: false, mute: true })
+      'Dropbox-API-Arg': JSON.stringify({ path: safePath, mode: 'overwrite', autorename: false, mute: true })
     },
     body: bytes
   });
