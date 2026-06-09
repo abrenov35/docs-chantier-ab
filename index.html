@@ -113,11 +113,11 @@ textarea { resize: vertical; min-height: 90px; }
 /* IMPRESSION */
 @page {
   size: A4 portrait;
-  margin: 12mm 12mm 14mm 12mm;
+  margin: 15mm 18mm;
 }
 @media print {
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-  html, body { background: white !important; font-family: 'Segoe UI', Arial, sans-serif !important; }
+  html, body { background: white !important; font-family: Georgia, 'Times New Roman', serif !important; }
 
   /* Masquer UI */
   .header, .tabs, .actions, .modif-zone, #form-section,
@@ -129,17 +129,17 @@ textarea { resize: vertical; min-height: 90px; }
 
   /* ── CADRE GLOBAL ── */
   #doc-frame {
-    border: 2px solid #162D49 !important;
+    border: none !important;
     border-radius: 0 !important;
     overflow: visible !important;
     box-shadow: none !important;
     width: 100% !important;
   }
 
-  /* ── EN-TÊTE ── */
+  /* ── EN-TÊTE — bande navy pleine largeur ── */
   .doc-type-header {
     background: #162D49 !important;
-    padding: 16px 20px !important;
+    padding: 18px 24px !important;
     display: flex !important;
     justify-content: space-between !important;
     align-items: center !important;
@@ -148,32 +148,38 @@ textarea { resize: vertical; min-height: 90px; }
   }
   .doc-type-header::after {
     content: 'AB RENOV 35';
-    color: #B8AADB !important;
+    color: #A495C3 !important;
     font-size: 11px !important;
-    font-weight: 800 !important;
+    font-weight: 700 !important;
     letter-spacing: 4px !important;
-    font-family: 'Century Gothic','Futura',Arial,sans-serif !important;
+    font-family: 'Century Gothic', 'Futura', Arial, sans-serif !important;
     text-transform: uppercase !important;
   }
   .type-full {
     color: white !important;
-    font-size: 16px !important;
-    font-weight: 800 !important;
-    letter-spacing: 2.5px !important;
-    font-family: 'Century Gothic','Futura',Arial,sans-serif !important;
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    letter-spacing: 1.5px !important;
+    font-family: 'Century Gothic', 'Futura', Arial, sans-serif !important;
+    text-transform: uppercase !important;
   }
 
-  /* ── BARRE INFOS ── */
+  /* ── BARRE INFOS — fond gris clair, texte 13px lisible ── */
   .doc-info-bar {
-    background: #F0F4F8 !important;
-    padding: 10px 20px !important;
+    background: #F2F4F6 !important;
+    padding: 10px 24px !important;
     display: flex !important;
-    gap: 28px !important;
-    border-bottom: 3px solid #162D49 !important;
+    gap: 32px !important;
+    border-bottom: 1px solid #D0D8E0 !important;
     break-after: avoid !important;
     page-break-after: avoid !important;
   }
-  .doc-info-item { font-size: 12px !important; color: #162D49 !important; font-weight: 800 !important; }
+  .doc-info-item {
+    font-size: 13px !important;
+    color: #162D49 !important;
+    font-weight: 700 !important;
+    font-family: 'Segoe UI', Arial, sans-serif !important;
+  }
   .doc-info-item span { font-weight: 400 !important; color: #3A5068 !important; }
 
   /* ── SECTIONS ── */
@@ -189,53 +195,64 @@ textarea { resize: vertical; min-height: 90px; }
     background: #162D49 !important;
     color: white !important;
     font-size: 11px !important;
-    font-weight: 800 !important;
-    padding: 9px 20px !important;
+    font-weight: 700 !important;
+    padding: 10px 24px !important;
     letter-spacing: 2px !important;
     text-transform: uppercase !important;
+    font-family: 'Segoe UI', Arial, sans-serif !important;
     break-after: avoid !important;
     page-break-after: avoid !important;
   }
 
+  /* ── SOUS-TITRES — fond blanc, bordure gauche lavande ── */
   .doc-subsection-title {
-    background: #EAE4F5 !important;
+    background: white !important;
     color: #162D49 !important;
     font-size: 11px !important;
-    font-weight: 800 !important;
-    padding: 7px 20px 7px 15px !important;
-    border-left: 4px solid #7B6BA8 !important;
-    letter-spacing: 1px !important;
+    font-weight: 700 !important;
+    padding: 8px 24px !important;
+    border: none !important;
+    border-left: 4px solid #A495C3 !important;
+    margin: 0 !important;
+    letter-spacing: 0.5px !important;
+    font-family: 'Segoe UI', Arial, sans-serif !important;
     break-after: avoid !important;
     page-break-after: avoid !important;
   }
 
-  .doc-section-body { padding: 10px 20px 14px !important; margin-bottom: 8px !important; }
+  /* ── CORPS — Georgia serif, 13px, 1.8, filet bas discret ── */
+  .doc-section-body {
+    padding: 14px 24px !important;
+    border-bottom: 1px solid #eeeeee !important;
+  }
+  .doc-section:last-child .doc-section-body { border-bottom: none !important; }
   .doc-text, .doc-text-plain {
-    font-size: 12px !important;
-    line-height: 1.75 !important;
-    color: #162D49 !important;
+    font-size: 13px !important;
+    line-height: 1.8 !important;
+    color: #1a1a2e !important;
     margin: 3px 0 !important;
     orphans: 3 !important; widows: 3 !important;
   }
   .doc-bullet {
-    font-size: 12px !important;
-    line-height: 1.75 !important;
-    color: #162D49 !important;
+    font-size: 13px !important;
+    line-height: 1.8 !important;
+    color: #1a1a2e !important;
     padding-left: 22px !important;
     margin: 3px 0 !important;
     orphans: 3 !important; widows: 3 !important;
   }
   .doc-bullet::before { color: #7B6BA8 !important; content: "▸" !important; font-size: 10px !important; top: 3px !important; }
 
-  /* ── PHOTOS — grille 2 colonnes ── */
+  /* ── PHOTOS — 2 colonnes, 220px ── */
   .photo-section-title {
     background: #162D49 !important;
     color: white !important;
     font-size: 11px !important;
-    font-weight: 800 !important;
-    padding: 9px 20px !important;
+    font-weight: 700 !important;
+    padding: 10px 24px !important;
     letter-spacing: 2px !important;
     text-transform: uppercase !important;
+    font-family: 'Segoe UI', Arial, sans-serif !important;
     margin-top: 0 !important;
     break-after: avoid !important;
     page-break-after: avoid !important;
@@ -244,17 +261,17 @@ textarea { resize: vertical; min-height: 90px; }
     display: grid !important;
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 12px !important;
-    padding: 14px 20px 18px !important;
+    padding: 16px 24px !important;
     break-inside: avoid !important;
     page-break-inside: avoid !important;
   }
   .doc-photo {
     display: block !important;
     width: 100% !important;
-    height: 200px !important;
+    height: 220px !important;
     object-fit: cover !important;
-    border-radius: 6px !important;
-    border: 1.5px solid #C8BFE0 !important;
+    border-radius: 4px !important;
+    border: none !important;
   }
 
   /* ── PIED DE PAGE ── */
@@ -262,14 +279,14 @@ textarea { resize: vertical; min-height: 90px; }
     content: 'AB RENOV 35  ·  ' attr(data-footer);
     display: block !important;
     font-size: 10px !important;
-    font-weight: 600 !important;
-    color: #7B6BA8 !important;
+    font-weight: 400 !important;
+    color: #A495C3 !important;
     text-align: center !important;
-    margin-top: 18px !important;
-    padding-top: 10px !important;
+    margin-top: 20px !important;
+    padding-top: 8px !important;
     border-top: 2px solid #162D49 !important;
     letter-spacing: 1.5px !important;
-    text-transform: uppercase !important;
+    font-family: 'Segoe UI', Arial, sans-serif !important;
   }
 }
 </style>
