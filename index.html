@@ -285,8 +285,7 @@ textarea { resize: vertical; min-height: 90px; }
 
 <div class="main">
   <div class="tabs">
-    <button class="tab-btn active" id="tab-btn-nouveau" onclick="showTab('nouveau')">✏️ Nouveau</button>
-    <button class="tab-btn" id="tab-btn-retour" onclick="showTab('nouveau')" style="display:none">← Retour</button>
+    <button class="tab-btn active" id="tab-btn-nouveau" onclick="showTab('nouveau')">✏️ Retour</button>
     <button class="tab-btn" id="tab-btn-liste" onclick="showTab('liste')">📂 Mes documents</button>
   </div>
 
@@ -297,7 +296,6 @@ textarea { resize: vertical; min-height: 90px; }
         <div class="type-btn active" data-type="CRCh" onclick="selectType(this)">Compte Rendu de Chantier</div>
         <div class="type-btn" data-type="FCh" onclick="selectType(this)">Fiche Chantier</div>
         <div class="type-btn" data-type="PVR" onclick="selectType(this)">Procès-Verbal de Réception</div>
-      </div>
       </div>
       <div class="card">
         <label>Chantier / Client</label>
@@ -348,7 +346,6 @@ textarea { resize: vertical; min-height: 90px; }
         <input type="file" id="modif-photo-input" accept="image/*" multiple style="display:none" onchange="handleFiles(this)">
         <input type="file" id="modif-doc-input" accept="image/*,application/pdf,.doc,.docx" multiple style="display:none" onchange="handleFiles(this)">
         <div id="modif-files-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
-        <button type="button" class="btn-generate" style="margin-top:14px;background:var(--navy)" onclick="regenAvecPhotos()">⚡ Régénérer le document avec les photos</button>
       </div>
     </div>
   </div>
@@ -564,10 +561,6 @@ async function generer() {
   }
 }
 
-
-
-
-
 // ── Modifier ─────────────────────────────────────
 async function modifier() {
   const modif = document.getElementById('modif-input').value.trim();
@@ -757,9 +750,6 @@ function showTab(tab) {
   document.getElementById('tab-btn-liste').classList.toggle('active', tab === 'liste');
   document.getElementById('tab-nouveau').style.display = tab === 'nouveau' ? 'block' : 'none';
   document.getElementById('tab-liste').style.display   = tab === 'liste'   ? 'block' : 'none';
-  // Afficher bouton Retour sur la liste, Nouveau sur formulaire
-  document.getElementById('tab-btn-nouveau').style.display = tab === 'liste' ? 'none' : 'block';
-  document.getElementById('tab-btn-retour').style.display  = tab === 'liste' ? 'block' : 'none';
   if (tab === 'liste') {
     document.getElementById('doc-result').style.display = 'none';
     document.getElementById('doc-result').classList.remove('visible');
@@ -855,28 +845,6 @@ async function supprimerDoc(id) {
   if (!confirm('Supprimer ce document ?')) return;
   await callGAS({ action: 'delete', id });
   chargerListe();
-}
-
-// ── Régénérer avec photos ──────────────────────
-async function regenAvecPhotos() {
-  const photos = currentFiles.filter(f => f.type && f.type.startsWith('image/'));
-  if (photos.length === 0) { alert("Ajoutez d'abord des photos."); return; }
-  const consigne = document.getElementById('modif-input').value.trim() || "Intègre les nouvelles photos dans le document.";
-  document.getElementById('doc-result').classList.remove('visible');
-  document.getElementById('doc-result').style.display = 'none';
-  document.getElementById('loading').classList.add('visible');
-  startProgress();
-  try {
-    const data = await callGAS({ type: selectedType, chantier: currentChantier, operateur: currentOperateur, observations: consigne, files: currentFiles, history: [] });
-    conversationHistory = data.history;
-    stopProgress();
-    setTimeout(async () => { afficherDoc(data.text); await sauvegarderAuto(); }, 400);
-  } catch(e) {
-    stopProgress();
-    alert('Erreur : ' + e.message);
-    document.getElementById('doc-result').classList.add('visible');
-    document.getElementById('doc-result').style.display = '';
-  }
 }
 </script>
 </body>
