@@ -781,6 +781,18 @@ function afficherDoc(text) {
   if (inSection) html += '</div></div>';
 
   const docContent = document.getElementById('doc-content');
+
+  // En mode modification : sauvegarder les blocs photos actuels avant écrasement
+  let blocksAvant = [];
+  if (_modeModification) {
+    docContent.querySelectorAll('.doc-photo-block').forEach(bloc => {
+      const cap = bloc.querySelector('div');
+      const label = cap ? cap.textContent.trim() : '';
+      const photo = currentFiles.find(f => (f.label||'') === label);
+      if (photo) blocksAvant.push({ label, photo, nextSibling: bloc.nextSibling, parent: bloc.parentNode });
+    });
+  }
+
   docContent.innerHTML = html;
   docContent.setAttribute('data-chantier', currentChantier);
   docContent.setAttribute('data-date', new Date().toLocaleDateString('fr-FR'));
@@ -788,8 +800,19 @@ function afficherDoc(text) {
   const docFrame = document.getElementById('doc-frame');
   docFrame.setAttribute('data-footer', currentChantier + (currentOperateur ? '  ·  ' + currentOperateur : '') + '  ·  ' + new Date().toLocaleDateString('fr-FR'));
 
-  // Injecter photos aux marqueurs [PHOTO:label] dans le doc
-  injecterPhotosMarqueurs();
+  // En mode modification : tenter d'abord les marqueurs, sinon réinjecter aux positions sauvegardées
+  if (_modeModification && blocksAvant.length > 0) {
+    // D'abord essayer les marqueurs dans le nouveau texte
+    injecterPhotosMarqueurs();
+    // Si toujours aucun bloc photo → réinjecter à la fin du doc
+    if (docContent.querySelectorAll('.doc-photo-block').length === 0) {
+      blocksAvant.forEach(({ photo }) => {
+        docContent.appendChild(creerBlocPhoto(photo));
+      });
+    }
+  } else {
+    injecterPhotosMarqueurs();
+  }
 }
 
 // ── Injection photos aux marqueurs ───────────────
@@ -1196,6 +1219,17 @@ async function ouvrirDoc(id) {
     currentDocDate   = (data.date     || '').slice(0, 10);
     conversationHistory = data.history || [];
     currentFiles = (data.files || []).map(f => ({ name: f.name, type: f.type || 'image/jpeg', url: f.url }));
+    // Restaurer les labels depuis les marqueurs [PHOTO:label] dans le contenu sauvegardé
+    const marqueurs = [...(data.contenu || '').matchAll(/\[PHOTO:([^\]]+)\]/gi)];
+    if (marqueurs.length > 0 && currentFiles.length > 0) {
+      // Associer chaque marqueur à la photo correspondante par ordre
+      marqueurs.forEach((m, i) => {
+        const label = m[1].trim();
+        // Chercher une photo sans label ou dont le nom contient le label
+        const photo = currentFiles.find(f => !f.label) || currentFiles[i];
+        if (photo) photo.label = label;
+      });
+    }
     console.log('currentFiles après ouvrirDoc:', JSON.stringify(currentFiles.map(f=>({name:f.name,url:f.url}))));
     renderFilesList();
     // Afficher
@@ -1225,7 +1259,9 @@ async function ouvrirDoc(id) {
       dc.setAttribute('data-chantier', currentChantier);
       dc.setAttribute('data-date', new Date().toLocaleDateString('fr-FR'));
     }
-    afficherPhotosDoc();
+    // À l'ouverture, les marqueurs sont dans le HTML — injecter normalement
+    // Mais si aucun marqueur (ancien doc), les photos iront en bas classiquement
+    injecterPhotosMarqueurs();
     const msg = document.getElementById('save-msg');
     msg.innerHTML = '<span class="save-badge save-badge-saving">📄 Document chargé</span>';
     setTimeout(() => msg.innerHTML = '<span class="save-badge save-badge-idle">✓ Sauvegardé</span>', 2000);
