@@ -970,8 +970,13 @@ async function sauvegarderSilencieux() {
   if (!currentDocId || !currentChantier) return;
   try {
     const clone = document.getElementById('doc-frame').cloneNode(true);
+    clone.querySelectorAll('.doc-photo-block').forEach(bloc => {
+      const cap = bloc.querySelector('div');
+      const label = cap ? cap.textContent.trim() : '';
+      bloc.parentNode.replaceChild(document.createTextNode('[PHOTO:' + label + ']'), bloc);
+    });
+    clone.querySelectorAll('.photo-section-title, .doc-photos').forEach(el => el.remove());
     clone.querySelectorAll('img.doc-photo').forEach(img => img.remove());
-    clone.querySelectorAll('.photo-section-title, .doc-photos, .doc-photo-block').forEach(el => el.remove());
     const contenu = clone.innerHTML;
     const filesPayload = currentFiles
       .filter(f => f.url && f.url.startsWith('dropbox:'))
@@ -1031,10 +1036,18 @@ async function sauvegarderAuto() {
     }
   }
 
-  // Contenu HTML sans balises img (photos référencées par URL)
+  // Contenu HTML : remplacer les blocs photos par leurs marqueurs [PHOTO:label] pour persistence
   const clone = document.getElementById('doc-frame').cloneNode(true);
-  clone.querySelectorAll('img.doc-photo').forEach(img => img.remove());
+  // Remplacer chaque doc-photo-block par son marqueur texte
+  clone.querySelectorAll('.doc-photo-block').forEach(bloc => {
+    const cap = bloc.querySelector('div');
+    const label = cap ? cap.textContent.trim() : '';
+    const marker = document.createTextNode('[PHOTO:' + label + ']');
+    bloc.parentNode.replaceChild(marker, bloc);
+  });
+  // Supprimer les sections photos groupées (sans marqueurs individuels)
   clone.querySelectorAll('.photo-section-title, .doc-photos').forEach(el => el.remove());
+  clone.querySelectorAll('img.doc-photo').forEach(img => img.remove());
   const contenu = clone.innerHTML;
 
   const filesPayload = currentFiles
