@@ -400,6 +400,7 @@ let currentOperateur = '';
 let currentDocDate   = '';
 let progressTimer = null;
 let _pendingLabelFiles = [];   // queue photos en attente de label
+let _modeModification = false; // true pendant une modif → photos non regroupées en bas
 let _pendingLabelResolve = null; // resolve de la Promise courante
 let isSaving = false;
 let _dbxToken    = null;
@@ -709,57 +710,11 @@ async function mettreAJour() {
     console.log('allPhotos avant sauvegarde:', JSON.stringify(allPhotos.map(f => ({ name: f.name, url: f.url }))));
 
     if (modif) {
-      // Sauvegarder les positions actuelles des photos AVANT modification
-      // sous forme de map { label -> index dans doc-frame }
-      const docFrame = document.getElementById('doc-frame');
-      const positionsAvant = [];
-      docFrame.querySelectorAll('.doc-photo-block').forEach(bloc => {
-        const cap = bloc.querySelector('div');
-        const label = cap ? cap.textContent.trim() : '';
-        // Trouver l'index de position relative dans le parent
-        const parent = bloc.parentNode;
-        const siblings = Array.from(parent.childNodes);
-        positionsAvant.push({ label, parentClass: parent.className || parent.tagName, siblingIdx: siblings.indexOf(bloc) });
-      });
-
+      _modeModification = true;
       const data = await callGAS({ modif, history: cleanHistory(conversationHistory) });
       conversationHistory = data.history;
-      afficherDoc(data.text); // afficherDoc appelle injecterPhotosMarqueurs
-
-      // Si les photos sont toutes en bas (aucun marqueur trouvé par Claude)
-      // → les replacer aux positions sauvegardées ou simplement les garder inline
-      const photosApres = document.querySelectorAll('.doc-photo-block');
-      const toutesEnBas = document.querySelector('.doc-photos') !== null;
-      if (toutesEnBas || photosApres.length === 0) {
-        // Ré-injecter les photos depuis currentFiles aux marqueurs si présents,
-        // sinon les laisser en bas — on accepte ce cas dégradé
-        // mais on supprime la section "Photos du chantier" et on les place après le texte principal
-        const section = document.querySelector('.photo-section-title');
-        const grid    = document.querySelector('.doc-photos');
-        if (section && grid) {
-          // Déplacer chaque photo inline après le dernier paragraphe de texte
-          const docContent = document.getElementById('doc-content') || docFrame;
-          const paras = Array.from(docContent.children).filter(el => 
-            !el.classList.contains('photo-section-title') && 
-            !el.classList.contains('doc-photos') &&
-            !el.classList.contains('doc-photo-block')
-          );
-          const insertPoint = paras[paras.length - 1] || null;
-          const photos = currentFiles.filter(f => f.type && f.type.startsWith('image/'));
-          section.remove();
-          Array.from(grid.querySelectorAll('.doc-photo-block')).forEach((bloc, i) => {
-            const photo = photos[i];
-            if (!photo) return;
-            const newBloc = creerBlocPhoto(photo);
-            if (insertPoint && insertPoint.parentNode) {
-              insertPoint.parentNode.insertBefore(newBloc, insertPoint.nextSibling);
-            } else {
-              docContent.appendChild(newBloc);
-            }
-          });
-          grid.remove();
-        }
-      }
+      afficherDoc(data.text);
+      _modeModification = false;
       document.getElementById('modif-input').value = '';
     }
     // Un seul appel sauvegarderAuto après que toutes les photos soient dans currentFiles
@@ -880,11 +835,27 @@ function injecterPhotosMarqueurs() {
 
   remplacerMarqueursDansEl(docFrame);
 
-  // Seulement les photos sans aucun marqueur trouvé → bas de page
-  // Si au moins 1 marqueur a été trouvé, on ne regroupe PAS les restantes
+  // Photos sans marqueur
   const restantes = photos.filter(p => !placees.has(p));
-  if (restantes.length > 0 && placees.size === 0) {
-    // Aucun marqueur du tout → afficher en bas classiquement
+  if (restantes.length === 0) return;
+
+  if (_modeModification) {
+    // En mode modification : si Claude n'a placé aucun marqueur → ne rien faire
+    // Les photos restent où elles étaient (le HTML sauvegardé contient les marqueurs)
+    if (placees.size === 0) return;
+    // Sinon placer les restantes après la dernière photo placée
+    const allBlocks = docFrame.querySelectorAll('.doc-photo-block');
+    const lastBlock = allBlocks[allBlocks.length - 1];
+    restantes.forEach(f => {
+      const bloc = creerBlocPhoto(f);
+      if (lastBlock && lastBlock.parentNode) lastBlock.parentNode.insertBefore(bloc, lastBlock.nextSibling);
+      else (document.getElementById('doc-content') || docFrame).appendChild(bloc);
+    });
+    return;
+  }
+
+  // Mode normal (première génération) → bas de page si aucun marqueur
+  if (placees.size === 0) {
     const target = document.getElementById('doc-content') || docFrame;
     const titleEl = document.createElement('div');
     titleEl.className = 'photo-section-title';
@@ -894,15 +865,13 @@ function injecterPhotosMarqueurs() {
     restantes.forEach(f => gridEl.appendChild(creerBlocPhoto(f)));
     target.appendChild(titleEl);
     target.appendChild(gridEl);
-  } else if (restantes.length > 0 && placees.size > 0) {
-    // Certaines placées, d'autres non → injecter les restantes juste après la dernière placée
+  } else {
     const allBlocks = docFrame.querySelectorAll('.doc-photo-block');
     const lastBlock = allBlocks[allBlocks.length - 1];
-    const insertAfter = lastBlock ? lastBlock.parentNode : (document.getElementById('doc-content') || docFrame);
     restantes.forEach(f => {
       const bloc = creerBlocPhoto(f);
       if (lastBlock && lastBlock.parentNode) lastBlock.parentNode.insertBefore(bloc, lastBlock.nextSibling);
-      else insertAfter.appendChild(bloc);
+      else (document.getElementById('doc-content') || docFrame).appendChild(bloc);
     });
   }
 }
