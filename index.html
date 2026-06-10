@@ -90,7 +90,6 @@ textarea { resize: vertical; min-height: 90px; }
 .doc-photos { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 16px 12px; }
 .doc-photo { width: calc(33% - 6px); aspect-ratio: 4/3; object-fit: cover; border-radius: 4px; cursor: pointer; }
 .photo-section-title { background: var(--navy); padding: 7px 16px; font-weight: 800; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: white; margin-top: 8px; }
-.doc-photo-block { padding: 4px 0; }
 
 .modif-zone { background: var(--white); border-radius: 12px; padding: 16px; border: 1px solid var(--border); margin-top: 14px; }
 .btn-modif { width: 100%; padding: 11px; background: var(--lav); color: var(--white); border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 10px; }
@@ -400,13 +399,10 @@ let currentChantier  = '';
 let currentOperateur = '';
 let currentDocDate   = '';
 let progressTimer = null;
-let _pendingLabelFiles = [];
-let _pendingLabelResolve = null;
 let isSaving = false;
 let _dbxToken    = null;
 let _dbxTokenExp = 0;
 let _saveDebounceTimer = null;
-let photoPositions = {};
 
 // pas de blocage beforeunload
 
@@ -451,30 +447,6 @@ function compressImage(file, callback) {
 }
 
 // ── Fichiers ─────────────────────────────────────
-// ── Label photo modal ──────────────────────────────────────
-function askPhotoLabel(fileName) {
-  return new Promise(resolve => {
-    _pendingLabelResolve = resolve;
-    const modal = document.getElementById('photo-label-modal');
-    const inp   = document.getElementById('photo-label-input');
-    inp.value   = '';
-    inp.placeholder = 'Ex: électricité, sol, menuiserie…';
-    modal.style.display = 'flex';
-    setTimeout(() => inp.focus(), 100);
-    // Valider avec Entrée
-    inp.onkeydown = e => { if (e.key === 'Enter') confirmPhotoLabel(); };
-  });
-}
-function confirmPhotoLabel() {
-  const val = document.getElementById('photo-label-input').value.trim();
-  document.getElementById('photo-label-modal').style.display = 'none';
-  if (_pendingLabelResolve) { _pendingLabelResolve(val || ''); _pendingLabelResolve = null; }
-}
-function skipPhotoLabel() {
-  document.getElementById('photo-label-modal').style.display = 'none';
-  if (_pendingLabelResolve) { _pendingLabelResolve(''); _pendingLabelResolve = null; }
-}
-
 async function handleFiles(input) {
   const files = Array.from(input.files).slice(0, 3);
   const existingPhotos = currentFiles.filter(f => f.type && f.type.startsWith('image/')).length;
@@ -485,8 +457,6 @@ async function handleFiles(input) {
     const file = files[i];
     if (file.type.startsWith('image/')) {
       const c = await new Promise(resolve => compressImage(file, resolve));
-      const label = await askPhotoLabel(file.name);
-      c.label = label;
       currentFiles.push(c);
     } else {
       const data = await new Promise((resolve, reject) => {
@@ -521,10 +491,7 @@ async function ajouterFichiersModif(files) {
       r.onerror = () => resolve(null);
       r.readAsDataURL(file);
     });
-    if (data) {
-      const label = file.type.startsWith('image/') ? await askPhotoLabel(file.name) : '';
-      currentFiles.push({ name: file.name, type: file.type, data, label });
-    }
+    if (data) currentFiles.push({ name: file.name, type: file.type, data });
     setSavingUI(true, `📥 ${i + 1}/${total} chargé…`);
     renderFilesList();
     afficherPhotosDoc();
@@ -535,17 +502,45 @@ async function ajouterFichiersModif(files) {
 function removeFile(i) { currentFiles.splice(i, 1); renderFilesList(); afficherPhotosDoc(); }
 
 function renderFilesList() {
-  const tags = currentFiles.map((f,i) => {
-    const isPhoto = f.type && f.type.startsWith('image/');
-    const labelBadge = isPhoto
-      ? `<span style="background:#162D49;color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;margin-left:4px">${f.label || '—'}</span>`
-      : '';
-    return `<div class="file-tag">${isPhoto?'📷':'📄'} ${f.name}${labelBadge} <button onclick="removeFile(${i})">✕</button></div>`;
-  }).join('');
+  const tags = currentFiles.map((f,i) =>
+    `<div class="file-tag">📄 ${f.name} <button onclick="removeFile(${i})">✕</button></div>`
+  ).join('');
   const el1 = document.getElementById('files-list');
   const el2 = document.getElementById('modif-files-list');
   if (el1) el1.innerHTML = tags;
   if (el2) el2.innerHTML = tags;
+}
+
+// Affiche/met à jour la section photos dans doc-content
+function afficherPhotosDoc() {
+  const photos = currentFiles.filter(f => f.type && f.type.startsWith('image/'));
+  // Chercher dans doc-frame entier (couvre doc-content et contenu restauré)
+  const docFrame = document.getElementById('doc-frame');
+  if (!docFrame) return;
+  // Supprimer toutes les anciennes sections photos où qu'elles soient
+  docFrame.querySelectorAll('.photo-section-title, .doc-photos').forEach(el => el.remove());
+  if (photos.length === 0) return;
+  // Injecter à la fin de doc-content si présent, sinon à la fin de doc-frame
+  const target = document.getElementById('doc-content') || docFrame;
+  const titleEl = document.createElement('div');
+  titleEl.className = 'photo-section-title';
+  titleEl.textContent = '📷 Photos du chantier';
+  const gridEl = document.createElement('div');
+  gridEl.className = 'doc-photos';
+  gridEl.id = 'doc-photos-section';
+  photos.forEach((f, i) => {
+    const img = document.createElement('img');
+    img.className = 'doc-photo';
+    img.onclick = () => openLightbox(i);
+    if (f.url && f.url.startsWith('dropbox:')) {
+      resolveDropboxUrl(f.url.replace('dropbox:', '')).then(link => { img.src = link; });
+    } else {
+      img.src = f.url || `data:${f.type};base64,${f.data}`;
+    }
+    gridEl.appendChild(img);
+  });
+  target.appendChild(titleEl);
+  target.appendChild(gridEl);
 }
 
 // ── Lightbox ─────────────────────────────────────
@@ -602,30 +597,14 @@ async function callGAS(payload) {
 
 // Purger images base64 de l'historique (trop lourd pour GAS)
 function cleanHistory(h) {
-  return (h || [])
-    .map(msg => {
-      // Nettoyer le contenu des blocs
-      if (Array.isArray(msg.content)) {
-        return { ...msg, content: msg.content.map(b => {
-          if (b.type === 'image') return { type: 'text', text: '[image]' };
-          if (b.type === 'document') return { type: 'text', text: '[document]' };
-          return b;
-        })};
-      }
-      // Supprimer les rappels photos des messages texte (évite que Claude y réponde)
-      if (typeof msg.content === 'string') {
-        const cleaned = msg.content
-          .replace(/\n\n\[RAPPEL PHOTOS EXISTANTES\][\s\S]*$/i, '')
-          .replace(/\n\n\[PHOTOS JOINTES[^\]]*\][\s\S]*$/i, '')
-          .trim();
-        return { ...msg, content: cleaned };
-      }
-      return msg;
-    })
-    .filter(msg => {
-      const txt = typeof msg.content === 'string' ? msg.content : '';
-      return txt.length > 0 || Array.isArray(msg.content);
-    });
+  return (h || []).map(msg => {
+    if (!Array.isArray(msg.content)) return msg;
+    return { ...msg, content: msg.content.map(b => {
+      if (b.type === 'image') return { type: 'text', text: '[image]' };
+      if (b.type === 'document') return { type: 'text', text: '[document]' };
+      return b;
+    })};
+  });
 }
 
 // ── Filtre images avant envoi API ────────────────
@@ -660,15 +639,7 @@ async function generer() {
 
   try {
     const filesWithoutPhotos = currentFiles.filter(f => !f.type || !f.type.startsWith('image/'));
-    // Photos : mention contextuelle uniquement (placement géré par JS)
-    const photoLabels = currentFiles
-      .filter(f => f.type && f.type.startsWith('image/'))
-      .map((f, i) => `- Photo ${i+1}${f.label ? ' : ' + f.label : ''}`)
-      .join('\n');
-    const obsAvecPhotos = photoLabels
-      ? observations + '\n\n[' + currentFiles.filter(f=>f.type&&f.type.startsWith('image/')).length + ' photo(s) jointe(s)]\n' + photoLabels
-      : observations;
-    const data = await callGAS({ type: selectedType, chantier, operateur, observations: obsAvecPhotos, files: filesWithoutPhotos, history: [] });
+    const data = await callGAS({ type: selectedType, chantier, operateur, observations, files: filesWithoutPhotos, history: [] });
     conversationHistory = data.history;
     stopProgress();
     setTimeout(async () => {
@@ -695,14 +666,19 @@ async function mettreAJour() {
     console.log('allPhotos avant sauvegarde:', JSON.stringify(allPhotos.map(f => ({ name: f.name, url: f.url }))));
 
     if (modif) {
+      // Texte de modification saisi → appel IA
       const data = await callGAS({ modif, history: cleanHistory(conversationHistory) });
       conversationHistory = data.history;
       afficherDoc(data.text);
       document.getElementById('modif-input').value = '';
-    } else {
-      afficherPhotosDoc();
     }
+    // Un seul appel sauvegarderAuto après que toutes les photos soient dans currentFiles
+    console.log('AVANT SAVE - currentFiles:', JSON.stringify(currentFiles.map(f=>({name:f.name,url:f.url||null}))));
+    console.log('currentDocId:', currentDocId);
+    console.log('photosExistantes:', JSON.stringify(currentFiles.filter(f => f.url && !f.data)));
+    console.log('photosAUploader:', JSON.stringify(currentFiles.filter(f => f.data && !f.url).map(f=>f.name)));
     await sauvegarderAuto();
+    afficherPhotosDoc();
   } catch(e) {
     alert('Erreur mise à jour : ' + e.message);
   } finally {
@@ -763,93 +739,13 @@ function afficherDoc(text) {
   docContent.innerHTML = html;
   docContent.setAttribute('data-chantier', currentChantier);
   docContent.setAttribute('data-date', new Date().toLocaleDateString('fr-FR'));
+  // Pied de page PDF
   const docFrame = document.getElementById('doc-frame');
   docFrame.setAttribute('data-footer', currentChantier + (currentOperateur ? '  ·  ' + currentOperateur : '') + '  ·  ' + new Date().toLocaleDateString('fr-FR'));
-  reinjecterPhotos();
+
+  // Photos depuis currentFiles
+  afficherPhotosDoc();
 }
-
-// ── Réinjection photos par positions sauvegardées ──
-function reinjecterPhotos() {
-  const docFrame = document.getElementById('doc-frame');
-  if (!docFrame) return;
-  const photos = currentFiles.filter(f => f.type && f.type.startsWith('image/'));
-
-  // Supprimer anciens blocs photos
-  docFrame.querySelectorAll('.photo-section-title, .doc-photos, .doc-photo-block').forEach(el => el.remove());
-  if (photos.length === 0) return;
-
-  const docContent = document.getElementById('doc-content') || docFrame;
-  const sections = Array.from(docContent.querySelectorAll('.doc-section'));
-  const sectionTitles = sections.map(s => s.querySelector('.doc-section-title')?.textContent?.trim() || '');
-
-  // Pour chaque photo sans position connue, tenter un matching label → section
-  photos.forEach(f => {
-    const key = f.label || f.name;
-    if (!photoPositions[key]) {
-      const lbl = (f.label || '').toLowerCase();
-      const matched = lbl ? sectionTitles.find(t => t.toLowerCase().includes(lbl) || lbl.includes(t.toLowerCase())) : null;
-      photoPositions[key] = matched || '__bottom__';
-    }
-  });
-
-  // Regrouper par section cible
-  const bySection = {};
-  const atBottom = [];
-  photos.forEach(f => {
-    const pos = photoPositions[f.label || f.name] || '__bottom__';
-    if (pos === '__bottom__') { atBottom.push(f); }
-    else { (bySection[pos] = bySection[pos] || []).push(f); }
-  });
-
-  // Injecter dans les sections
-  sections.forEach(section => {
-    const title = section.querySelector('.doc-section-title')?.textContent?.trim() || '';
-    if (bySection[title] && bySection[title].length > 0) {
-      const grid = document.createElement('div');
-      grid.className = 'doc-photos';
-      bySection[title].forEach(f => grid.appendChild(creerBlocPhoto(f)));
-      section.appendChild(grid);
-    }
-  });
-
-  // Photos restantes en bas
-  if (atBottom.length > 0) {
-    const titleEl = document.createElement('div');
-    titleEl.className = 'photo-section-title';
-    titleEl.textContent = '📷 Photos du chantier';
-    const gridEl = document.createElement('div');
-    gridEl.className = 'doc-photos';
-    atBottom.forEach(f => gridEl.appendChild(creerBlocPhoto(f)));
-    docContent.appendChild(titleEl);
-    docContent.appendChild(gridEl);
-  }
-}
-
-function creerBlocPhoto(f) {
-  const wrap = document.createElement('div');
-  wrap.className = 'doc-photo-block';
-  wrap.style.cssText = 'margin:12px 0;text-align:center;';
-  const img = document.createElement('img');
-  img.className = 'doc-photo';
-  img.style.maxWidth = '100%';
-  const idx = currentFiles.filter(x=>x.type&&x.type.startsWith('image/')).indexOf(f);
-  img.onclick = () => openLightbox(idx);
-  if (f.url && f.url.startsWith('dropbox:')) {
-    resolveDropboxUrl(f.url.replace('dropbox:', '')).then(link => { img.src = link; });
-  } else {
-    img.src = f.url || (f.data ? `data:${f.type};base64,${f.data}` : '');
-  }
-  wrap.appendChild(img);
-  if (f.label) {
-    const cap = document.createElement('div');
-    cap.style.cssText = 'font-size:11px;color:#888;margin-top:4px;font-style:italic;';
-    cap.textContent = f.label;
-    wrap.appendChild(cap);
-  }
-  return wrap;
-}
-
-function afficherPhotosDoc() { reinjecterPhotos(); }
 
 // ── Dropbox ──────────────────────────────────────
 async function getDropboxToken() {
@@ -921,36 +817,6 @@ function setSavingUI(saving, label) {
 }
 
 // ── Sauvegarde auto ──────────────────────────────
-// Sauvegarde silencieuse déclenchée à la navigation (sans upload photos)
-async function sauvegarderSilencieux() {
-  if (!currentDocId || !currentChantier) return;
-  try {
-    const clone = document.getElementById('doc-frame').cloneNode(true);
-    clone.querySelectorAll('img.doc-photo').forEach(img => img.remove());
-    clone.querySelectorAll('.photo-section-title, .doc-photos, .doc-photo-block').forEach(el => el.remove());
-    const contenu = clone.innerHTML;
-    const filesPayload = currentFiles
-      .filter(f => f.url && f.url.startsWith('dropbox:'))
-      .map(f => ({ name: f.name, type: f.type, url: f.url }));
-    const cleanHistory = (conversationHistory || []).map(m => ({
-      role: m.role,
-      content: typeof m.content === 'string' ? m.content
-        : (m.content || []).filter(b => b.type === 'text').map(b => b.text).join('')
-    })).filter(m => m.content);
-    await callGAS({
-      action: 'update', id: currentDocId,
-      type: selectedType, chantier: currentChantier,
-      operateur: currentOperateur,
-      date: new Date().toISOString().slice(0,10),
-      contenu, files: filesPayload, history: cleanHistory
-    });
-    const msg = document.getElementById('save-msg');
-    if (msg) msg.innerHTML = '<span class="save-badge save-badge-idle">✓ Sauvegardé</span>';
-  } catch(e) {
-    console.warn('Sauvegarde silencieuse échouée:', e.message);
-  }
-}
-
 async function sauvegarderAuto() {
   if (!currentChantier) return;
   const msg = document.getElementById('save-msg');
@@ -987,10 +853,10 @@ async function sauvegarderAuto() {
     }
   }
 
-  // Contenu HTML sans images (photos référencées par URL)
+  // Contenu HTML sans balises img (photos référencées par URL)
   const clone = document.getElementById('doc-frame').cloneNode(true);
   clone.querySelectorAll('img.doc-photo').forEach(img => img.remove());
-  clone.querySelectorAll('.photo-section-title, .doc-photos, .doc-photo-block').forEach(el => el.remove());
+  clone.querySelectorAll('.photo-section-title, .doc-photos').forEach(el => el.remove());
   const contenu = clone.innerHTML;
 
   const filesPayload = currentFiles
@@ -1072,8 +938,6 @@ function showTab(tab) {
   document.getElementById('tab-nouveau').style.display = tab === 'nouveau' ? 'block' : 'none';
   document.getElementById('tab-liste').style.display   = tab === 'liste'   ? 'block' : 'none';
   if (tab === 'liste') {
-    // Sauvegarde automatique si un doc est ouvert
-    if (currentDocId) sauvegarderSilencieux();
     document.getElementById('doc-result').style.display = 'none';
     document.getElementById('doc-result').classList.remove('visible');
     document.getElementById('form-section').style.display = 'none';
@@ -1089,7 +953,6 @@ function showTab(tab) {
     document.getElementById('form-section').style.display = 'block';
     currentDocId = null; currentFiles = []; conversationHistory = [];
     currentChantier = ''; currentOperateur = ''; currentDocDate = '';
-    photoPositions = {};
     renderFilesList();
   }
 }
@@ -1131,8 +994,7 @@ async function ouvrirDoc(id) {
     currentOperateur = data.operateur || '';
     currentDocDate   = (data.date     || '').slice(0, 10);
     conversationHistory = data.history || [];
-    currentFiles = (data.files || []).map(f => ({ name: f.name, type: f.type || 'image/jpeg', url: f.url, label: f.label || '' }));
-    photoPositions = {};
+    currentFiles = (data.files || []).map(f => ({ name: f.name, type: f.type || 'image/jpeg', url: f.url }));
     console.log('currentFiles après ouvrirDoc:', JSON.stringify(currentFiles.map(f=>({name:f.name,url:f.url}))));
     renderFilesList();
     // Afficher
@@ -1162,7 +1024,7 @@ async function ouvrirDoc(id) {
       dc.setAttribute('data-chantier', currentChantier);
       dc.setAttribute('data-date', new Date().toLocaleDateString('fr-FR'));
     }
-    reinjecterPhotos();
+    afficherPhotosDoc();
     const msg = document.getElementById('save-msg');
     msg.innerHTML = '<span class="save-badge save-badge-saving">📄 Document chargé</span>';
     setTimeout(() => msg.innerHTML = '<span class="save-badge save-badge-idle">✓ Sauvegardé</span>', 2000);
@@ -1175,17 +1037,5 @@ async function supprimerDoc(id) {
   chargerListe();
 }
 </script>
-<!-- Modal label photo -->
-<div id="photo-label-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.5);align-items:center;justify-content:center;">
-  <div style="background:#fff;border-radius:14px;padding:24px 20px;width:90%;max-width:340px;box-shadow:0 8px 32px rgba(0,0,0,.2);">
-    <div style="font-weight:700;font-size:15px;color:#162D49;margin-bottom:8px;">📷 Label de la photo</div>
-    <div style="font-size:13px;color:#666;margin-bottom:14px;">Décris ce que montre cette photo (ex: électricité, sol, menuiserie, bas de page…)</div>
-    <input id="photo-label-input" type="text" placeholder="Ex: électricité" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid #DDD5CA;border-radius:8px;font-size:14px;margin-bottom:16px;outline:none;">
-    <div style="display:flex;gap:10px;">
-      <button onclick="confirmPhotoLabel()" style="flex:1;background:#162D49;color:#fff;border:none;border-radius:8px;padding:11px;font-size:14px;font-weight:600;cursor:pointer;">Confirmer</button>
-      <button onclick="skipPhotoLabel()" style="flex:1;background:#EDE9F4;color:#7B6BA8;border:none;border-radius:8px;padding:11px;font-size:14px;cursor:pointer;">Sans label</button>
-    </div>
-  </div>
-</div>
 </body>
 </html>
