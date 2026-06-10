@@ -804,17 +804,17 @@ function injecterPhotosMarqueurs() {
   if (!docFrame) return;
 
   const photos = currentFiles.filter(f => f.type && f.type.startsWith('image/'));
-  // Supprimer anciens blocs photos orphelins (sans marqueur)
-  docFrame.querySelectorAll('.photo-section-title, .doc-photos, .doc-photo-block').forEach(el => el.remove());
-
   if (photos.length === 0) return;
 
-  // Parcourir tous les éléments texte du doc et remplacer [PHOTO:label]
-  const photosSansMarqueur = [...photos];
+  // Supprimer anciens blocs photos (seront réinjectés aux marqueurs)
+  docFrame.querySelectorAll('.photo-section-title, .doc-photos, .doc-photo-block').forEach(el => el.remove());
+
+  // Chercher les marqueurs [PHOTO:label] dans les noeuds texte
+  const placees = new Set();
 
   function remplacerMarqueursDansEl(el) {
-    el.childNodes.forEach(node => {
-      if (node.nodeType === 3) { // text node
+    Array.from(el.childNodes).forEach(node => {
+      if (node.nodeType === 3) {
         const txt = node.textContent;
         const re = /\[PHOTO:([^\]]+)\]/gi;
         let match;
@@ -824,21 +824,16 @@ function injecterPhotosMarqueurs() {
         while ((match = re.exec(txt)) !== null) {
           found = true;
           const label = match[1].trim().toLowerCase();
-          // Texte avant
           if (match.index > lastIdx) frag.appendChild(document.createTextNode(txt.slice(lastIdx, match.index)));
-          // Chercher la photo avec ce label
           const photo = photos.find(f => (f.label||'').toLowerCase() === label);
-          if (photo) {
-            photosSansMarqueur.splice(photosSansMarqueur.indexOf(photo), 1);
-            frag.appendChild(creerBlocPhoto(photo));
-          }
+          if (photo) { placees.add(photo); frag.appendChild(creerBlocPhoto(photo)); }
           lastIdx = match.index + match[0].length;
         }
         if (found) {
           if (lastIdx < txt.length) frag.appendChild(document.createTextNode(txt.slice(lastIdx)));
           node.parentNode.replaceChild(frag, node);
         }
-      } else if (node.nodeType === 1) {
+      } else if (node.nodeType === 1 && !node.classList.contains('doc-photo-block')) {
         remplacerMarqueursDansEl(node);
       }
     });
@@ -846,18 +841,30 @@ function injecterPhotosMarqueurs() {
 
   remplacerMarqueursDansEl(docFrame);
 
-  // Photos sans marqueur (label 'bas de page' ou non placées) → à la fin
-  const restantes = photosSansMarqueur;
-  if (restantes.length > 0) {
+  // Seulement les photos sans aucun marqueur trouvé → bas de page
+  // Si au moins 1 marqueur a été trouvé, on ne regroupe PAS les restantes
+  const restantes = photos.filter(p => !placees.has(p));
+  if (restantes.length > 0 && placees.size === 0) {
+    // Aucun marqueur du tout → afficher en bas classiquement
     const target = document.getElementById('doc-content') || docFrame;
     const titleEl = document.createElement('div');
     titleEl.className = 'photo-section-title';
     titleEl.textContent = '📷 Photos du chantier';
     const gridEl = document.createElement('div');
     gridEl.className = 'doc-photos';
-    restantes.forEach((f, i) => { gridEl.appendChild(creerBlocPhoto(f)); });
+    restantes.forEach(f => gridEl.appendChild(creerBlocPhoto(f)));
     target.appendChild(titleEl);
     target.appendChild(gridEl);
+  } else if (restantes.length > 0 && placees.size > 0) {
+    // Certaines placées, d'autres non → injecter les restantes juste après la dernière placée
+    const allBlocks = docFrame.querySelectorAll('.doc-photo-block');
+    const lastBlock = allBlocks[allBlocks.length - 1];
+    const insertAfter = lastBlock ? lastBlock.parentNode : (document.getElementById('doc-content') || docFrame);
+    restantes.forEach(f => {
+      const bloc = creerBlocPhoto(f);
+      if (lastBlock && lastBlock.parentNode) lastBlock.parentNode.insertBefore(bloc, lastBlock.nextSibling);
+      else insertAfter.appendChild(bloc);
+    });
   }
 }
 
