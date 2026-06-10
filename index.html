@@ -950,6 +950,36 @@ function setSavingUI(saving, label) {
 }
 
 // ── Sauvegarde auto ──────────────────────────────
+// Sauvegarde silencieuse déclenchée à la navigation (sans upload photos)
+async function sauvegarderSilencieux() {
+  if (!currentDocId || !currentChantier) return;
+  try {
+    const clone = document.getElementById('doc-frame').cloneNode(true);
+    clone.querySelectorAll('img.doc-photo').forEach(img => img.remove());
+    clone.querySelectorAll('.photo-section-title, .doc-photos, .doc-photo-block').forEach(el => el.remove());
+    const contenu = clone.innerHTML;
+    const filesPayload = currentFiles
+      .filter(f => f.url && f.url.startsWith('dropbox:'))
+      .map(f => ({ name: f.name, type: f.type, url: f.url }));
+    const cleanHistory = (conversationHistory || []).map(m => ({
+      role: m.role,
+      content: typeof m.content === 'string' ? m.content
+        : (m.content || []).filter(b => b.type === 'text').map(b => b.text).join('')
+    })).filter(m => m.content);
+    await callGAS({
+      action: 'update', id: currentDocId,
+      type: selectedType, chantier: currentChantier,
+      operateur: currentOperateur,
+      date: new Date().toISOString().slice(0,10),
+      contenu, files: filesPayload, history: cleanHistory
+    });
+    const msg = document.getElementById('save-msg');
+    if (msg) msg.innerHTML = '<span class="save-badge save-badge-idle">✓ Sauvegardé</span>';
+  } catch(e) {
+    console.warn('Sauvegarde silencieuse échouée:', e.message);
+  }
+}
+
 async function sauvegarderAuto() {
   if (!currentChantier) return;
   const msg = document.getElementById('save-msg');
@@ -1071,6 +1101,8 @@ function showTab(tab) {
   document.getElementById('tab-nouveau').style.display = tab === 'nouveau' ? 'block' : 'none';
   document.getElementById('tab-liste').style.display   = tab === 'liste'   ? 'block' : 'none';
   if (tab === 'liste') {
+    // Sauvegarde automatique si un doc est ouvert
+    if (currentDocId) sauvegarderSilencieux();
     document.getElementById('doc-result').style.display = 'none';
     document.getElementById('doc-result').classList.remove('visible');
     document.getElementById('form-section').style.display = 'none';
