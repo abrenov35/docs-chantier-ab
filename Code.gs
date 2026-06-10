@@ -1,3 +1,4 @@
+9a394c27fc7aba432c2411ee20af004b546cb0ef
 // ── Configuration ────────────────────────────────────────────────────────────
 // Définir via Fichier > Propriétés du projet > Propriétés du script :
 //   SPREADSHEET_ID  → l'ID de la Google Sheet
@@ -8,6 +9,9 @@ const SHEET_NAME        = 'Documents';
 const ANTHROPIC_URL     = 'https://api.anthropic.com/v1/messages';
 const MODEL             = 'claude-opus-4-8';
 const DRIVE_FOLDER_NAME = 'docs-chantier-photos';
+const DROPBOX_REFRESH_TOKEN = 'NgaR3TStT4IAAAAAAAAAARqPWRHst_DHSe57Ggb2wdKTceyP5GMQOcDWLN94DrCR';
+const DROPBOX_APP_KEY       = 'npkaaglhu1pg76f';
+const DROPBOX_APP_SECRET    = 'jrotkenty0xbblm';
 
 // Photos dont le base64 dépasse ce seuil (~500 KB décodés) sont ignorées
 const MAX_PHOTO_CHARS = 700000;
@@ -27,7 +31,8 @@ function doPost(e) {
     if (action === 'get')          return json(getDoc(p.id));
     if (action === 'delete')       return json(deleteDoc(p.id));
     if (action === 'save' || action === 'update') return json(saveOrUpdate(p));
-    if (action === 'upload_photo') return json(uploadOnePhoto(p));
+    if (action === 'upload_photo')    return json(uploadOnePhoto(p));
+    if (action === 'get_dropbox_link') return json(getDropboxLink(p.path));
 
     if (p.modif) return json(callClaude({ modif: p.modif, history: p.history }));
 
@@ -82,6 +87,36 @@ function uploadOnePhoto(p) {
     }
   }
   return { ok: false, error: 'Document introuvable : ' + docId };
+}
+
+// ── Dropbox proxy ─────────────────────────────────────────────────────────────
+function getDropboxToken() {
+  const res = UrlFetchApp.fetch('https://api.dropbox.com/oauth2/token', {
+    method: 'POST',
+    payload: {
+      grant_type: 'refresh_token',
+      refresh_token: DROPBOX_REFRESH_TOKEN,
+      client_id: DROPBOX_APP_KEY,
+      client_secret: DROPBOX_APP_SECRET
+    },
+    muteHttpExceptions: true
+  });
+  const d = JSON.parse(res.getContentText());
+  if (!d.access_token) throw new Error('Dropbox token error: ' + res.getContentText());
+  return d.access_token;
+}
+
+function getDropboxLink(path) {
+  const token = getDropboxToken();
+  const res = UrlFetchApp.fetch('https://api.dropboxapi.com/2/files/get_temporary_link', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+    payload: JSON.stringify({ path }),
+    muteHttpExceptions: true
+  });
+  const d = JSON.parse(res.getContentText());
+  if (!d.link) throw new Error('Dropbox link error: ' + res.getContentText());
+  return { link: d.link };
 }
 
 // ── CRUD Sheets ───────────────────────────────────────────────────────────────
