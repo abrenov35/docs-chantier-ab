@@ -252,7 +252,13 @@ function callClaude({ payload, modif, history }) {
       'Génère un ' + (labels[type] || type) + ' professionnel structuré.',
       'Chantier : ' + chantier + (operateur ? ' | Opérateur : ' + operateur : '') + ' | Date : ' + new Date().toLocaleDateString('fr-FR'),
       'Structure : sections en ## , sous-sections en ### , listes à puces avec - .',
-      "Ne répète pas le titre ni les infos d'en-tête dans le corps du document."
+      "Ne répète pas le titre ni les infos d'en-tête dans le corps du document.",
+      'RÈGLE PHOTOS OBLIGATOIRE : Si le message contient [PHOTOS JOINTES] avec une liste de photos et leurs labels, tu DOIS insérer le marqueur [PHOTO:label] dans le corps du document.',
+      'Le marqueur [PHOTO:label] doit être placé IMMÉDIATEMENT APRÈS le dernier point/tiret de la section dont le titre ou le contenu correspond au label de la photo.',
+      'Exemple : si label="électricité", insère [PHOTO:électricité] juste après le dernier tiret de la section ## Électricité.',
+      'Si le label ne correspond à aucune section exacte, insère la photo dans la section la plus proche thématiquement.',
+      'NE JAMAIS oublier un marqueur photo. Chaque photo listée doit avoir son marqueur [PHOTO:label] dans le document.',
+      'RÈGLE MODIFICATION : Si on te demande de déplacer ou placer une photo dans une section, utilise EXACTEMENT le marqueur [PHOTO:label] à l'endroit demandé et supprime l'ancien marqueur.'
     ].join('\n');
 
     const resp  = anthropicFetch(system, messages);
