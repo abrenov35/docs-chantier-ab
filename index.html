@@ -633,14 +633,30 @@ async function callGAS(payload) {
 
 // Purger images base64 de l'historique (trop lourd pour GAS)
 function cleanHistory(h) {
-  return (h || []).map(msg => {
-    if (!Array.isArray(msg.content)) return msg;
-    return { ...msg, content: msg.content.map(b => {
-      if (b.type === 'image') return { type: 'text', text: '[image]' };
-      if (b.type === 'document') return { type: 'text', text: '[document]' };
-      return b;
-    })};
-  });
+  return (h || [])
+    .map(msg => {
+      // Nettoyer le contenu des blocs
+      if (Array.isArray(msg.content)) {
+        return { ...msg, content: msg.content.map(b => {
+          if (b.type === 'image') return { type: 'text', text: '[image]' };
+          if (b.type === 'document') return { type: 'text', text: '[document]' };
+          return b;
+        })};
+      }
+      // Supprimer les rappels photos des messages texte (évite que Claude y réponde)
+      if (typeof msg.content === 'string') {
+        const cleaned = msg.content
+          .replace(/\n\n\[RAPPEL PHOTOS EXISTANTES\][\s\S]*$/i, '')
+          .replace(/\n\n\[PHOTOS JOINTES[^\]]*\][\s\S]*$/i, '')
+          .trim();
+        return { ...msg, content: cleaned };
+      }
+      return msg;
+    })
+    .filter(msg => {
+      const txt = typeof msg.content === 'string' ? msg.content : '';
+      return txt.length > 0 || Array.isArray(msg.content);
+    });
 }
 
 // ── Filtre images avant envoi API ────────────────
@@ -800,12 +816,12 @@ function afficherDoc(text) {
   const docFrame = document.getElementById('doc-frame');
   docFrame.setAttribute('data-footer', currentChantier + (currentOperateur ? '  ·  ' + currentOperateur : '') + '  ·  ' + new Date().toLocaleDateString('fr-FR'));
 
-  // En mode modification : tenter d'abord les marqueurs, sinon réinjecter aux positions sauvegardées
   if (_modeModification && blocksAvant.length > 0) {
-    // D'abord essayer les marqueurs dans le nouveau texte
+    // Tenter les marqueurs [PHOTO:label] dans le nouveau texte
     injecterPhotosMarqueurs();
-    // Si toujours aucun bloc photo → réinjecter à la fin du doc
+    // Si aucun bloc photo injecté → réinjecter les photos à la fin, inline
     if (docContent.querySelectorAll('.doc-photo-block').length === 0) {
+      // Pas de section "Photos du chantier" — juste les blocs inline
       blocksAvant.forEach(({ photo }) => {
         docContent.appendChild(creerBlocPhoto(photo));
       });
