@@ -709,8 +709,16 @@ async function mettreAJour() {
     console.log('allPhotos avant sauvegarde:', JSON.stringify(allPhotos.map(f => ({ name: f.name, url: f.url }))));
 
     if (modif) {
-      // Texte de modification saisi → appel IA
-      const data = await callGAS({ modif, history: cleanHistory(conversationHistory) });
+      // Ajouter les labels photos dans la demande de modif pour que Claude sache où les placer
+      const photoLabels = currentFiles
+        .filter(f => f.type && f.type.startsWith('image/'))
+        .map((f, i) => `- Photo ${i+1} (label: ${f.label || 'sans label'}, marqueur: [PHOTO:${f.label || 'photo-'+(i+1)}])`)
+        .join('\n');
+      const modifAvecPhotos = photoLabels
+        ? modif + '\n\n[RAPPEL PHOTOS EXISTANTES]\n' + photoLabels
+          + '\nCes marqueurs [PHOTO:label] doivent être présents dans le document à la bonne place. Si tu déplaces une photo, utilise le marqueur exact [PHOTO:label] à l\'endroit demandé et supprime l\'ancien. Ne regroupe JAMAIS les photos en bas sous "Photos du chantier".'
+        : modif;
+      const data = await callGAS({ modif: modifAvecPhotos, history: cleanHistory(conversationHistory) });
       conversationHistory = data.history;
       afficherDoc(data.text);
       document.getElementById('modif-input').value = '';
