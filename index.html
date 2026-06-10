@@ -680,7 +680,7 @@ async function generer() {
       .map((f, i) => `- Photo ${i+1} (label: ${f.label || 'sans label'})`)
       .join('\n');
     const obsAvecPhotos = photoLabels
-      ? observations + '\n\n[PHOTOS JOINTES - ' + currentFiles.filter(f=>f.type&&f.type.startsWith('image/')).length + ' photo(s)]\n' + photoLabels + "\n\nInsère chaque photo dans le corps du document à l'endroit correspondant à son label avec le marqueur : [PHOTO:label]. Exemple : [PHOTO:électricité]. Si le label est 'bas de page', place la photo à la toute fin du document."
+      ? observations + '\n\n[PHOTOS JOINTES - ' + currentFiles.filter(f=>f.type&&f.type.startsWith('image/')).length + ' photo(s)]\n' + photoLabels + "\n\nInsère chaque photo APRÈS le texte de sa section avec le marqueur [PHOTO:label]. Jamais avant le texte, toujours après. Si label est 'bas de page', place en toute fin."
       : observations;
     const data = await callGAS({ type: selectedType, chantier, operateur, observations: obsAvecPhotos, files: filesWithoutPhotos, history: [] });
     conversationHistory = data.history;
