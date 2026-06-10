@@ -675,6 +675,8 @@ async function mettreAJour() {
     // Un seul appel sauvegarderAuto après que toutes les photos soient dans currentFiles
     console.log('AVANT SAVE - currentFiles:', JSON.stringify(currentFiles.map(f=>({name:f.name,url:f.url||'base64'}))));
     console.log('currentDocId:', currentDocId);
+    console.log('photosExistantes:', JSON.stringify(currentFiles.filter(f => f.url && !f.data)));
+    console.log('photosAUploader:', JSON.stringify(currentFiles.filter(f => f.data && !f.url).map(f=>f.name)));
     await sauvegarderAuto();
     afficherPhotosDoc();
   } catch(e) {
@@ -992,6 +994,7 @@ async function ouvrirDoc(id) {
   try {
     const data = await callGAS({ action: 'get', id });
     console.log('Colonne 9 brute:', data[8]);
+    console.log('DATA.FILES reçu du GAS:', JSON.stringify(data.files));
     currentDocId     = data.id;
     selectedType     = data.type;
     currentChantier  = data.chantier  || '';
