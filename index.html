@@ -671,9 +671,13 @@ async function mettreAJour() {
       conversationHistory = data.history;
       afficherDoc(data.text);
       document.getElementById('modif-input').value = '';
+      console.log('AVANT SAVE - currentFiles:', JSON.stringify(currentFiles.map(f=>({name:f.name,url:f.url||'base64'}))));
+      console.log('currentDocId:', currentDocId);
       await sauvegarderAuto();
     } else {
       // Pas de texte → conserver contenu existant, uploader/fusionner photos uniquement
+      console.log('AVANT SAVE - currentFiles:', JSON.stringify(currentFiles.map(f=>({name:f.name,url:f.url||'base64'}))));
+      console.log('currentDocId:', currentDocId);
       await sauvegarderAuto();
       afficherPhotosDoc();
     }
@@ -871,6 +875,8 @@ async function sauvegarderAuto() {
 
   // Étape 2 : sauvegarder texte + URLs + history dans GAS
   try {
+    console.log('ACTION GAS:', currentDocId ? 'update' : 'save', 'ID:', currentDocId);
+    console.log('FILES PAYLOAD:', JSON.stringify(filesPayload));
     const data = await callGAS({
       action:    currentDocId ? 'update' : 'save',
       id:        currentDocId,
