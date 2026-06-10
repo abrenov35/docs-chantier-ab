@@ -145,8 +145,12 @@ function getDoc(id) {
     try { photoUrls = JSON.parse(r[COL.photoUrls - 1] || '[]'); } catch(e) {}
 
     const files = photoUrls
-      .filter(url => url)
-      .map((url, idx) => ({ name: 'photo_' + (idx + 1) + '.jpg', type: 'image/jpeg', url }));
+      .filter(item => item)
+      .map((item, idx) => ({
+        name: (typeof item === 'object' ? item.name : null) || ('photo_' + (idx + 1) + '.jpg'),
+        type: (typeof item === 'object' ? item.type : null) || 'image/jpeg',
+        url:  (typeof item === 'object' ? item.url  : item) || null
+      }));
 
     return {
       id:        r[COL.id        - 1],
