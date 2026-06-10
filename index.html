@@ -400,14 +400,13 @@ let currentChantier  = '';
 let currentOperateur = '';
 let currentDocDate   = '';
 let progressTimer = null;
-let _pendingLabelFiles = [];   // queue photos en attente de label
-let _modeModification = false; // true pendant une modif → photos non regroupées en bas
-let _pendingLabelResolve = null; // resolve de la Promise courante
+let _pendingLabelFiles = [];
+let _pendingLabelResolve = null;
 let isSaving = false;
 let _dbxToken    = null;
 let _dbxTokenExp = 0;
 let _saveDebounceTimer = null;
-let _modeModification = false;
+let photoPositions = {};
 
 // pas de blocage beforeunload
 
@@ -661,13 +660,13 @@ async function generer() {
 
   try {
     const filesWithoutPhotos = currentFiles.filter(f => !f.type || !f.type.startsWith('image/'));
-    // Labels photos pour le prompt Claude
+    // Photos : mention contextuelle uniquement (placement géré par JS)
     const photoLabels = currentFiles
       .filter(f => f.type && f.type.startsWith('image/'))
-      .map((f, i) => `- Photo ${i+1} (label: ${f.label || 'sans label'})`)
+      .map((f, i) => `- Photo ${i+1}${f.label ? ' : ' + f.label : ''}`)
       .join('\n');
     const obsAvecPhotos = photoLabels
-      ? observations + '\n\n[PHOTOS JOINTES - ' + currentFiles.filter(f=>f.type&&f.type.startsWith('image/')).length + ' photo(s)]\n' + photoLabels + "\n\nInsère chaque photo APRÈS le texte de sa section avec le marqueur [PHOTO:label]. Jamais avant le texte, toujours après. Si label est 'bas de page', place en toute fin."
+      ? observations + '\n\n[' + currentFiles.filter(f=>f.type&&f.type.startsWith('image/')).length + ' photo(s) jointe(s)]\n' + photoLabels
       : observations;
     const data = await callGAS({ type: selectedType, chantier, operateur, observations: obsAvecPhotos, files: filesWithoutPhotos, history: [] });
     conversationHistory = data.history;
@@ -696,39 +695,14 @@ async function mettreAJour() {
     console.log('allPhotos avant sauvegarde:', JSON.stringify(allPhotos.map(f => ({ name: f.name, url: f.url }))));
 
     if (modif) {
-      // Nouvelles photos sans marqueur dans le doc → demander à Claude de les placer
-      const nouvellesPhotos = currentFiles
-        .filter(f => f.type && f.type.startsWith('image/') && f.label)
-        .filter(f => {
-          // Photo "nouvelle" = pas encore dans le HTML sauvegardé (pas de marqueur existant)
-          const docText = document.getElementById('doc-frame').innerText || '';
-          return !docText.includes('[PHOTO:' + f.label + ']');
-        });
-
-      let modifFinal = modif;
-      if (nouvellesPhotos.length > 0) {
-        const labelsNouveaux = nouvellesPhotos
-          .map(f => `- [PHOTO:${f.label}] → à placer dans la section correspondant au label "${f.label}"`)
-          .join('\n');
-        modifFinal = (modif || 'Intègre les nouvelles photos dans le document.')
-          + '\n\nNOUVELLES PHOTOS À INTÉGRER (place chaque marqueur APRÈS le texte de la section correspondante) :\n'
-          + labelsNouveaux;
-      }
-
-      const data = await callGAS({ modif: modifFinal, history: cleanHistory(conversationHistory) });
+      const data = await callGAS({ modif, history: cleanHistory(conversationHistory) });
       conversationHistory = data.history;
-      _modeModification = true;
       afficherDoc(data.text);
-      _modeModification = false;
       document.getElementById('modif-input').value = '';
+    } else {
+      afficherPhotosDoc();
     }
-    // Un seul appel sauvegarderAuto après que toutes les photos soient dans currentFiles
-    console.log('AVANT SAVE - currentFiles:', JSON.stringify(currentFiles.map(f=>({name:f.name,url:f.url||null}))));
-    console.log('currentDocId:', currentDocId);
-    console.log('photosExistantes:', JSON.stringify(currentFiles.filter(f => f.url && !f.data)));
-    console.log('photosAUploader:', JSON.stringify(currentFiles.filter(f => f.data && !f.url).map(f=>f.name)));
     await sauvegarderAuto();
-    if (!modif) afficherPhotosDoc();
   } catch(e) {
     alert('Erreur mise à jour : ' + e.message);
   } finally {
@@ -768,9 +742,6 @@ function afficherDoc(text) {
     if (SKIP_START.test(stripped)) continue;
     if (!inSection && /^[A-ZÀ-Ÿa-zà-ÿ\s]{2,30}\s*:\s*.+$/.test(stripped) && !stripped.match(/^#{1,3} /)) continue;
 
-    const photoMatch = trimmed.match(/^\[PHOTO:([^\]]+)\]$/);
-    if (photoMatch) { html += `<span class="photo-marker" data-label="${photoMatch[1]}"></span>`; continue; }
-
     if (line.match(/^## /) || (trimmed.match(/^\*\*[^*]+\*\*$/) && trimmed.length < 80)) {
       if (inSection) { html += '</div></div>'; inSection = false; }
       const title = trimmed.replace(/^## /,'').replace(/\*\*/g,'');
@@ -789,120 +760,68 @@ function afficherDoc(text) {
   if (inSection) html += '</div></div>';
 
   const docContent = document.getElementById('doc-content');
-
-  // En mode modification : sauvegarder les blocs photos actuels avant écrasement
-  let blocksAvant = [];
-  if (_modeModification) {
-    docContent.querySelectorAll('.doc-photo-block').forEach(bloc => {
-      const cap = bloc.querySelector('div');
-      const label = cap ? cap.textContent.trim() : '';
-      const photo = currentFiles.find(f => (f.label||'') === label);
-      if (photo) blocksAvant.push({ label, photo, nextSibling: bloc.nextSibling, parent: bloc.parentNode });
-    });
-  }
-
   docContent.innerHTML = html;
   docContent.setAttribute('data-chantier', currentChantier);
   docContent.setAttribute('data-date', new Date().toLocaleDateString('fr-FR'));
-  // Pied de page PDF
   const docFrame = document.getElementById('doc-frame');
   docFrame.setAttribute('data-footer', currentChantier + (currentOperateur ? '  ·  ' + currentOperateur : '') + '  ·  ' + new Date().toLocaleDateString('fr-FR'));
-
-  if (_modeModification && blocksAvant.length > 0) {
-    // Tenter les marqueurs [PHOTO:label] dans le nouveau texte
-    injecterPhotosMarqueurs();
-    // Si aucun bloc photo injecté → réinjecter les photos à la fin, inline
-    if (docContent.querySelectorAll('.doc-photo-block').length === 0) {
-      blocksAvant.forEach(({ photo }) => {
-        docContent.appendChild(creerBlocPhoto(photo));
-      });
-    }
-  } else {
-    injecterPhotosMarqueurs();
-  }
+  reinjecterPhotos();
 }
 
-// ── Injection photos aux marqueurs ───────────────
-function injecterPhotosMarqueurs() {
+// ── Réinjection photos par positions sauvegardées ──
+function reinjecterPhotos() {
   const docFrame = document.getElementById('doc-frame');
   if (!docFrame) return;
-
   const photos = currentFiles.filter(f => f.type && f.type.startsWith('image/'));
+
+  // Supprimer anciens blocs photos
+  docFrame.querySelectorAll('.photo-section-title, .doc-photos, .doc-photo-block').forEach(el => el.remove());
   if (photos.length === 0) return;
 
-  // Supprimer anciens blocs photos (seront réinjectés aux marqueurs)
-  docFrame.querySelectorAll('.photo-section-title, .doc-photos, .doc-photo-block').forEach(el => el.remove());
+  const docContent = document.getElementById('doc-content') || docFrame;
+  const sections = Array.from(docContent.querySelectorAll('.doc-section'));
+  const sectionTitles = sections.map(s => s.querySelector('.doc-section-title')?.textContent?.trim() || '');
 
-  // Chercher les marqueurs [PHOTO:label] dans les noeuds texte
-  const placees = new Set();
+  // Pour chaque photo sans position connue, tenter un matching label → section
+  photos.forEach(f => {
+    const key = f.label || f.name;
+    if (!photoPositions[key]) {
+      const lbl = (f.label || '').toLowerCase();
+      const matched = lbl ? sectionTitles.find(t => t.toLowerCase().includes(lbl) || lbl.includes(t.toLowerCase())) : null;
+      photoPositions[key] = matched || '__bottom__';
+    }
+  });
 
-  function remplacerMarqueursDansEl(el) {
-    Array.from(el.childNodes).forEach(node => {
-      if (node.nodeType === 3) {
-        const txt = node.textContent;
-        const re = /\[PHOTO:([^\]]+)\]/gi;
-        let match;
-        let lastIdx = 0;
-        const frag = document.createDocumentFragment();
-        let found = false;
-        while ((match = re.exec(txt)) !== null) {
-          found = true;
-          const label = match[1].trim().toLowerCase();
-          if (match.index > lastIdx) frag.appendChild(document.createTextNode(txt.slice(lastIdx, match.index)));
-          const photo = photos.find(f => (f.label||'').toLowerCase() === label);
-          if (photo) { placees.add(photo); frag.appendChild(creerBlocPhoto(photo)); }
-          lastIdx = match.index + match[0].length;
-        }
-        if (found) {
-          if (lastIdx < txt.length) frag.appendChild(document.createTextNode(txt.slice(lastIdx)));
-          node.parentNode.replaceChild(frag, node);
-        }
-      } else if (node.nodeType === 1 && !node.classList.contains('doc-photo-block')) {
-        remplacerMarqueursDansEl(node);
-      }
-    });
-  }
+  // Regrouper par section cible
+  const bySection = {};
+  const atBottom = [];
+  photos.forEach(f => {
+    const pos = photoPositions[f.label || f.name] || '__bottom__';
+    if (pos === '__bottom__') { atBottom.push(f); }
+    else { (bySection[pos] = bySection[pos] || []).push(f); }
+  });
 
-  remplacerMarqueursDansEl(docFrame);
+  // Injecter dans les sections
+  sections.forEach(section => {
+    const title = section.querySelector('.doc-section-title')?.textContent?.trim() || '';
+    if (bySection[title] && bySection[title].length > 0) {
+      const grid = document.createElement('div');
+      grid.className = 'doc-photos';
+      bySection[title].forEach(f => grid.appendChild(creerBlocPhoto(f)));
+      section.appendChild(grid);
+    }
+  });
 
-  // Photos sans marqueur
-  const restantes = photos.filter(p => !placees.has(p));
-  if (restantes.length === 0) return;
-
-  if (_modeModification) {
-    // En mode modification : si Claude n'a placé aucun marqueur → ne rien faire
-    // Les photos restent où elles étaient (le HTML sauvegardé contient les marqueurs)
-    if (placees.size === 0) return;
-    // Sinon placer les restantes après la dernière photo placée
-    const allBlocks = docFrame.querySelectorAll('.doc-photo-block');
-    const lastBlock = allBlocks[allBlocks.length - 1];
-    restantes.forEach(f => {
-      const bloc = creerBlocPhoto(f);
-      if (lastBlock && lastBlock.parentNode) lastBlock.parentNode.insertBefore(bloc, lastBlock.nextSibling);
-      else (document.getElementById('doc-content') || docFrame).appendChild(bloc);
-    });
-    return;
-  }
-
-  // Mode normal (première génération) → bas de page si aucun marqueur
-  if (placees.size === 0) {
-    const target = document.getElementById('doc-content') || docFrame;
+  // Photos restantes en bas
+  if (atBottom.length > 0) {
     const titleEl = document.createElement('div');
     titleEl.className = 'photo-section-title';
     titleEl.textContent = '📷 Photos du chantier';
     const gridEl = document.createElement('div');
     gridEl.className = 'doc-photos';
-    restantes.forEach(f => gridEl.appendChild(creerBlocPhoto(f)));
-    target.appendChild(titleEl);
-    target.appendChild(gridEl);
-  } else {
-    const allBlocks = docFrame.querySelectorAll('.doc-photo-block');
-    const lastBlock = allBlocks[allBlocks.length - 1];
-    restantes.forEach(f => {
-      const bloc = creerBlocPhoto(f);
-      if (lastBlock && lastBlock.parentNode) lastBlock.parentNode.insertBefore(bloc, lastBlock.nextSibling);
-      else (document.getElementById('doc-content') || docFrame).appendChild(bloc);
-    });
+    atBottom.forEach(f => gridEl.appendChild(creerBlocPhoto(f)));
+    docContent.appendChild(titleEl);
+    docContent.appendChild(gridEl);
   }
 }
 
@@ -930,8 +849,7 @@ function creerBlocPhoto(f) {
   return wrap;
 }
 
-// Compat — appelé depuis ouvrirDoc et autres endroits
-function afficherPhotosDoc() { injecterPhotosMarqueurs(); }
+function afficherPhotosDoc() { reinjecterPhotos(); }
 
 // ── Dropbox ──────────────────────────────────────
 async function getDropboxToken() {
@@ -1008,13 +926,8 @@ async function sauvegarderSilencieux() {
   if (!currentDocId || !currentChantier) return;
   try {
     const clone = document.getElementById('doc-frame').cloneNode(true);
-    clone.querySelectorAll('.doc-photo-block').forEach(bloc => {
-      const cap = bloc.querySelector('div');
-      const label = cap ? cap.textContent.trim() : '';
-      bloc.parentNode.replaceChild(document.createTextNode('[PHOTO:' + label + ']'), bloc);
-    });
-    clone.querySelectorAll('.photo-section-title, .doc-photos').forEach(el => el.remove());
     clone.querySelectorAll('img.doc-photo').forEach(img => img.remove());
+    clone.querySelectorAll('.photo-section-title, .doc-photos, .doc-photo-block').forEach(el => el.remove());
     const contenu = clone.innerHTML;
     const filesPayload = currentFiles
       .filter(f => f.url && f.url.startsWith('dropbox:'))
@@ -1074,18 +987,10 @@ async function sauvegarderAuto() {
     }
   }
 
-  // Contenu HTML : remplacer les blocs photos par leurs marqueurs [PHOTO:label] pour persistence
+  // Contenu HTML sans images (photos référencées par URL)
   const clone = document.getElementById('doc-frame').cloneNode(true);
-  // Remplacer chaque doc-photo-block par son marqueur texte
-  clone.querySelectorAll('.doc-photo-block').forEach(bloc => {
-    const cap = bloc.querySelector('div');
-    const label = cap ? cap.textContent.trim() : '';
-    const marker = document.createTextNode('[PHOTO:' + label + ']');
-    bloc.parentNode.replaceChild(marker, bloc);
-  });
-  // Supprimer les sections photos groupées (sans marqueurs individuels)
-  clone.querySelectorAll('.photo-section-title, .doc-photos').forEach(el => el.remove());
   clone.querySelectorAll('img.doc-photo').forEach(img => img.remove());
+  clone.querySelectorAll('.photo-section-title, .doc-photos, .doc-photo-block').forEach(el => el.remove());
   const contenu = clone.innerHTML;
 
   const filesPayload = currentFiles
@@ -1184,6 +1089,7 @@ function showTab(tab) {
     document.getElementById('form-section').style.display = 'block';
     currentDocId = null; currentFiles = []; conversationHistory = [];
     currentChantier = ''; currentOperateur = ''; currentDocDate = '';
+    photoPositions = {};
     renderFilesList();
   }
 }
@@ -1225,18 +1131,8 @@ async function ouvrirDoc(id) {
     currentOperateur = data.operateur || '';
     currentDocDate   = (data.date     || '').slice(0, 10);
     conversationHistory = data.history || [];
-    currentFiles = (data.files || []).map(f => ({ name: f.name, type: f.type || 'image/jpeg', url: f.url }));
-    // Restaurer les labels depuis les marqueurs [PHOTO:label] dans le contenu sauvegardé
-    const marqueurs = [...(data.contenu || '').matchAll(/\[PHOTO:([^\]]+)\]/gi)];
-    if (marqueurs.length > 0 && currentFiles.length > 0) {
-      // Associer chaque marqueur à la photo correspondante par ordre
-      marqueurs.forEach((m, i) => {
-        const label = m[1].trim();
-        // Chercher une photo sans label ou dont le nom contient le label
-        const photo = currentFiles.find(f => !f.label) || currentFiles[i];
-        if (photo) photo.label = label;
-      });
-    }
+    currentFiles = (data.files || []).map(f => ({ name: f.name, type: f.type || 'image/jpeg', url: f.url, label: f.label || '' }));
+    photoPositions = {};
     console.log('currentFiles après ouvrirDoc:', JSON.stringify(currentFiles.map(f=>({name:f.name,url:f.url}))));
     renderFilesList();
     // Afficher
@@ -1266,9 +1162,7 @@ async function ouvrirDoc(id) {
       dc.setAttribute('data-chantier', currentChantier);
       dc.setAttribute('data-date', new Date().toLocaleDateString('fr-FR'));
     }
-    // À l'ouverture, les marqueurs sont dans le HTML — injecter normalement
-    // Mais si aucun marqueur (ancien doc), les photos iront en bas classiquement
-    injecterPhotosMarqueurs();
+    reinjecterPhotos();
     const msg = document.getElementById('save-msg');
     msg.innerHTML = '<span class="save-badge save-badge-saving">📄 Document chargé</span>';
     setTimeout(() => msg.innerHTML = '<span class="save-badge save-badge-idle">✓ Sauvegardé</span>', 2000);
