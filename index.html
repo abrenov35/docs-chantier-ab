@@ -796,13 +796,8 @@ async function getDropboxUrl(path) {
 }
 
 async function resolveDropboxUrl(path) {
-  const token = await getDropboxToken();
-  const res = await fetch('https://api.dropboxapi.com/2/files/get_temporary_link', {
-    method: 'POST',
-    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ path })
-  });
-  const d = await res.json();
+  // Passe par le GAS (CORS bloque l'appel direct depuis le navigateur)
+  const d = await callGAS({ action: 'get_dropbox_link', path });
   return d.link;
 }
 
