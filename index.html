@@ -399,6 +399,8 @@ let currentChantier  = '';
 let currentOperateur = '';
 let currentDocDate   = '';
 let progressTimer = null;
+let _pendingLabelFiles = [];   // queue photos en attente de label
+let _pendingLabelResolve = null; // resolve de la Promise courante
 let isSaving = false;
 let _dbxToken    = null;
 let _dbxTokenExp = 0;
@@ -447,6 +449,30 @@ function compressImage(file, callback) {
 }
 
 // ── Fichiers ─────────────────────────────────────
+// ── Label photo modal ──────────────────────────────────────
+function askPhotoLabel(fileName) {
+  return new Promise(resolve => {
+    _pendingLabelResolve = resolve;
+    const modal = document.getElementById('photo-label-modal');
+    const inp   = document.getElementById('photo-label-input');
+    inp.value   = '';
+    inp.placeholder = 'Ex: électricité, sol, menuiserie…';
+    modal.style.display = 'flex';
+    setTimeout(() => inp.focus(), 100);
+    // Valider avec Entrée
+    inp.onkeydown = e => { if (e.key === 'Enter') confirmPhotoLabel(); };
+  });
+}
+function confirmPhotoLabel() {
+  const val = document.getElementById('photo-label-input').value.trim();
+  document.getElementById('photo-label-modal').style.display = 'none';
+  if (_pendingLabelResolve) { _pendingLabelResolve(val || ''); _pendingLabelResolve = null; }
+}
+function skipPhotoLabel() {
+  document.getElementById('photo-label-modal').style.display = 'none';
+  if (_pendingLabelResolve) { _pendingLabelResolve(''); _pendingLabelResolve = null; }
+}
+
 async function handleFiles(input) {
   const files = Array.from(input.files).slice(0, 3);
   const existingPhotos = currentFiles.filter(f => f.type && f.type.startsWith('image/')).length;
@@ -457,6 +483,8 @@ async function handleFiles(input) {
     const file = files[i];
     if (file.type.startsWith('image/')) {
       const c = await new Promise(resolve => compressImage(file, resolve));
+      const label = await askPhotoLabel(file.name);
+      c.label = label;
       currentFiles.push(c);
     } else {
       const data = await new Promise((resolve, reject) => {
@@ -491,7 +519,10 @@ async function ajouterFichiersModif(files) {
       r.onerror = () => resolve(null);
       r.readAsDataURL(file);
     });
-    if (data) currentFiles.push({ name: file.name, type: file.type, data });
+    if (data) {
+      const label = file.type.startsWith('image/') ? await askPhotoLabel(file.name) : '';
+      currentFiles.push({ name: file.name, type: file.type, data, label });
+    }
     setSavingUI(true, `📥 ${i + 1}/${total} chargé…`);
     renderFilesList();
     afficherPhotosDoc();
@@ -502,9 +533,13 @@ async function ajouterFichiersModif(files) {
 function removeFile(i) { currentFiles.splice(i, 1); renderFilesList(); afficherPhotosDoc(); }
 
 function renderFilesList() {
-  const tags = currentFiles.map((f,i) =>
-    `<div class="file-tag">📄 ${f.name} <button onclick="removeFile(${i})">✕</button></div>`
-  ).join('');
+  const tags = currentFiles.map((f,i) => {
+    const isPhoto = f.type && f.type.startsWith('image/');
+    const labelBadge = isPhoto
+      ? `<span style="background:#162D49;color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;margin-left:4px">${f.label || '—'}</span>`
+      : '';
+    return `<div class="file-tag">${isPhoto?'📷':'📄'} ${f.name}${labelBadge} <button onclick="removeFile(${i})">✕</button></div>`;
+  }).join('');
   const el1 = document.getElementById('files-list');
   const el2 = document.getElementById('modif-files-list');
   if (el1) el1.innerHTML = tags;
@@ -639,7 +674,15 @@ async function generer() {
 
   try {
     const filesWithoutPhotos = currentFiles.filter(f => !f.type || !f.type.startsWith('image/'));
-    const data = await callGAS({ type: selectedType, chantier, operateur, observations, files: filesWithoutPhotos, history: [] });
+    // Labels photos pour le prompt Claude
+    const photoLabels = currentFiles
+      .filter(f => f.type && f.type.startsWith('image/'))
+      .map((f, i) => `- Photo ${i+1} (label: ${f.label || 'sans label'})`)
+      .join('\n');
+    const obsAvecPhotos = photoLabels
+      ? observations + '\n\n[PHOTOS JOINTES - ' + currentFiles.filter(f=>f.type&&f.type.startsWith('image/')).length + ' photo(s)]\n' + photoLabels + "\n\nInsère chaque photo dans le corps du document à l'endroit correspondant à son label avec le marqueur : [PHOTO:label]. Exemple : [PHOTO:électricité]. Si le label est 'bas de page', place la photo à la toute fin du document."
+      : observations;
+    const data = await callGAS({ type: selectedType, chantier, operateur, observations: obsAvecPhotos, files: filesWithoutPhotos, history: [] });
     conversationHistory = data.history;
     stopProgress();
     setTimeout(async () => {
@@ -743,9 +786,99 @@ function afficherDoc(text) {
   const docFrame = document.getElementById('doc-frame');
   docFrame.setAttribute('data-footer', currentChantier + (currentOperateur ? '  ·  ' + currentOperateur : '') + '  ·  ' + new Date().toLocaleDateString('fr-FR'));
 
-  // Photos depuis currentFiles
-  afficherPhotosDoc();
+  // Injecter photos aux marqueurs [PHOTO:label] dans le doc
+  injecterPhotosMarqueurs();
 }
+
+// ── Injection photos aux marqueurs ───────────────
+function injecterPhotosMarqueurs() {
+  const docFrame = document.getElementById('doc-frame');
+  if (!docFrame) return;
+
+  const photos = currentFiles.filter(f => f.type && f.type.startsWith('image/'));
+  // Supprimer anciens blocs photos orphelins (sans marqueur)
+  docFrame.querySelectorAll('.photo-section-title, .doc-photos, .doc-photo-block').forEach(el => el.remove());
+
+  if (photos.length === 0) return;
+
+  // Parcourir tous les éléments texte du doc et remplacer [PHOTO:label]
+  const photosSansMarqueur = [...photos];
+
+  function remplacerMarqueursDansEl(el) {
+    el.childNodes.forEach(node => {
+      if (node.nodeType === 3) { // text node
+        const txt = node.textContent;
+        const re = /\[PHOTO:([^\]]+)\]/gi;
+        let match;
+        let lastIdx = 0;
+        const frag = document.createDocumentFragment();
+        let found = false;
+        while ((match = re.exec(txt)) !== null) {
+          found = true;
+          const label = match[1].trim().toLowerCase();
+          // Texte avant
+          if (match.index > lastIdx) frag.appendChild(document.createTextNode(txt.slice(lastIdx, match.index)));
+          // Chercher la photo avec ce label
+          const photo = photos.find(f => (f.label||'').toLowerCase() === label);
+          if (photo) {
+            photosSansMarqueur.splice(photosSansMarqueur.indexOf(photo), 1);
+            frag.appendChild(creerBlocPhoto(photo));
+          }
+          lastIdx = match.index + match[0].length;
+        }
+        if (found) {
+          if (lastIdx < txt.length) frag.appendChild(document.createTextNode(txt.slice(lastIdx)));
+          node.parentNode.replaceChild(frag, node);
+        }
+      } else if (node.nodeType === 1) {
+        remplacerMarqueursDansEl(node);
+      }
+    });
+  }
+
+  remplacerMarqueursDansEl(docFrame);
+
+  // Photos sans marqueur (label 'bas de page' ou non placées) → à la fin
+  const restantes = photosSansMarqueur;
+  if (restantes.length > 0) {
+    const target = document.getElementById('doc-content') || docFrame;
+    const titleEl = document.createElement('div');
+    titleEl.className = 'photo-section-title';
+    titleEl.textContent = '📷 Photos du chantier';
+    const gridEl = document.createElement('div');
+    gridEl.className = 'doc-photos';
+    restantes.forEach((f, i) => { gridEl.appendChild(creerBlocPhoto(f)); });
+    target.appendChild(titleEl);
+    target.appendChild(gridEl);
+  }
+}
+
+function creerBlocPhoto(f) {
+  const wrap = document.createElement('div');
+  wrap.className = 'doc-photo-block';
+  wrap.style.cssText = 'margin:12px 0;text-align:center;';
+  const img = document.createElement('img');
+  img.className = 'doc-photo';
+  img.style.maxWidth = '100%';
+  const idx = currentFiles.filter(x=>x.type&&x.type.startsWith('image/')).indexOf(f);
+  img.onclick = () => openLightbox(idx);
+  if (f.url && f.url.startsWith('dropbox:')) {
+    resolveDropboxUrl(f.url.replace('dropbox:', '')).then(link => { img.src = link; });
+  } else {
+    img.src = f.url || (f.data ? `data:${f.type};base64,${f.data}` : '');
+  }
+  wrap.appendChild(img);
+  if (f.label) {
+    const cap = document.createElement('div');
+    cap.style.cssText = 'font-size:11px;color:#888;margin-top:4px;font-style:italic;';
+    cap.textContent = f.label;
+    wrap.appendChild(cap);
+  }
+  return wrap;
+}
+
+// Compat — appelé depuis ouvrirDoc et autres endroits
+function afficherPhotosDoc() { injecterPhotosMarqueurs(); }
 
 // ── Dropbox ──────────────────────────────────────
 async function getDropboxToken() {
@@ -1037,5 +1170,17 @@ async function supprimerDoc(id) {
   chargerListe();
 }
 </script>
+<!-- Modal label photo -->
+<div id="photo-label-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.5);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:14px;padding:24px 20px;width:90%;max-width:340px;box-shadow:0 8px 32px rgba(0,0,0,.2);">
+    <div style="font-weight:700;font-size:15px;color:#162D49;margin-bottom:8px;">📷 Label de la photo</div>
+    <div style="font-size:13px;color:#666;margin-bottom:14px;">Décris ce que montre cette photo (ex: électricité, sol, menuiserie, bas de page…)</div>
+    <input id="photo-label-input" type="text" placeholder="Ex: électricité" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid #DDD5CA;border-radius:8px;font-size:14px;margin-bottom:16px;outline:none;">
+    <div style="display:flex;gap:10px;">
+      <button onclick="confirmPhotoLabel()" style="flex:1;background:#162D49;color:#fff;border:none;border-radius:8px;padding:11px;font-size:14px;font-weight:600;cursor:pointer;">Confirmer</button>
+      <button onclick="skipPhotoLabel()" style="flex:1;background:#EDE9F4;color:#7B6BA8;border:none;border-radius:8px;padding:11px;font-size:14px;cursor:pointer;">Sans label</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
