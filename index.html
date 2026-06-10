@@ -673,7 +673,7 @@ async function mettreAJour() {
       document.getElementById('modif-input').value = '';
     }
     // Un seul appel sauvegarderAuto après que toutes les photos soient dans currentFiles
-    console.log('AVANT SAVE - currentFiles:', JSON.stringify(currentFiles.map(f=>({name:f.name,url:f.url||'base64'}))));
+    console.log('AVANT SAVE - currentFiles:', JSON.stringify(currentFiles.map(f=>({name:f.name,url:f.url||null}))));
     console.log('currentDocId:', currentDocId);
     console.log('photosExistantes:', JSON.stringify(currentFiles.filter(f => f.url && !f.data)));
     console.log('photosAUploader:', JSON.stringify(currentFiles.filter(f => f.data && !f.url).map(f=>f.name)));
@@ -831,11 +831,11 @@ async function sauvegarderAuto() {
 
   // Photos déjà sur Dropbox — conserver telles quelles
   const photosExistantes = currentFiles
-    .filter(f => f.type && f.type.startsWith('image/') && f.url);
+    .filter(f => f.url && f.url.startsWith('dropbox:'));
 
   // Nouvelles photos (base64, pas encore uploadées)
   const photosAUploader = currentFiles
-    .filter(f => f.type && f.type.startsWith('image/') && f.data && !f.url);
+    .filter(f => !f.url || !f.url.startsWith('dropbox:'));
 
   let dbxErrors = 0;
   const nouvellesUploadees = [];
