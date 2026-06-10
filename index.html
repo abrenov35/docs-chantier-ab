@@ -864,11 +864,9 @@ async function sauvegarderAuto() {
   clone.querySelectorAll('.photo-section-title, .doc-photos').forEach(el => el.remove());
   const contenu = clone.innerHTML;
 
-  // Fusion : existantes Dropbox + nouvellement uploadées
-  const filesPayload = [
-    ...photosExistantes.map(f => ({ name: f.name, type: f.type, url: f.url })),
-    ...nouvellesUploadees
-  ];
+  const filesPayload = currentFiles
+    .filter(f => f.url && f.url.startsWith('dropbox:'))
+    .map(f => ({ name: f.name, type: f.type, url: f.url }));
   console.log('filesPayload envoyé au GAS:', JSON.stringify(filesPayload));
 
   // Étape 2 : sauvegarder texte + URLs + history dans GAS
