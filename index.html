@@ -999,18 +999,8 @@ async function ouvrirDoc(id) {
     currentOperateur = data.operateur || '';
     currentDocDate   = (data.date     || '').slice(0, 10);
     conversationHistory = data.history || [];
-    // Restaurer fichiers (photos) depuis la base — colonne 9 : JSON array d'URLs Dropbox ou objets legacy
-    let rawFiles = data.files;
-    if (typeof rawFiles === 'string') {
-      try { rawFiles = rawFiles.startsWith('[') ? JSON.parse(rawFiles) : []; }
-      catch(e) { rawFiles = []; }
-    }
-    currentFiles = (rawFiles || []).map((f, i) => ({
-      name: f.name || ('photo-' + (i + 1) + '.jpg'),
-      type: f.type || 'image/jpeg',
-      url:  f.url  || null,
-      data: f.data || null
-    }));
+    currentFiles = (data.files || []).map(f => ({ name: f.name, type: f.type || 'image/jpeg', url: f.url }));
+    console.log('currentFiles après ouvrirDoc:', JSON.stringify(currentFiles.map(f=>({name:f.name,url:f.url}))));
     renderFilesList();
     // Afficher
     document.getElementById('chantier').value  = currentChantier;
