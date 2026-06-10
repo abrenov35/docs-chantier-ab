@@ -727,7 +727,27 @@ async function mettreAJour() {
 
     if (modif) {
       _modeModification = true;
-      const data = await callGAS({ modif, history: cleanHistory(conversationHistory) });
+
+      // Nouvelles photos sans marqueur dans le doc → demander à Claude de les placer
+      const nouvellesPhotos = currentFiles
+        .filter(f => f.type && f.type.startsWith('image/') && f.label)
+        .filter(f => {
+          // Photo "nouvelle" = pas encore dans le HTML sauvegardé (pas de marqueur existant)
+          const docText = document.getElementById('doc-frame').innerText || '';
+          return !docText.includes('[PHOTO:' + f.label + ']');
+        });
+
+      let modifFinal = modif;
+      if (nouvellesPhotos.length > 0) {
+        const labelsNouveaux = nouvellesPhotos
+          .map(f => `- [PHOTO:${f.label}] → à placer dans la section correspondant au label "${f.label}"`)
+          .join('\n');
+        modifFinal = (modif || 'Intègre les nouvelles photos dans le document.')
+          + '\n\nNOUVELLES PHOTOS À INTÉGRER (place chaque marqueur APRÈS le texte de la section correspondante) :\n'
+          + labelsNouveaux;
+      }
+
+      const data = await callGAS({ modif: modifFinal, history: cleanHistory(conversationHistory) });
       conversationHistory = data.history;
       afficherDoc(data.text);
       _modeModification = false;
