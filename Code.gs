@@ -98,7 +98,7 @@ function saveOrUpdate(p) {
   const sheet = getSheet();
   const { action, id, type, chantier, operateur, date, contenu, history, files } = p;
   const historyJson   = JSON.stringify(history || []);
-  const photoUrlsJson = files && files.length ? JSON.stringify(files) : null;
+  const photoUrlsJson = files && files.length ? JSON.stringify(files.map(f => ({ name: f.name, type: f.type, url: f.url }))) : null;
 
   if (action === 'update' && id) {
     const rows = sheet.getDataRange().getValues();
