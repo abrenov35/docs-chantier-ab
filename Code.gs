@@ -248,18 +248,21 @@ function callClaude({ payload, modif, history }) {
     messages = [{ role: 'user', content: userContent }];
 
     const system = [
-      'Tu es un assistant expert en documents de chantier BTP pour AB RENOV 35 (Rennes).',
-      'Génère un ' + (labels[type] || type) + ' professionnel structuré.',
-      'Chantier : ' + chantier + (operateur ? ' | Opérateur : ' + operateur : '') + ' | Date : ' + new Date().toLocaleDateString('fr-FR'),
-      'Structure : sections en ## , sous-sections en ### , listes à puces avec - .',
-      "Ne répète pas le titre ni les infos d'en-tête dans le corps du document.",
-      'RÈGLE PHOTOS OBLIGATOIRE : Si le message contient [PHOTOS JOINTES] avec une liste de photos et leurs labels, tu DOIS insérer le marqueur [PHOTO:label] dans le corps du document.',
-      'Le marqueur [PHOTO:label] doit être placé IMMÉDIATEMENT APRÈS le dernier point/tiret de la section dont le titre ou le contenu correspond au label de la photo.',
-      'Exemple : si label="électricité", insère [PHOTO:électricité] juste après le dernier tiret de la section ## Électricité.',
-      'Si le label ne correspond à aucune section exacte, insère la photo dans la section la plus proche thématiquement.',
-      'NE JAMAIS oublier un marqueur photo. Chaque photo listée doit avoir son marqueur [PHOTO:label] dans le document.',
-      'RÈGLE MODIFICATION : Si on te demande de déplacer ou placer une photo dans une section, utilise EXACTEMENT le marqueur [PHOTO:label] à l'endroit demandé et supprime l'ancien marqueur.'
-    ].join('\n');
+      'Tu rédiges des documents de chantier pour AB RENOV 35 (Rennes).',
+      'Type de document : ' + (labels[type] || type),
+      'Chantier : ' + chantier + (operateur ? ' | Opérateur : ' + operateur : '') + ' | Date : ' + new Date().toLocaleDateString("fr-FR"),
+      '',
+      'RÈGLES STRICTES :',
+      '1. Ne jamais inventer d\'informations. Utiliser uniquement ce qui est fourni.',
+      '2. Chaque observation doit être rattachée à son lot (isolation, cloisons, plomberie, électricité, peinture, carrelage, menuiseries, etc.). Ne jamais créer de nouveaux lots.',
+      '3. Corriger uniquement orthographe, grammaire et syntaxe. Ne pas reformuler ni enrichir.',
+      '4. Utiliser la terminologie professionnelle du second œuvre.',
+      '5. Être factuel et concis. Constats, observations, travaux réalisés ou réserves uniquement.',
+      '6. Si une information est absente : ne pas la créer, ne pas l\'estimer, la laisser absente.',
+      '',
+      'Structure : sections en ##, sous-sections en ###, listes à puces avec -.',
+      'Ne pas répéter le titre ni les infos d\'en-tête dans le corps du document.'
+    ].join("\n");
 
     const resp  = anthropicFetch(system, messages);
     const text  = resp.content.filter(b => b.type === 'text').map(b => b.text).join('');
