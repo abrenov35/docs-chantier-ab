@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>AB RENOV 35 — Documents Chantier</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 :root {
   --navy: #162D49;
@@ -64,6 +66,8 @@ textarea { resize: vertical; min-height: 90px; }
 .btn-action { flex: 1; padding: 11px; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; }
 .btn-retour { background: var(--white); color: var(--navy); border: 2px solid var(--border) !important; }
 .btn-print { background: var(--navy); color: white; }
+.btn-share { background: var(--lav); color: white; }
+.btn-share:disabled { opacity: 0.6; }
 #save-msg { flex: 1; font-size: 11px; text-align: center; min-height: 18px; }
 .save-pendule { display: inline-block; animation: pendule 0.6s ease-in-out infinite alternate; transform-origin: top center; }
 @keyframes pendule { from { transform: rotate(-25deg); } to { transform: rotate(25deg); } }
@@ -354,6 +358,7 @@ textarea { resize: vertical; min-height: 90px; }
       <div class="actions">
         <button class="btn-action btn-retour" onclick="resetForm()">← Retour</button>
         <div id="save-msg"></div>
+        <button class="btn-action btn-share" onclick="partagerPDF()">📤 Partager le PDF</button>
         <button class="btn-action btn-print" onclick="imprimerDoc()">🖨️ Imprimer</button>
       </div>
       <div id="doc-frame">
@@ -916,6 +921,82 @@ function resetForm() {
   currentDocDate       = '';
   currentFiles         = [];
   renderFilesList();
+}
+
+// ── Partager le PDF ─────────────────────────────
+async function partagerPDF() {
+  const btn = document.querySelector('.btn-share');
+  const original = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '⏳ Génération du PDF…';
+
+  try {
+    const typeLabel = selectedType === 'CRCh' ? 'CR_Chantier' : selectedType === 'FCh' ? 'Fiche_Chantier' : 'PV_Reception';
+    const dateStr = (currentDocDate || new Date().toISOString().slice(0,10));
+    const fileName = `${dateStr}_${typeLabel}_${(currentChantier||'chantier').replace(/[^a-zA-Z0-9]+/g,'_')}.pdf`;
+
+    const source = document.getElementById('doc-frame');
+
+    // Rendu du contenu en image haute résolution
+    const canvas = await html2canvas(source, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff'
+    });
+
+    const imgData = canvas.toDataURL('image/jpeg', 0.92);
+    const { jsPDF } = window.jspdf;
+
+    // Format A4
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+    const imgW = pageW;
+    const imgH = (canvas.height * imgW) / canvas.width;
+
+    let heightLeft = imgH;
+    let position = 0;
+
+    pdf.addImage(imgData, 'JPEG', 0, position, imgW, imgH);
+    heightLeft -= pageH;
+
+    while (heightLeft > 0) {
+      position = heightLeft - imgH;
+      pdf.addPage();
+      pdf.addImage(imgData, 'JPEG', 0, position, imgW, imgH);
+      heightLeft -= pageH;
+    }
+
+    const pdfBlob = pdf.output('blob');
+    const pdfFile = new File([pdfBlob], fileName, { type: 'application/pdf' });
+
+    // Web Share API (sélecteur natif Android: SMS, WhatsApp, Gmail, Drive, Dropbox...)
+    if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+      await navigator.share({
+        files: [pdfFile],
+        title: fileName,
+        text: `${typeLabel.replace(/_/g,' ')} — ${currentChantier || ''}`
+      });
+    } else if (navigator.share) {
+      // Fallback: partage sans fichier (rare)
+      const url = URL.createObjectURL(pdfBlob);
+      const a = document.createElement('a');
+      a.href = url; a.download = fileName;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    } else {
+      // Pas de Web Share API (desktop / vieux navigateurs) → téléchargement direct
+      pdf.save(fileName);
+    }
+  } catch (err) {
+    if (err.name !== 'AbortError') {
+      console.error('Erreur partage PDF:', err);
+      alert('Erreur lors de la génération du PDF : ' + err.message);
+    }
+  } finally {
+    btn.disabled = false;
+    btn.textContent = original;
+  }
 }
 
 // ── Imprimer ─────────────────────────────────────
