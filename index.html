@@ -698,7 +698,7 @@ function afficherDoc(text) {
   document.getElementById('doc-result').classList.add('visible');
 
   // En-tête
-  let html = `<div class="doc-type-header"><div class="type-full">${(TYPE_LABELS[selectedType]||selectedType).toUpperCase()}</div></div>`;
+  let html = `<div class="doc-type-header"><div class="type-full" style="font-size:11px;letter-spacing:2px;opacity:.7;margin-bottom:2px;">AB RENOV 35</div><div class="type-full">${(TYPE_LABELS[selectedType]||selectedType).toUpperCase()}</div></div>`;
   let infos = '';
   if (currentChantier)  infos += `<div class="doc-info-item">Chantier <span>${currentChantier}</span></div>`;
   if (currentOperateur) infos += `<div class="doc-info-item">Opérateur <span>${currentOperateur}</span></div>`;
