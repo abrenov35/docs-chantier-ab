@@ -43,6 +43,9 @@ html, body { min-height: 100%; background: var(--beige); font-family: Arial, Hel
 .type-btn { background: var(--white); border: 1px solid var(--border); border-radius: 6px; min-height:40px; padding: 7px 6px; display:flex; align-items:center; justify-content:center; text-align: center; cursor: pointer; font-size: 10px; font-weight: 700; color: var(--navy); line-height: 1.2; }
 .type-btn.active { border-color: var(--navy); background: var(--navy); color: var(--white); }
 .card { background: var(--white); border-radius: 6px; padding: 14px; margin-bottom: 12px; border: 1px solid #e5e7eb; box-shadow:0 2px 5px rgba(15,23,42,.08); }
+.identity-row { display:grid; grid-template-columns:minmax(0,2fr) minmax(130px,1fr); gap:10px; align-items:end; }
+.identity-field { min-width:0; }
+.identity-field label { margin-top:0; }
 label { display: block; font-size: 10px; font-weight: 800; color: #374151; text-transform: none; letter-spacing: 0; margin-bottom: 5px; margin-top: 13px; }
 label:first-child { margin-top: 0; }
 input, textarea { width: 100%; padding: 9px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 12px; font-weight: 500; font-family: inherit; background: var(--blue-light); color: var(--navy); outline: none; }
@@ -135,6 +138,7 @@ textarea { resize: vertical; min-height: 90px; }
   .type-grid { gap:5px; }
   .type-btn { font-size:9px; padding:6px 3px; }
   .card { padding:11px; }
+  .identity-row { grid-template-columns:minmax(0,1.65fr) minmax(100px,1fr); gap:7px; }
   .doc-list-header, .doc-list-item { grid-template-columns:92px 1fr 58px 66px; padding-left:7px; padding-right:7px; font-size:10px; }
 }
 
@@ -336,7 +340,7 @@ textarea { resize: vertical; min-height: 90px; }
         <option value="PVR">PV réception</option>
       </select>
     </div>
-    <div class="app-version">v2</div>
+    <div class="app-version">v3</div>
   </div>
   <div class="header-band"></div>
 </div>
@@ -350,10 +354,16 @@ textarea { resize: vertical; min-height: 90px; }
   <div id="tab-nouveau">
     <div id="form-section">
       <div class="card">
-        <label>Chantier / Client</label>
-        <input type="text" id="chantier" placeholder="Ex: Dupont — 12 rue des Lilas, Rennes">
-        <label>Opérateur</label>
-        <input type="text" id="operateur" placeholder="Ton prénom ou initiales">
+        <div class="identity-row">
+          <div class="identity-field">
+            <label>Chantier / Client</label>
+            <input type="text" id="chantier" placeholder="Ex: Dupont — 12 rue des Lilas, Rennes">
+          </div>
+          <div class="identity-field">
+            <label>Opérateur</label>
+            <input type="text" id="operateur" placeholder="Prénom / initiales">
+          </div>
+        </div>
         <label>Informations et observations</label>
         <textarea id="observations" placeholder="Décris les travaux du jour, observations, points importants…" style="min-height:140px"></textarea>
         <label>Photos / Documents</label>
