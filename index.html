@@ -21,13 +21,18 @@
 html, body { min-height: 100%; background: var(--beige); font-family: Arial, Helvetica, sans-serif; color: var(--navy); }
 
 .header { background: var(--navy); min-height: 43px; padding: 7px 12px; position: sticky; top: 0; z-index: 100; border-bottom:1px solid rgba(255,255,255,.12); }
-.header-top { display: flex; align-items: center; justify-content:space-between; min-height:28px; }
+.header-top { display: flex; align-items: center; gap:8px; min-height:28px; }
+.brand { display:flex; align-items:center; white-space:nowrap; flex-shrink:0; }
 .logo-text { font-weight: 800; font-size: 13px; color: var(--white); letter-spacing: 0; display:inline-block; }
 .logo-text::after { content:""; display:inline-block; width:1px; height:24px; margin:0 10px; background:rgba(255,255,255,.25); vertical-align:middle; }
 .logo-sub { display:inline-block; font-size: 10px; color: rgba(255,255,255,.78); letter-spacing: 0; font-weight:700; text-transform: none; margin-top: 0; vertical-align:middle; }
-.app-version { color:rgba(255,255,255,.65); font-size:9px; font-weight:700; flex-shrink:0; }
+.toolbar-actions { margin-left:auto; display:flex; align-items:center; gap:6px; min-width:0; }
+.toolbar-btn { height:28px; padding:0 9px; border:1px solid rgba(255,255,255,.42); border-radius:5px; background:transparent; color:white; font-size:10px; font-weight:700; cursor:pointer; white-space:nowrap; }
+.toolbar-btn.active { background:rgba(255,255,255,.18); box-shadow:inset 0 -2px 0 #f59e0b; }
+.type-select { width:138px; height:28px; padding:0 7px; border:1px solid rgba(255,255,255,.55); border-radius:5px; background:white; color:#172554; font-family:Arial,Helvetica,sans-serif; font-size:10px; font-weight:700; outline:none; }
+.app-version { color:rgba(255,255,255,.65); font-size:9px; font-weight:700; flex-shrink:0; margin-left:2px; }
 .header-band { display:none; }
-.main { max-width: 640px; margin: 0 auto; padding: 0 12px 32px; }
+.main { max-width: 640px; margin: 0 auto; padding: 10px 12px 32px; }
 
 .tabs { display: flex; gap: 8px; padding: 10px 0; margin-bottom: 8px; }
 .tab-btn { flex: 1; height:32px; padding: 0 8px; background: var(--white); border: 1px solid #94a3b8; border-radius: 5px; font-size: 10px; font-weight: 700; color: var(--navy); cursor: pointer; text-align: center; transition: all 0.2s; }
@@ -120,7 +125,12 @@ textarea { resize: vertical; min-height: 90px; }
   .header { padding-left:8px; padding-right:8px; }
   .logo-text { font-size:12px; }
   .logo-text::after { margin:0 7px; }
-  .logo-sub { font-size:9px; }
+  .logo-sub { display:none; }
+  .logo-text::after { display:none; }
+  .toolbar-actions { gap:4px; }
+  .toolbar-btn { padding:0 6px; font-size:9px; }
+  .type-select { width:105px; padding:0 4px; font-size:9px; }
+  .app-version { display:none; }
   .main { padding-left:8px; padding-right:8px; }
   .type-grid { gap:5px; }
   .type-btn { font-size:9px; padding:6px 3px; }
@@ -313,11 +323,20 @@ textarea { resize: vertical; min-height: 90px; }
 
 <div class="header">
   <div class="header-top">
-    <div>
+    <div class="brand">
       <div class="logo-text">AB CR CHANTIER</div>
       <div class="logo-sub">Documents</div>
     </div>
-    <div class="app-version">v1</div>
+    <div class="toolbar-actions">
+      <button class="toolbar-btn active" id="tab-btn-nouveau" onclick="showTab('nouveau')">✏️ Nouveau</button>
+      <button class="toolbar-btn" id="tab-btn-liste" onclick="showTab('liste')">📂 Documents</button>
+      <select class="type-select" id="type-select" aria-label="Type de document" onchange="selectType(this.value)">
+        <option value="CRCh">Compte rendu</option>
+        <option value="FCh">Fiche chantier</option>
+        <option value="PVR">PV réception</option>
+      </select>
+    </div>
+    <div class="app-version">v2</div>
   </div>
   <div class="header-band"></div>
 </div>
@@ -328,19 +347,8 @@ textarea { resize: vertical; min-height: 90px; }
 </div>
 
 <div class="main">
-  <div class="tabs">
-    <button class="tab-btn active" id="tab-btn-nouveau" onclick="showTab('nouveau')">✏️ Retour</button>
-    <button class="tab-btn" id="tab-btn-liste" onclick="showTab('liste')">📂 Mes documents</button>
-  </div>
-
   <div id="tab-nouveau">
     <div id="form-section">
-      <div class="section-label">Type de document</div>
-      <div class="type-grid">
-        <div class="type-btn active" data-type="CRCh" onclick="selectType(this)">Compte Rendu de Chantier</div>
-        <div class="type-btn" data-type="FCh" onclick="selectType(this)">Fiche Chantier</div>
-        <div class="type-btn" data-type="PVR" onclick="selectType(this)">Procès-Verbal de Réception</div>
-      </div>
       <div class="card">
         <label>Chantier / Client</label>
         <input type="text" id="chantier" placeholder="Ex: Dupont — 12 rue des Lilas, Rennes">
@@ -426,10 +434,9 @@ let _saveDebounceTimer = null;
 // pas de blocage beforeunload
 
 // ── Type ─────────────────────────────────────────
-function selectType(el) {
-  document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
-  selectedType = el.dataset.type;
+function selectType(type) {
+  selectedType = type;
+  document.getElementById('type-select').value = type;
 }
 
 // ── Compression image ────────────────────────────
@@ -1085,6 +1092,7 @@ async function ouvrirDoc(id) {
     console.log('DATA.FILES reçu du GAS:', JSON.stringify(data.files));
     currentDocId     = data.id;
     selectedType     = data.type;
+    document.getElementById('type-select').value = selectedType;
     currentChantier  = data.chantier  || '';
     currentOperateur = data.operateur || '';
     currentDocDate   = (data.date     || '').slice(0, 10);
