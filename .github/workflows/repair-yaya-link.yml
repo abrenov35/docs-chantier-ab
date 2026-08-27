@@ -1,0 +1,44 @@
+name: DOCS Chantier - repare liaison Yaya
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/repair-yaya-link.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch-index:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rendre la synchro Yaya tolerante aux erreurs Dropbox
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+
+          old_link="async function lienPartageDropbox(path){const token=await getDropboxToken(),headers={Authorization:'Bearer '+token,'Content-Type':'application/json'},created=await fetch('https://api.dropboxapi.com/2/sharing/create_shared_link_with_settings',{method:'POST',headers,body:JSON.stringify({path,settings:{requested_visibility:'public'}})});let url='';if(created.ok){url=(await created.json()).url||''}else{const listed=await fetch('https://api.dropboxapi.com/2/sharing/list_shared_links',{method:'POST',headers,body:JSON.stringify({path,direct_only:true})});if(listed.ok){const data=await listed.json();url=data.links&&data.links[0]?data.links[0].url:''}}if(!url)throw new Error('Lien PDF Dropbox indisponible');const direct=new URL(url);direct.searchParams.delete('dl');direct.searchParams.set('raw','1');return direct.toString()}"
+          new_link="async function lienPartageDropbox(path){const token=await getDropboxToken(),headers={Authorization:'Bearer '+token,'Content-Type':'application/json'};let url='';const listed=await fetch('https://api.dropboxapi.com/2/sharing/list_shared_links',{method:'POST',headers,body:JSON.stringify({path,direct_only:false})});if(listed.ok){const data=await listed.json();url=data.links&&data.links[0]?data.links[0].url:''}if(!url){const created=await fetch('https://api.dropboxapi.com/2/sharing/create_shared_link_with_settings',{method:'POST',headers,body:JSON.stringify({path})});if(created.ok)url=(await created.json()).url||''}if(!url)throw new Error('Lien PDF Dropbox indisponible');const direct=new URL(url);direct.searchParams.delete('dl');direct.searchParams.set('raw','1');return direct.toString()}"
+
+          old_sync="async function synchroniserDocumentYaya(){if(!currentDocId||!currentChantier)return;const response=await fetch(YAYA_API+'?_ts='+Date.now(),{method:'GET',cache:'no-store'});if(!response.ok)throw new Error('Lecture Yaya HTTP '+response.status);const json=await response.json(),state=json&&json.data?json.data:json,chantiers=Array.isArray(state&&state.chantiers)?state.chantiers:[],chantier=chantiers.find(c=>cleChantierYaya(c.nom||c.chantier||c.client)===cleChantierYaya(currentChantier));if(!chantier)throw new Error('Chantier Yaya introuvable');const documents=Array.isArray(state.documents)?state.documents.slice():[],id='DOCS-CHANTIER-'+currentDocId,date=currentDocDate||new Date().toISOString().slice(0,10),documentYaya={id,chantierId:String(chantier.id),type:getDocumentTypeLabel(),titre:getDocumentTypeLabel()+' — '+currentChantier,sujet:currentOperateur||'Document chantier',date,lien:(currentPdfYayaUrl=await genererPdfPourYaya()),origine:'DOCS_CHANTIER'};const index=documents.findIndex(d=>String(d.id)===id);if(index>=0)documents[index]={...documents[index],...documentYaya};else documents.unshift(documentYaya);const save=await fetch(YAYA_API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'setDocuments',data:documents})}),result=await save.json();if(!save.ok||result.ok===false)throw new Error(result.error||'Écriture Yaya impossible');majBoutonPdf()}"
+          new_sync="async function synchroniserDocumentYaya(){if(!currentDocId||!currentChantier)return;const response=await fetch(YAYA_API+'?_ts='+Date.now(),{method:'GET',cache:'no-store'});if(!response.ok)throw new Error('Lecture Yaya HTTP '+response.status);const json=await response.json(),state=json&&json.data?json.data:json,chantiers=Array.isArray(state&&state.chantiers)?state.chantiers:[],chantier=chantiers.find(c=>cleChantierYaya(c.nom||c.chantier||c.client)===cleChantierYaya(currentChantier));if(!chantier)throw new Error('Chantier Yaya introuvable');let lien=currentPdfYayaUrl||('https://abrenov35.github.io/docs-chantier-ab/?doc='+encodeURIComponent(currentDocId));try{lien=await genererPdfPourYaya();currentPdfYayaUrl=lien}catch(pdfError){console.warn('PDF Yaya non regenere, conservation du lien disponible',pdfError)}const documents=Array.isArray(state.documents)?state.documents.slice():[],id='DOCS-CHANTIER-'+currentDocId,date=currentDocDate||new Date().toISOString().slice(0,10),documentYaya={id,chantierId:String(chantier.id),type:getDocumentTypeLabel(),titre:getDocumentTypeLabel()+' — '+currentChantier,sujet:currentOperateur||'Document chantier',date,lien,origine:'DOCS_CHANTIER'};const index=documents.findIndex(d=>String(d.id)===id);if(index>=0)documents[index]={...documents[index],...documentYaya};else documents.unshift(documentYaya);const save=await fetch(YAYA_API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'setDocuments',data:documents})}),result=await save.json();if(!save.ok||result.ok===false)throw new Error(result.error||'Écriture Yaya impossible');majBoutonPdf()}"
+
+          if old_link not in s:
+              raise SystemExit('Marqueur lienPartageDropbox introuvable')
+          if old_sync not in s:
+              raise SystemExit('Marqueur synchroniserDocumentYaya introuvable')
+          s=s.replace(old_link,new_link,1).replace(old_sync,new_sync,1)
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit et push
+        run: |
+          git config user.email "github-actions@github.com"
+          git config user.name "GitHub Actions"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Repare la liaison Docs Chantier vers Yaya"
+          git push
