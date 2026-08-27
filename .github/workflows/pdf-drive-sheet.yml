@@ -1,0 +1,86 @@
+name: DOCS Chantier - PDF Drive et Sheet
+on:
+  push:
+    paths:
+      - '.github/workflows/pdf-drive-sheet.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch Code.gs et index.html
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('Code.gs'); s=p.read_text()
+          s=s.replace("const DRIVE_FOLDER_NAME = 'docs-chantier-photos';", "const DRIVE_FOLDER_NAME = 'docs-chantier-photos';\nconst PDF_DRIVE_FOLDER_NAME = 'docs-chantier-pdf';")
+          s=s.replace("const COL = { id:1, type:2, chantier:3, operateur:4, date:5, contenu:6, history:7, photoUrls:8 };", "const COL = { id:1, type:2, chantier:3, operateur:4, date:5, contenu:6, history:7, photoUrls:9, pdfUrl:10 };")
+          s=s.replace("if (action === 'get_dropbox_link') return json(getDropboxLink(p.path));", "if (action === 'get_dropbox_link') return json(getDropboxLink(p.path));\n    if (action === 'save_pdf') return json(savePdfDrive(p));")
+          marker="// ── CRUD Sheets"
+          fn=r'''function savePdfDrive(p) {
+  if (!p.id || !p.base64) throw new Error('PDF incomplet');
+  const sheet = getSheet();
+  const rows = sheet.getDataRange().getValues();
+  let row = 0;
+  for (let i=1;i<rows.length;i++) if (String(rows[i][COL.id-1])===String(p.id)) { row=i+1; break; }
+  if (!row) throw new Error('Document introuvable : '+p.id);
+  const folder = getOrCreateFolder(PDF_DRIVE_FOLDER_NAME);
+  const name = 'document-'+String(p.id).replace(/[^a-zA-Z0-9_-]/g,'_')+'.pdf';
+  const existing = folder.getFilesByName(name);
+  while (existing.hasNext()) existing.next().setTrashed(true);
+  const blob = Utilities.newBlob(Utilities.base64Decode(p.base64), 'application/pdf', name);
+  const file = folder.createFile(blob);
+  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  const url = 'https://drive.google.com/file/d/'+file.getId()+'/view';
+  sheet.getRange(row, COL.pdfUrl).setValue(url);
+  return {ok:true,url:url};
+}
+
+'''
+          if fn not in s: s=s.replace(marker,fn+marker)
+          s=s.replace("date:      r[COL.date      - 1],\n      contenu:", "date:      r[COL.date      - 1],\n      pdfUrl:    r[COL.pdfUrl    - 1] || '',\n      contenu:")
+          s=s.replace("date:      r[COL.date      - 1]\n    });", "date:      r[COL.date      - 1],\n      pdfUrl:    r[COL.pdfUrl    - 1] || ''\n    });")
+          p.write_text(s)
+
+          p=Path('index.html'); s=p.read_text()
+          # Historique : PDF_URL fourni par Sheet, placé avant crayon.
+          old='<button class="btn-pdf-history" title="Voir le PDF" onclick="voirPdfHistorique(\'${d.id}\')">📄</button><button title="Ouvrir / Modifier"'
+          new='<button class="btn-pdf-history" title="Voir le PDF" onclick="voirPdfHistoriqueUrl(\'${encodeURIComponent(d.pdfUrl||\'\')}\')">📄</button><button title="Ouvrir / Modifier"'
+          if old in s: s=s.replace(old,new,1)
+          elif '<button title="Ouvrir / Modifier"' in s:
+            s=s.replace('<button title="Ouvrir / Modifier"', '<button class="btn-pdf-history" title="Voir le PDF" onclick="voirPdfHistoriqueUrl(\'${encodeURIComponent(d.pdfUrl||\'\')}\')">📄</button><button title="Ouvrir / Modifier"',1)
+          # fonction d'ouverture directe
+          insert="function voirPdfHistoriqueUrl(url){url=decodeURIComponent(url||'');if(!url){alert('PDF non disponible pour ce document.');return}window.open(url,'_blank','noopener')}\n"
+          anchor='async function ouvrirDoc(id)'
+          if insert not in s: s=s.replace(anchor,insert+anchor,1)
+          # Génération PDF Drive via GAS : remplace le PDF précédent et écrit PDF_URL en J.
+          fn2=r'''async function sauvegarderPdfDrive(){
+  if(!currentDocId)return '';
+  const source=document.getElementById('doc-frame');
+  const canvas=await html2canvas(source,{scale:1.6,useCORS:true,backgroundColor:'#ffffff'});
+  const imgData=canvas.toDataURL('image/jpeg',.9),{jsPDF}=window.jspdf,pdf=new jsPDF('p','mm','a4');
+  const pageW=pdf.internal.pageSize.getWidth(),pageH=pdf.internal.pageSize.getHeight(),imgW=pageW,imgH=canvas.height*imgW/canvas.width;
+  let left=imgH,pos=0;pdf.addImage(imgData,'JPEG',0,pos,imgW,imgH);left-=pageH;
+  while(left>0){pos=left-imgH;pdf.addPage();pdf.addImage(imgData,'JPEG',0,pos,imgW,imgH);left-=pageH}
+  const data=pdf.output('datauristring').split(',')[1];
+  const r=await callGAS({action:'save_pdf',id:currentDocId,base64:data});
+  currentPdfYayaUrl=r.url||'';majBoutonPdf();return currentPdfYayaUrl;
+}
+'''
+          anchor2='function majBoutonPdf()'
+          if fn2 not in s: s=s.replace(anchor2,fn2+anchor2,1)
+          # Lors de la sauvegarde, le workflow existant appelait genererPdfPourYaya : bascule vers Drive.
+          s=s.replace('await genererPdfPourYaya();','await sauvegarderPdfDrive();')
+          # Yaya réutilise le PDF Drive existant, sans regénération Dropbox.
+          s=s.replace("try{lien=await genererPdfPourYaya();currentPdfYayaUrl=lien}catch(pdfError){console.warn('PDF Yaya non regenere, conservation du lien disponible',pdfError)}", "if(!currentPdfYayaUrl){try{lien=await sauvegarderPdfDrive();currentPdfYayaUrl=lien}catch(pdfError){console.warn('PDF Drive indisponible',pdfError)}}else lien=currentPdfYayaUrl")
+          p.write_text(s)
+          PY
+      - name: Commit
+        run: |
+          git config user.name "abrenov35"
+          git config user.email "abrenov35@gmail.com"
+          git add Code.gs index.html
+          git commit -m "Stocke le PDF sur Drive et son URL en colonne J" || exit 0
+          git push
