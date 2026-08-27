@@ -1,0 +1,63 @@
+name: DOCS Chantier - PDF a chaque sauvegarde
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/pdf-history-save.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PDF sauvegarde et Historique
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+
+          old="currentDocId=data.id||currentDocId;let yayaMsg='';try{await synchroniserDocumentYaya()}catch(yayaError){console.warn('Envoi Yaya impossible',yayaError);yayaMsg=' — Yaya non synchronisé'}"
+          new="currentDocId=data.id||currentDocId;let pdfMsg='';try{currentPdfYayaUrl=await genererPdfPourYaya();majBoutonPdf()}catch(pdfError){console.warn('PDF non genere',pdfError);pdfMsg=' — PDF non généré'}let yayaMsg='';try{await synchroniserDocumentYaya()}catch(yayaError){console.warn('Envoi Yaya impossible',yayaError);yayaMsg=' — Yaya non synchronisé'}"
+          if old not in s:
+              raise SystemExit('Marqueur sauvegarderAuto introuvable')
+          s=s.replace(old,new,1)
+
+          old2="const errMsg=dbxErrors>0?` (${dbxErrors} photo(s) non uploadée(s))`:'';msg.innerHTML='<span class=\"save-badge save-badge-ok\">✅ Sauvegardé'+errMsg+yayaMsg+'</span>';"
+          new2="const errMsg=dbxErrors>0?` (${dbxErrors} photo(s) non uploadée(s))`:'';msg.innerHTML='<span class=\"save-badge save-badge-ok\">✅ Sauvegardé'+errMsg+pdfMsg+yayaMsg+'</span>';"
+          if old2 not in s:
+              raise SystemExit('Marqueur message sauvegarde introuvable')
+          s=s.replace(old2,new2,1)
+
+          old3="<div class=\"doc-list-actions\"><button title=\"Ouvrir / Modifier\" onclick=\"ouvrirDoc('${d.id}')\">✏️</button><button class=\"btn-delete\" title=\"Supprimer\" onclick=\"supprimerDoc('${d.id}')\">🗑</button></div>"
+          new3="<div class=\"doc-list-actions\"><button title=\"Voir le PDF\" onclick=\"ouvrirPdfHistorique('${d.id}')\">📄</button><button title=\"Ouvrir / Modifier\" onclick=\"ouvrirDoc('${d.id}')\">✏️</button><button class=\"btn-delete\" title=\"Supprimer\" onclick=\"supprimerDoc('${d.id}')\">🗑</button></div>"
+          if old3 not in s:
+              raise SystemExit('Marqueur actions historique introuvable')
+          s=s.replace(old3,new3,1)
+
+          old4="function majBoutonPdf(){const btn=document.getElementById('btn-voir-pdf');if(btn)btn.style.display=currentPdfYayaUrl?'block':'none'}"
+          new4="async function ouvrirPdfHistorique(id){try{const path=DROPBOX_FOLDER+'document-'+String(id).replace(/[^a-zA-Z0-9_-]/g,'_')+'.pdf',url=await lienPartageDropbox(path);window.open(url,'_blank','noopener')}catch(e){alert('PDF non disponible pour ce document.')}}function majBoutonPdf(){const btn=document.getElementById('btn-voir-pdf');if(btn)btn.style.display=currentPdfYayaUrl?'block':'none'}"
+          if old4 not in s:
+              raise SystemExit('Marqueur majBoutonPdf introuvable')
+          s=s.replace(old4,new4,1)
+
+          old5="let lien=currentPdfYayaUrl||('https://abrenov35.github.io/docs-chantier-ab/?doc='+encodeURIComponent(currentDocId));try{lien=await genererPdfPourYaya();currentPdfYayaUrl=lien}catch(pdfError){console.warn('PDF Yaya non regenere, conservation du lien disponible',pdfError)}"
+          new5="let lien=currentPdfYayaUrl||('https://abrenov35.github.io/docs-chantier-ab/?doc='+encodeURIComponent(currentDocId));"
+          if old5 not in s:
+              raise SystemExit('Marqueur regen PDF Yaya introuvable')
+          s=s.replace(old5,new5,1)
+
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit et push
+        run: |
+          git config user.email "github-actions@github.com"
+          git config user.name "GitHub Actions"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Docs Chantier: cree et remplace le PDF a chaque sauvegarde"
+          git push
