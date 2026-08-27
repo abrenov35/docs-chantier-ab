@@ -1,0 +1,44 @@
+name: Fix PDF Drive front
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-pdf-drive-front.yml'
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch index
+        shell: bash
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          old="async function genererPdfPourYaya(){const source=document.getElementById('doc-frame'),canvas=await html2canvas(source,{scale:1.6,useCORS:true,backgroundColor:'#ffffff'}),imgData=canvas.toDataURL('image/jpeg',.9),{jsPDF}=window.jspdf,pdf=new jsPDF('p','mm','a4'),pageW=pdf.internal.pageSize.getWidth(),pageH=pdf.internal.pageSize.getHeight(),imgW=pageW,imgH=canvas.height*imgW/canvas.width;let heightLeft=imgH,position=0;pdf.addImage(imgData,'JPEG',0,position,imgW,imgH);heightLeft-=pageH;while(heightLeft>0){position=heightLeft-imgH;pdf.addPage();pdf.addImage(imgData,'JPEG',0,position,imgW,imgH);heightLeft-=pageH}const bytes=new Uint8Array(pdf.output('arraybuffer')),path=await uploadPdfDropbox(bytes,'document-'+String(currentDocId).replace(/[^a-zA-Z0-9_-]/g,'_')+'.pdf');return lienPartageDropbox(path)}"
+          new="async function genererPdfPourYaya(){if(!currentDocId)throw new Error('Document non sauvegarde');const source=document.getElementById('doc-frame'),canvas=await html2canvas(source,{scale:1.6,useCORS:true,backgroundColor:'#ffffff'}),imgData=canvas.toDataURL('image/jpeg',.9),{jsPDF}=window.jspdf,pdf=new jsPDF('p','mm','a4'),pageW=pdf.internal.pageSize.getWidth(),pageH=pdf.internal.pageSize.getHeight(),imgW=pageW,imgH=canvas.height*imgW/canvas.width;let heightLeft=imgH,position=0;pdf.addImage(imgData,'JPEG',0,position,imgW,imgH);heightLeft-=pageH;while(heightLeft>0){position=heightLeft-imgH;pdf.addPage();pdf.addImage(imgData,'JPEG',0,position,imgW,imgH);heightLeft-=pageH}const base64=pdf.output('datauristring').split(',')[1],r=await callGAS({action:'save_pdf',id:currentDocId,base64});if(!r.url)throw new Error('Lien PDF Drive manquant');return r.url}"
+          if old not in s:
+              raise SystemExit('genererPdfPourYaya introuvable')
+          s=s.replace(old,new,1)
+          old2="async function ouvrirPdfHistorique(id){try{const path=DROPBOX_FOLDER+'document-'+String(id).replace(/[^a-zA-Z0-9_-]/g,'_')+'.pdf',url=await lienPartageDropbox(path);window.open(url,'_blank','noopener')}catch(e){alert('PDF non disponible pour ce document.')}}"
+          new2="async function ouvrirPdfHistorique(id){try{const d=await callGAS({action:'get',id});if(!d.pdfUrl)throw new Error('PDF absent');window.open(d.pdfUrl,'_blank','noopener')}catch(e){alert('PDF non disponible pour ce document.')}}"
+          if old2 not in s:
+              raise SystemExit('ouvrirPdfHistorique introuvable')
+          s=s.replace(old2,new2,1)
+          old3="async function chargerLienPdfExistant(){if(!currentDocId)return;try{currentPdfYayaUrl=await lienPartageDropbox(DROPBOX_FOLDER+'document-'+String(currentDocId).replace(/[^a-zA-Z0-9_-]/g,'_')+'.pdf');majBoutonPdf()}catch(e){currentPdfYayaUrl='';majBoutonPdf()}}"
+          new3="async function chargerLienPdfExistant(){if(!currentDocId)return;try{const d=await callGAS({action:'get',id:currentDocId});currentPdfYayaUrl=d.pdfUrl||'';majBoutonPdf()}catch(e){currentPdfYayaUrl='';majBoutonPdf()}}"
+          if old3 not in s:
+              raise SystemExit('chargerLienPdfExistant introuvable')
+          s=s.replace(old3,new3,1)
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit fix
+        shell: bash
+        run: |
+          git config user.name "abrenov35"
+          git config user.email "abrenov35@gmail.com"
+          git add index.html
+          git commit -m "Relie les PDF a Drive et PDF_URL" || exit 0
+          git push
