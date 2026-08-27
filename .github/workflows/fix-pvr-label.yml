@@ -1,0 +1,35 @@
+name: DOCS Chantier - Libelle PV Reception
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-pvr-label.yml'
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Elargir uniquement le libelle PV Reception dans historique
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          old='.doc-type-badge{font-size:8px;font-weight:800;background:#edf2f6;color:var(--navy);border:1px solid #d9e1e9;border-radius:5px;padding:3px 6px;display:inline-block;white-space:normal;line-height:1.2}'
+          new='.doc-type-badge{font-size:8px;font-weight:800;background:#edf2f6;color:var(--navy);border:1px solid #d9e1e9;border-radius:5px;padding:3px 6px;display:inline-block;white-space:normal;line-height:1.2}.doc-type-badge.pvr{font-size:8px;line-height:1.15;min-width:116px;max-width:122px;text-align:center;white-space:normal}'
+          if old not in s: raise SystemExit('CSS badge introuvable')
+          s=s.replace(old,new,1)
+          old2='<span class="doc-type-badge">${TYPE_LABELS[d.type]||d.type}</span>'
+          new2='<span class="doc-type-badge ${d.type===\'PVR\'?\'pvr\':\'\'}">${TYPE_LABELS[d.type]||d.type}</span>'
+          if old2 not in s: raise SystemExit('badge historique introuvable')
+          s=s.replace(old2,new2,1)
+          p.write_text(s)
+          PY
+      - name: Commit
+        run: |
+          git config user.name "abrenov35"
+          git config user.email "abrenov35@gmail.com"
+          git add index.html
+          git commit -m "Elargit le libelle Proces-Verbal de Reception sur deux lignes" || exit 0
+          git push
